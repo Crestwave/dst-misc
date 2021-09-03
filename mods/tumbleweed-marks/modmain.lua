@@ -1,0 +1,5 @@
+AddPrefabPostInit("tumbleweed", function(inst)
+    inst:DoTaskInTime(0, function(inst)
+        GLOBAL.SpawnPrefab("reticule").Transform:SetPosition(inst.Transform:GetWorldPosition())
+    end)
+end)
