@@ -3,7 +3,7 @@ POSIX shell scripts to fetch and parse lobby data.
 The scripts optionally accept specific regions as arguments, defaulting to all. Namely: china, eu, sing, us
 
 
-`fetch.sh` - Outputs human-readable lobby data into *region*.json.
+`fetch.sh` - Outputs lobby data into *region*.json.
 `chars.sh` - Parses *region*.json and outputs a ranking of how many people are using a character.
 
 

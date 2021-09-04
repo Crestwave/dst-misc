@@ -9,10 +9,5 @@ for i; do
 	url=https://lobby-$i.kleientertainment.com/lobby/read
 
 	printf 'Fetching %s lobby data...\n' "$i"
-	curl -w '\n' -d "$data" "$url" |
-		sed '
-			s/\\n/\
-/g
-			s/\\"/"/g
-			' >"$i".json
+	curl -w '\n' -d "$data" "$url" >"$i".json
 done

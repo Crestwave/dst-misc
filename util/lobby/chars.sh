@@ -6,7 +6,8 @@ for i; do
 	shift
 done
 
-awk -F \" '
+awk -F '\\\\"' '
+	BEGIN { RS = "\\\\n" }
 	/prefab=/ { a[$2] += 1 }
 	END { for (i in a) print a[i] " - " i }
 	' "$@" | sort -n
