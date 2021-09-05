@@ -2,7 +2,7 @@
 [ "$#" -eq 0 ] && set china eu sing us
 
 for i; do
-	set "$@" "$1".json
+	set "$@" data/"$1".json
 	shift
 done
 

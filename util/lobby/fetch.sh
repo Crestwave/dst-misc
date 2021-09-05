@@ -5,9 +5,10 @@ read -r data <<EOF
 {"__gameId":"DontStarveTogether","__token":"$KLEI_TOKEN","query":{}}
 EOF
 
+mkdir -p data
 for i; do
 	url=https://lobby-$i.kleientertainment.com/lobby/read
 
 	printf 'Fetching %s lobby data...\n' "$i"
-	curl -w '\n' -d "$data" "$url" >"$i".json
+	curl -w '\n' -d "$data" "$url" >data/"$i".json
 done
