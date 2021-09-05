@@ -10,16 +10,17 @@ while IFS=, read -r host name file; do
 				exit
 			}
 		}
-		' "$file" | while IFS=, read -r id name; do
+		' listings/"$file" | while IFS=, read -r id name; do
+			name="${name##*/}"
 			./fetch-row.sh "${name%%-*}" "$id"
 
 			if ! awk '{ if ($0 == "{\"GET\":[]}") exit 1 }' \
-				"$id".json
+				row/"$id".json
 			then
 				printf 'rowId invalid; redownloading %s\n' \
 				       	"$file".gz
 				./lobby.sh "${file%.json}"
-				gunzip -fk "$file".gz
+				gunzip -fk listings/"$file".gz
 				"$0" "${1:-hosts.csv}"
 				exit
 			fi

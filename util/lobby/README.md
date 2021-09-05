@@ -15,8 +15,10 @@ Note that this token eventually expires, so you'll have to get new ones periodic
 
 The next set of scripts is a bit hairier due to an over-reliance on ad-hoc parsing.
 
+The overall goal of this set is to periodically query data from specific servers.
+
 `lobby.sh` - Fetches all lobby *listings*
 `get-hosts.sh` - Parses lobby listings into a CSV format for `watch.sh`
-`fetch-row.sh` - Like `fetch.sh`, but queries for a specific server instead
+`fetch-row.sh` - `fetch.sh`, but queries for a specific server (*region* *row*)
 `row-info.sh` - Extracts some basic info about a row
 `watch.sh` - Parses `get-hosts.sh` output to invoke `fetch-row.sh` and `row-info.sh`

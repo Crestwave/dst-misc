@@ -1,4 +1,7 @@
 #!/bin/sh
+mkdir -p listings
+cd ./listings
+
 url=https://s3.amazonaws.com/klei-lobby
 
 if [ "$#" -gt 0 ]; then

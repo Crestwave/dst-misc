@@ -1,5 +1,7 @@
 #!/bin/sh
-gunzip -fkl *.gz
+cd ./listings
+
+gunzip -fk *.gz
 awk -F \" '
 	BEGIN { RS = "," }
 	/"host"/ { printf("%s", $4) }
