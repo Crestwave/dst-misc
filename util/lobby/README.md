@@ -15,7 +15,7 @@ Note that this token eventually expires, so you'll have to get new ones periodic
 
 The next set of scripts is a bit hairier due to an overabundance of ad-hoc parsing.
 
-The overall goal of this set is to periodically query data from specific servers. T
+The overall goal of this set is to periodically query data from specific servers.
 
 * `lobby.sh` - Fetches all lobby *listings*.
 * `get-hosts.sh` - Parses lobby listings into a CSV format for `watch.sh`.
