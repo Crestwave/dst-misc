@@ -18,16 +18,12 @@ else
 				gsub("&quot;", "")
 				print
 			}
-			' | while read -r line; do
-					IFS=,
-					set -f
-					set +f $line
-					unset IFS
-					
-					if ! printf '%s  %s\n' "$3" "$1" |
+			' |
+				while IFS=, read -r file _ md5 _; do
+					if ! printf '%s  %s\n' "$md5" "$file" |
 						md5sum -c 2>/dev/null
 					then
-						curl "$url"/"$1" -o "$1"
+						curl "$url"/"$file" -o "$file"
 					fi
 				done
 fi
