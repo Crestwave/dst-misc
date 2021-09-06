@@ -21,7 +21,8 @@ while IFS=, read -r host name file; do
 				       	"$file".gz
 				./lobby.sh "${file%.json}"
 				gunzip -fk listings/"$file".gz
-				"$0" "${1:-hosts.csv}"
+				[ "$level" != 1 ] &&
+					level=1 "$0" "${1:-hosts.csv}"
 				exit
 			fi
 
