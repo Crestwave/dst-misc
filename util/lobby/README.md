@@ -22,3 +22,5 @@ The overall goal of this set is to periodically query data from specific servers
 * `fetch-row.sh` - `fetch.sh`, but queries for a specific server (*region* *row*).
 * `row-info.sh` - Extracts some basic info about a row.
 * `watch.sh` - Parses `get-hosts.sh` output to invoke `fetch-row.sh` and `row-info.sh`.
+
+For more information, see [watch.md](watch.md).

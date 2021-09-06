@@ -1,3 +1,5 @@
+## Periodic watching
+
 The process for this set of scripts can be separated into two sections:
 
 ### Setup
@@ -7,7 +9,7 @@ The process for this set of scripts can be separated into two sections:
 3. Select a server to watch. We define a server as its name, its hoster, and the listing it is in.
 4. Save this definition in a file to be parsed later.
 
-### Watching
+### Running
 
 1. Extract the server's rowId from the listings using our definitions.
 2. If the rowId is invalid, redownload a copy of the listing it is specifically in.
