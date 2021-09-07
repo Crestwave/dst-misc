@@ -29,6 +29,6 @@ get_server() {
 		done
 }
 
-while IFS=, read -r host name file; do
+while IFS=, read -r host name file _; do
 	get_server "$host" "$name" "$file"
 done <"${1:-hosts.csv}"
