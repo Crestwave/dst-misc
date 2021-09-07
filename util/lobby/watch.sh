@@ -1,6 +1,6 @@
 #!/bin/sh
-while IFS=, read -r host name file; do
-	host=$host name=$name awk -F \" '
+get_server() {
+	host=$1 name=$2 awk -F \" '
 		BEGIN { RS = "," }
 		/"__rowId"/ { id = $4 }
 		/"host"/ { host=($4 == ENVIRON["host"])  }
@@ -10,7 +10,7 @@ while IFS=, read -r host name file; do
 				exit
 			}
 		}
-		' listings/"$file" | while IFS=, read -r id name; do
+		' listings/"$3" | while IFS=, read -r id name; do
 			name="${name##*/}"
 			./fetch-row.sh "${name%%-*}" "$id"
 
@@ -18,14 +18,17 @@ while IFS=, read -r host name file; do
 				row/"$id".json
 			then
 				printf 'rowId invalid; redownloading %s\n' \
-				       	"$file".gz
-				./lobby.sh "${file%.json}"
-				gunzip -fk listings/"$file".gz
-				[ "$level" != 1 ] &&
-					level=1 "$0" "${1:-hosts.csv}"
+					"$3".gz
+				./lobby.sh "${3%.json}"
+				gunzip -fk listings/"$3".gz
+				[ "$4" != 1 ] && get_server "$@" 1
 				exit
 			fi
 
 			./row-info.sh row/"$id".json
 		done
+}
+
+while IFS=, read -r host name file; do
+	get_server "$host" "$name" "$file"
 done <"${1:-hosts.csv}"
