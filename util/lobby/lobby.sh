@@ -1,6 +1,6 @@
 #!/bin/sh
 mkdir -p listings
-cd ./listings
+cd ./listings || exit
 
 url=https://s3.amazonaws.com/klei-lobby
 

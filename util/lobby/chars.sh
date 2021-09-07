@@ -1,7 +1,7 @@
 #!/bin/sh
 [ "$#" -eq 0 ] && set china eu sing us
 
-for i; do
+for _; do
 	set "$@" data/"$1".json
 	shift
 done
