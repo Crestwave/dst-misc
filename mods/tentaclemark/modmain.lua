@@ -1,0 +1,6 @@
+AddPrefabPostInit("tentacle", function(inst)
+    inst:DoTaskInTime(0, function(inst)
+        local fx = GLOBAL.SpawnPrefab("wurt_tentacle_warning")
+	fx.entity:SetParent(inst.entity)
+    end)
+end)
