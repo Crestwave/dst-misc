@@ -14,16 +14,26 @@ get_server() {
 			name="${name##*/}"
 			./fetch-row.sh "${name%%-*}" "$id"
 
-			if ! awk '{ if ($0 == "{\"GET\":[]}") exit 1 }' \
-				row/"$id".json
-			then
-				printf 'rowId invalid; redownloading %s\n' \
-					"$3".gz
-				./lobby.sh "${3%.json}"
-				gunzip -fk listings/"$3".gz
-				[ "$4" != 1 ] && get_server "$@" 1
-				exit
-			fi
+			read -r data <row/"$id".json
+
+			case $data in
+				'{"error":'*)
+					err="${data#'{"error":'}"
+					err="${err%'}'}"
+					printf 'Received error: %s\n' \
+						"$err" >&2
+
+					continue
+					;;
+				'{"GET":[]}')
+					printf 'rowId invalid; updating %s\n' \
+						"$3".gz >&2
+					./lobby.sh "${3%.json}"
+					gunzip -fk listings/"$3".gz
+					[ "$4" != 1 ] && get_server "$@" 1
+					exit
+					;;
+			esac
 
 			./row-info.sh row/"$id".json
 		done
