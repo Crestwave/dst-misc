@@ -20,8 +20,7 @@ get_server() {
 				'{"error":'*)
 					err="${data#'{"error":'}"
 					err="${err%'}'}"
-					printf 'Received error: %s\n' \
-						"$err" >&2
+					printf 'Received error %s\n' "$err" >&2
 
 					continue
 					;;
