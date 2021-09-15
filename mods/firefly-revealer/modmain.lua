@@ -1,0 +1,13 @@
+AddPrefabPostInit("fireflies", function(inst)
+    inst:DoTaskInTime(5, function(inst)
+        inst.AnimState:PlayAnimation("swarm_loop", true)
+        inst:RemoveTag("NOCLICK")
+    end)
+
+    inst:WatchWorldState("isday", function(inst)
+   	 inst:DoTaskInTime(5, function(inst)
+   	     inst.AnimState:PlayAnimation("swarm_loop", true)
+   	     inst:RemoveTag("NOCLICK")
+   	 end)
+    end)
+end)
