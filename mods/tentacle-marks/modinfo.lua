@@ -2,7 +2,7 @@
 name = "Tentacle Marks"
 
 --A description of the mod.
-description = 
+description =
 [[
 Marks tentacles, similar to Wurt's tentacle warnings.
 ]]
@@ -25,8 +25,10 @@ shipwrecked_compatible = false
 client_only_mod = true
 all_clients_require_mod = false
 
+--[[
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
+--]]
 
 forumthread = ""
 

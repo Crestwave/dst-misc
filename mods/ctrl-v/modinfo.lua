@@ -2,7 +2,7 @@
 name = "Ctrl-V Fix"
 
 --A description of the mod.
-description = 
+description =
 [[
 Fixes Ctrl-V toggling remote execution in the in-game console
 ]]
@@ -25,8 +25,10 @@ shipwrecked_compatible = false
 client_only_mod = true
 all_clients_require_mod = false
 
+--[[
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
+--]]
 
 forumthread = ""
 
