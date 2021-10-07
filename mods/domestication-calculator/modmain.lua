@@ -1,5 +1,7 @@
 AddPlayerPostInit(function(inst)
 	inst:ListenForEvent("isridingdirty", function(inst)
+		if inst ~= GLOBAL.ThePlayer then return end
+
 		if inst.replica.rider._isriding:value() then
 			if lastmounted == nil then
 				lastmounted = GLOBAL.GetTime()
