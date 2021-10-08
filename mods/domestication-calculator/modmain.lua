@@ -8,6 +8,12 @@ AddPlayerPostInit(function(inst)
 
 				inst:DoTaskInTime(GLOBAL.FRAMES, function(inst)
 					mount = inst.replica.rider.classified ~= nil and inst.replica.rider.classified.ridermount:value()
+
+					if type(mount) == "table" and mount.prefab == "beefalo" then
+						moodmult = mount:HasTag("scarytoprey") and TUNING.BEEFALO_BUCK_TIME_MOOD_MULT or 1
+						beardmult = not mount:HasTag("has_beard") and TUNING.BEEFALO_BUCK_TIME_NUDE_MULT or 1
+						domesticmult = not mount:HasTag("domesticated") and TUNING.BEEFALO_BUCK_TIME_UNDOMESTICATED_MULT or 1
+					end
 				end)
 			end
 		else
@@ -18,13 +24,7 @@ AddPlayerPostInit(function(inst)
 				lastmounted = nil
 			end
 
-			if mount ~= nil and type(mount) ~= "boolean" and ridetime ~= nil then
-				if mount.prefab ~= "beefalo" then return end
-
-				local moodmult = mount:HasTag("scarytoprey") and TUNING.BEEFALO_BUCK_TIME_MOOD_MULT or 1
-				local beardmult = not mount:HasTag("has_beard") and TUNING.BEEFALO_BUCK_TIME_NUDE_MULT or 1
-				local domesticmult = not mount:HasTag("domesticated") and TUNING.BEEFALO_BUCK_TIME_UNDOMESTICATED_MULT or 1
-
+			if type(mount) == "table" and mount.prefab == "beefalo" and ridetime ~= nil then
 				local basedelay = ridetime / moodmult / beardmult / domesticmult
 				local domestication = GLOBAL.Remap(basedelay, TUNING.BEEFALO_MIN_BUCK_TIME, TUNING.BEEFALO_MAX_BUCK_TIME, 0, 1)
 
