@@ -18,42 +18,44 @@ MOISTURE_RATES = {
     }
 }
 
-_G = GLOBAL
-TheWorld = _G.TheWorld
 
 --min = MOISTURE_RATES.MIN[season]
 --max = MOISTURE_RATES.MAX[season]
 
-local function CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
-	p = 1 - math.sin(PI * (elapseddaysinseason/daysinseason))
-	moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
-	return moisturerate
-end
 
 
 
-function PredictRain()
-	moisture = TheWorld.state.moisture
-	moistureceil = TheWorld.state.moistureceil
-	remainingsecondsinday = 480 - (TheWorld.state.time*480)
-	elapseddaysinseason = TheWorld.state.elapseddaysinseason
-	daysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
-	season = TheWorld.state.season
-	totalseconds = 0
-
-	while elapseddaysinseason <= daysinseason do
-		moisturerate = CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
-		_moisture = moisture + (moisturerate * remainingsecondsinday)
-	
-		if _moisture >= moistureceil then
-			totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
-			break
-		else
-			moisture = _moisture
-			remainingsecondsinday = 480
-			elapseddaysinseason = elapseddaysinseason + 1
+AddPlayerPostInit(function(inst)
+	inst:ListenForEvent("predictrain", function(inst)
+		_G = GLOBAL
+		TheWorld = _G.TheWorld
+		local function CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
+			p = 1 - math.sin(_G.PI * (elapseddaysinseason/daysinseason))
+			moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
+			return moisturerate
 		end
-	end
+		moisture = TheWorld.state.moisture
+		moistureceil = TheWorld.state.moistureceil
+		remainingsecondsinday = 480 - (TheWorld.state.time*480)
+		elapseddaysinseason = TheWorld.state.elapseddaysinseason
+		daysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
+		season = TheWorld.state.season
+		totalseconds = 0
 
-	TheNet:Say(string.format("%s It will rain in %d seconds", _G.STRINGS.LMB, totalseconds))
-end
+		while elapseddaysinseason <= daysinseason do
+			moisturerate = CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
+			_moisture = moisture + (moisturerate * remainingsecondsinday)
+		
+			if _moisture >= moistureceil then
+				totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
+				break
+			else
+				moisture = _moisture
+				remainingsecondsinday = 480
+				elapseddaysinseason = elapseddaysinseason + 1
+			end
+		end
+
+		GLOBAL.TheNet:Say(string.format("%s It will rain in %d seconds", _G.STRINGS.LMB, totalseconds))
+	end)
+end)
