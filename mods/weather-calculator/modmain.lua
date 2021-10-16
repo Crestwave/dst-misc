@@ -1,16 +1,3 @@
--- 1. Calculate the seconds remaining in day and how much moisture will be gained
--- 2. If that is >= moistureceil then the time is (moistureceil-moisture)/moisturerate
--- 3. If it isn't, then add moistureinday to moisture and seconds to totalseconds and repeat for the next day.
-
--- components/weather.lua
-
-
---min = MOISTURE_RATES.MIN[season]
---max = MOISTURE_RATES.MAX[season]
-
-
-
-
 AddPlayerPostInit(function(inst)
 	inst:ListenForEvent("predictrain", function(inst)
 		-- components/weather.lua
@@ -31,34 +18,46 @@ AddPlayerPostInit(function(inst)
 
 		local TheWorld = GLOBAL.TheWorld
 		local world = TheWorld.net.components.weather ~= nil and "Surface" or "Caves"
+		local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
+		local totalseconds = 0
+		local rain = false
 
 		local season = TheWorld.state.season
 		local elapseddaysinseason = TheWorld.state.elapseddaysinseason
-		local daysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
-		local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
+		local totaldaysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
 
 		local moisture = TheWorld.state.moisture
 		local moistureceil = TheWorld.state.moistureceil
-		local totalseconds = 0
 
-		while elapseddaysinseason <= daysinseason do
-			local p = 1 - math.sin(GLOBAL.PI * (elapseddaysinseason/daysinseason))
-			local moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
+		while elapseddaysinseason <= totaldaysinseason do
+			local moisturerate
+
+			if world == "Surface" and season == "winter" and elapseddaysinseason == 2 then
+				moisturerate = 50
+			else
+				local p = 1 - math.sin(GLOBAL.PI * (elapseddaysinseason / totaldaysinseason))
+				moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
+			end
 
 			local _moisture = moisture + (moisturerate * remainingsecondsinday)
 		
 			if _moisture >= moistureceil then
 				totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
+				rain = true
 				break
 			else
 				moisture = _moisture
 				totalseconds = totalseconds + remainingsecondsinday
-				remainingsecondsinday = 480
+				remainingsecondsinday = TUNING.TOTAL_DAY_TIME
 				elapseddaysinseason = elapseddaysinseason + 1
 			end
 		end
 
-		GLOBAL.TheNet:Say(string.format("%s %s will rain in %d seconds.", GLOBAL.STRINGS.LMB, world, totalseconds))
-		print(string.format("%s, %s, %s, %s, %s", moisturerate, moisture, moistureceil, remainingsecondsinday, daysinseason))
+		if rain then
+			GLOBAL.TheNet:Say(string.format("%s %s will rain in %d seconds.", GLOBAL.STRINGS.LMB, world, totalseconds))
+		else
+			GLOBAL.TheNet:Say(string.format("%s %s will no longer rain this %s.", GLOBAL.STRINGS.LMB, world, season))
+		end
+		--print(string.format("%s, %s, %s, %s, %s", moisturerate, moisture, moistureceil, remainingsecondsinday, totaldaysinseason))
 	end)
 end)
