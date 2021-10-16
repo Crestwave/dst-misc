@@ -3,20 +3,6 @@
 -- 3. If it isn't, then add moistureinday to moisture and seconds to totalseconds and repeat for the next day.
 
 -- components/weather.lua
-MOISTURE_RATES = {
-    MIN = {
-        autumn = .25,
-        winter = .25,
-        spring = 3,
-        summer = .1,
-    },
-    MAX = {
-        autumn = 1.0,
-        winter = 1.0,
-        spring = 3.75,
-        summer = .5,
-    }
-}
 
 
 --min = MOISTURE_RATES.MIN[season]
@@ -26,7 +12,21 @@ MOISTURE_RATES = {
 
 
 AddPlayerPostInit(function(inst)
-	inst:ListenForEvent("predictrain", function(inst)
+inst:ListenForEvent("predictrain", function(inst)
+		MOISTURE_RATES = {
+		    MIN = {
+		        autumn = .25,
+		        winter = .25,
+		        spring = 3,
+		        summer = .1,
+		    },
+		    MAX = {
+		        autumn = 1.0,
+		        winter = 1.0,
+		        spring = 3.75,
+		        summer = .5,
+		    }
+		}
 		_G = GLOBAL
 		TheWorld = _G.TheWorld
 		local function CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
@@ -51,11 +51,13 @@ AddPlayerPostInit(function(inst)
 				break
 			else
 				moisture = _moisture
+				totalseconds = totalseconds + remainingsecondsinday
 				remainingsecondsinday = 480
 				elapseddaysinseason = elapseddaysinseason + 1
 			end
 		end
 
 		GLOBAL.TheNet:Say(string.format("%s It will rain in %d seconds", _G.STRINGS.LMB, totalseconds))
+		print(string.format("%s, %s, %s, %s, %s", moisturerate, moisture, moistureceil, remainingsecondsinday, daysinseason))
 	end)
 end)
