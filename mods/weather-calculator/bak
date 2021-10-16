@@ -13,7 +13,6 @@
 
 AddPlayerPostInit(function(inst)
 	inst:ListenForEvent("predictrain", function(inst)
-		-- components/weather.lua
 		MOISTURE_RATES = {
 		    MIN = {
 		        autumn = .25,
@@ -29,23 +28,23 @@ AddPlayerPostInit(function(inst)
 		    }
 		}
 
-		local TheWorld = GLOBAL.TheWorld
-		local world = TheWorld.net.components.weather ~= nil and "Surface" or "Caves"
-
-		local season = TheWorld.state.season
-		local elapseddaysinseason = TheWorld.state.elapseddaysinseason
-		local daysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
-		local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
-
-		local moisture = TheWorld.state.moisture
-		local moistureceil = TheWorld.state.moistureceil
-		local totalseconds = 0
+		TheWorld = GLOBAL.TheWorld
+		local function CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
+			p = 1 - math.sin(GLOBAL.PI * (elapseddaysinseason/daysinseason))
+			moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
+			return moisturerate
+		end
+		moisture = TheWorld.state.moisture
+		moistureceil = TheWorld.state.moistureceil
+		remainingsecondsinday = 480 - (TheWorld.state.time*480)
+		elapseddaysinseason = TheWorld.state.elapseddaysinseason
+		daysinseason = elapseddaysinseason + TheWorld.state.remainingdaysinseason
+		season = TheWorld.state.season
+		totalseconds = 0
 
 		while elapseddaysinseason <= daysinseason do
-			local p = 1 - math.sin(GLOBAL.PI * (elapseddaysinseason/daysinseason))
-			local moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
-
-			local _moisture = moisture + (moisturerate * remainingsecondsinday)
+			moisturerate = CalculateMoistureRate(elapseddaysinseason, daysinseason, season)
+			_moisture = moisture + (moisturerate * remainingsecondsinday)
 		
 			if _moisture >= moistureceil then
 				totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
@@ -58,6 +57,7 @@ AddPlayerPostInit(function(inst)
 			end
 		end
 
+		world = TheWorld.net.components.weather ~= nil and "Surface" or "Caves"
 		GLOBAL.TheNet:Say(string.format("%s %s will rain in %d seconds.", GLOBAL.STRINGS.LMB, world, totalseconds))
 		print(string.format("%s, %s, %s, %s, %s", moisturerate, moisture, moistureceil, remainingsecondsinday, daysinseason))
 	end)
