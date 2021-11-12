@@ -21,6 +21,7 @@ local function PredictRainStart()
 	local rain = false
 
 	local season = TheWorld.state.season
+	local seasonprogress = GLOBAL.tonumber(GLOBAL.tostring(TheWorld.state.seasonprogress))
 	local elapseddaysinseason = TheWorld.state.elapseddaysinseason
 	local remainingdaysinseason = TheWorld.state.remainingdaysinseason
 	local totaldaysinseason = elapseddaysinseason + remainingdaysinseason
@@ -29,8 +30,10 @@ local function PredictRainStart()
 	local moisture = TheWorld.state.moisture
 	local moistureceil = TheWorld.state.moistureceil
 
-	if season == "autumn" or season == "spring" then
-		totaldaysinseason = totaldaysinseason * 2
+	if seasonprogress ~= (elapseddaysinseason / totaldaysinseason) then
+		if season == "autumn" or season == "spring" then
+			totaldaysinseason = totaldaysinseason * 2
+		end
 	end
 
 	while elapseddaysinseason < _totaldaysinseason do
@@ -39,7 +42,7 @@ local function PredictRainStart()
 		if world == "Surface" and season == "winter" and elapseddaysinseason == 2 then
 			moisturerate = 50
 		else
-			local p = 1 - math.sin(GLOBAL.PI * (1 - 1 * (remainingdaysinseason / totaldaysinseason)))
+			local p = 1 - math.sin(GLOBAL.PI * seasonprogress)
 			moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
 		end
 
@@ -55,6 +58,12 @@ local function PredictRainStart()
 			remainingsecondsinday = TUNING.TOTAL_DAY_TIME
 			elapseddaysinseason = elapseddaysinseason + 1
 			remainingdaysinseason = remainingdaysinseason - 1
+
+			if totaldaysinseason == _totaldaysinseason then
+				seasonprogress = elapseddaysinseason / totaldaysinseason
+			else
+				seasonprogress = 1 - 1 * (remainingdaysinseason / totaldaysinseason)
+			end
 		end
 	end
 
