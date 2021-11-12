@@ -6,23 +6,11 @@ get_server() {
 		/"host"/ { host=($4 == ENVIRON["host"])  }
 		/"name"/ {
 			if (host && $4 == ENVIRON["name"]) {
-				printf("%s,%s", id, tolower(FILENAME))
-				code = 1
+				printf("%s,%s\n", id, tolower(FILENAME))
 				exit
 			}
 		}
-		END { printf(",%s\n", int(code)) }
-		' listings/"$3" | while IFS=, read -r id name code _; do
-			if [ "$code" != 1 ] && [ "$5" != 1 ]; then
-				printf 'Server "%s" not found; updating %s\n' \
-					"$2" "$3" >&2
-				./lobby.sh "${3%.json}"
-				gunzip -fk listings/"$3".gz
-				get_server "$@" 0 1
-			fi
-
-			[ "$code" != 1 ] && exit
-
+		' listings/"$3" | while IFS=, read -r id name; do
 			name="${name##*/}"
 			./fetch-row.sh "${name%%-*}" "$id"
 

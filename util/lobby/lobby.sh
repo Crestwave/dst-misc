@@ -6,6 +6,7 @@ url=https://s3.amazonaws.com/klei-lobby
 
 if [ "$#" -gt 0 ]; then
 	for i; do
+		printf 'Downloading %s...\n' "$url"/"$i".json.gz
 		curl "$url"/"$i".json.gz -o "$i".json.gz
 	done
 else
