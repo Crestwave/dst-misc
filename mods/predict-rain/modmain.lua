@@ -30,10 +30,8 @@ local function PredictRainStart()
 	local moisture = TheWorld.state.moisture
 	local moistureceil = TheWorld.state.moistureceil
 
-	if seasonprogress ~= (1 - 1 * (remainingdaysinseason / totaldaysinseason)) then
-		if season == "autumn" or season == "spring" then
-			totaldaysinseason = totaldaysinseason * 2
-		end
+	if seasonprogress == (1 - 1 * (remainingdaysinseason / (totaldaysinseason * 2))) then
+		totaldaysinseason = totaldaysinseason * 2
 	end
 
 	while elapseddaysinseason < _totaldaysinseason do
