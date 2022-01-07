@@ -515,6 +515,39 @@ GLOBAL.ACTIONS.CASTSPELL.fn = function(act)
     return successful
 end
 
+AddPlayerPostInit(function(inst)
+    inst:ListenForEvent("done_embark_movement", function(inst)
+        local platform = inst.components.embarker.embarkable
+        local logstring = GLOBAL.string.format("%s[%s] embarks %s @(%.2f, %.2f, %.2f)", inst:GetDisplayName(), inst.userid or inst.GUID, platform ~= nil and platform:GetDisplayName() .. "[" .. platform.GUID .. "]" or "land", inst.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+    end)
+end)
+
+AddComponentPostInit("hullhealth", function(self, inst)
+    local _OnCollide = self.OnCollide
+    self.OnCollide = function(self, data)
+        local oldpercent = self.inst.components.health:GetPercent()
+        _OnCollide(self, data)
+        local newpercent = self.inst.components.health:GetPercent()
+
+        if oldpercent ~= newpercent then
+            local logstring = GLOBAL.string.format("%s[%s] collides @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.GUID, self.inst.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+        end
+    end
+end)
+
+AddPrefabPostInit("boat_leak", function(inst)
+    inst:DoTaskInTime(0, function(inst)
+        local boat = inst.components.boatleak.boat
+        local logstring = GLOBAL.string.format("%s[%s] springs a leak @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, boat.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+    end)
+end)
+
 AddComponentPostInit("unwrappable", function(self, inst)
     self.Unwrap = function(self, doer)
         local pos = self.inst:GetPosition()
