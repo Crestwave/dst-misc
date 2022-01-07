@@ -160,6 +160,7 @@ local function logdebugaction(act, obj, desc, emoji)
             (desc == " lights " or desc == " uses firestaff on ") and GetModConfigData("lighting") == "all" or
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("reading") == "all" or
+            desc == " casts " or
             desc == " picks " and (GetModConfigData("picking") == "all" or GetModConfigData("picking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("crockpot") == "all") then
         print(logstring)
@@ -170,6 +171,7 @@ local function logdebugaction(act, obj, desc, emoji)
             (desc == " lights " or desc == " uses firestaff on ") and GetModConfigData("discordlighting") == "all" or
             desc == " picks up " and (GetModConfigData("discordpickup") == "all" or GetModConfigData("discordpickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
+            desc == " casts " or
             desc == " picks " and (GetModConfigData("discordpicking") == "all" or GetModConfigData("discordpicking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("discordcrockpot") == "all") then
                 io.write("[" .. GLOBAL.os.date("%x %X") .. "] " .. discord_logstring .. "\n")
@@ -319,6 +321,7 @@ local old_COOK = GLOBAL.ACTIONS.COOK.fn
 local old_HARVEST = GLOBAL.ACTIONS.HARVEST.fn
 local old_ATTACK = GLOBAL.ACTIONS.ATTACK.fn
 local old_PICKUP = GLOBAL.ACTIONS.PICKUP.fn
+local old_CASTSPELL = GLOBAL.ACTIONS.CASTSPELL.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -494,6 +497,17 @@ GLOBAL.ACTIONS.PICKUP.fn = function(act)
         local obj = act.target
         if successful then
             logdebugaction(act, obj, " picks up ", ":arrow_up: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.CASTSPELL.fn = function(act)
+    local successful = old_CASTSPELL(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject or act.doer.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+        if successful then
+            logdebugaction(act, obj, " casts ", ":magic_wand: ")
         end
     end, successful, act)
     return successful
