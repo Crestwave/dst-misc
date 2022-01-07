@@ -499,6 +499,50 @@ GLOBAL.ACTIONS.PICKUP.fn = function(act)
     return successful
 end
 
+AddComponentPostInit("unwrappable", function(self, inst)
+    self.Unwrap = function(self, doer)
+        local pos = self.inst:GetPosition()
+        pos.y = 0
+        if self.itemdata ~= nil then
+            if doer ~= nil and
+                self.inst.components.inventoryitem ~= nil and
+                self.inst.components.inventoryitem:GetGrandOwner() == doer then
+                local doerpos = doer:GetPosition()
+                local offset = GLOBAL.FindWalkableOffset(doerpos, doer.Transform:GetRotation() * GLOBAL.DEGREES, 1, 8, false, true, self.NoHoles)
+                if offset ~= nil then
+                    pos.x = doerpos.x + offset.x
+                    pos.z = doerpos.z + offset.z
+                else
+                    pos.x, pos.z = doerpos.x, doerpos.z
+                end
+            end
+            local creator = self.origin ~= nil and GLOBAL.TheWorld.meta.session_identifier ~= self.origin and { sessionid = self.origin } or nil
+            for i, v in ipairs(self.itemdata) do
+                local item = GLOBAL.SpawnPrefab(v.prefab, v.skinname, v.skin_id, creator)
+                local stack = v.data ~= nil and v.data.stackable ~= nil and v.data.stackable.stack or 1
+                local logstring = GLOBAL.string.format("%s[%s] unwraps %s[%d] (x%d) from %s[%s]", doer:GetDisplayName(), doer.userid or doer.GUID, item:GetDisplayName(), item.GUID, stack, self.inst:GetDisplayName(), self.inst.GUID)
+                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                print(logstring)
+                if item ~= nil and item:IsValid() then
+                    if item.Physics ~= nil then
+                        item.Physics:Teleport(pos:Get())
+                    else
+                        item.Transform:SetPosition(pos:Get())
+                    end
+                    item:SetPersistData(v.data)
+                    if item.components.inventoryitem ~= nil then
+                        item.components.inventoryitem:OnDropped(true, .5)
+                    end
+                end
+            end
+            self.itemdata = nil
+        end
+        if self.onunwrappedfn ~= nil then
+            self.onunwrappedfn(self.inst, pos, doer)
+        end
+    end
+end)
+
 -- listen for items being dropped
 -- so when someone picks up a dropped item, the previous owner is printed
 AddComponentPostInit("inventory", function(self, inst)
