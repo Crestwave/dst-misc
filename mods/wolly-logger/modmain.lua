@@ -119,7 +119,7 @@ AddSimPostInit(function()
         else
             print("no inventory")
         end
-        --local logstring = player.name .. "[" .. player.userid .. "] has left the game."
+        --local logstring = player:GetDisplayName() .. "[" .. player.userid .. "] has left the game."
         --io.write("[" .. GLOBAL.os.date("%x %X") .. "] " .. logstring .. "\n")
         --print(logstring)
     end) ]]
@@ -135,7 +135,7 @@ local function logdebugaction(act, obj, desc, emoji)
     local discord_ownedby = ""
     local chef = ""
     local discord_chef = ""
-    if (act.doer ~= nil and act.doer.name ~= nil and obj ~= nil and obj.name ~= nil) then
+    if (act.doer ~= nil and act.doer:GetDisplayName() ~= nil and obj ~= nil and obj:GetDisplayName() ~= nil) then
         if act.doer.userid ~= nil then
             id = "[" .. act.doer.userid .. "]"
         end
@@ -153,9 +153,9 @@ local function logdebugaction(act, obj, desc, emoji)
             chef = " Chef: " .. obj.cookedbyname .. "[" .. obj.cookedbyid .. "]"
             discord_chef = " :man_cook: " .. chef
         end
-        local logstring = act.doer.name .. id .. desc .. obj.name .. otherid .. amount .. ownedby .. chef
+        local logstring = act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. ownedby .. chef
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-        local discord_logstring = theemoji .. act.doer.name .. id .. desc .. obj.name .. otherid .. amount .. discord_ownedby .. discord_chef
+        local discord_logstring = theemoji .. act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. discord_ownedby .. discord_chef
         if (desc == " eats " and (GetModConfigData("eating") == "all" or GetModConfigData("eating") == "valuables" and valuables[obj.prefab] ~= nil) or
             (desc == " lights " or desc == " uses firestaff on ") and GetModConfigData("lighting") == "all" or
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
@@ -195,12 +195,12 @@ local function newOnIgnite(self, immediate, source, doer)
         end
         if self.inst.litbyid == nil then
             -- don't know what lit the object
-            if source ~= nil and source.name ~= nil then
+            if source ~= nil and source:GetDisplayName() ~= nil then
                 self.inst.litbyid = source.userid or source.GUID
-                self.inst.litbyname = source.name
+                self.inst.litbyname = source:GetDisplayName()
                 self.inst.originalid = self.inst.GUID
-                self.inst.originalname = self.inst.name
-                causer = self.inst.litbyname .. "[" .. self.inst.litbyid .. "]" .. " lighting " .. self.inst.name .. "[" .. self.inst.GUID .. "]"
+                self.inst.originalname = self.inst:GetDisplayName()
+                causer = self.inst.litbyname .. "[" .. self.inst.litbyid .. "]" .. " lighting " .. self.inst:GetDisplayName() .. "[" .. self.inst.GUID .. "]"
             end
         else
             causer = self.inst.litbyname .. "[" .. self.inst.litbyid .. "]" .. " lighting " .. self.inst.originalname .. "[" .. self.inst.originalid .. "]"
@@ -209,7 +209,7 @@ local function newOnIgnite(self, immediate, source, doer)
             ownedby = " Owner: " .. self.inst.builtbyname .. "[" .. self.inst.builtbyid .. "]"
         end
         local source_string =  " Source: " .. causer .. ownedby
-        local logstring = self.inst.name .. "[" .. self.inst.GUID .. "]" .. " combusts!"
+        local logstring = self.inst:GetDisplayName() .. "[" .. self.inst.GUID .. "]" .. " combusts!"
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":fire: " .. logstring .. " :oil: " .. source_string
         logstring = logstring .. source_string
@@ -293,7 +293,7 @@ local function newExplosion(self)
                         not v:HasTag("burnt") then
                             v.litbyname = self.inst.litbyname
                             v.litbyid = self.inst.litbyid
-                            v.originalname = self.inst.name
+                            v.originalname = self.inst:GetDisplayName()
                             v.originalid = self.inst.GUID
                     end
                 end
@@ -372,10 +372,10 @@ GLOBAL.ACTIONS.LIGHT.fn = function(act)
     -- have to set the burn flags early because the ignite() function will print who burned them and that happens DURING the actions.light() function
     GLOBAL.pcall(function(act)
         local obj = act.target
-        obj.litbyname = act.doer.name
+        obj.litbyname = act.doer:GetDisplayName()
         obj.litbyid = act.doer.userid
         obj.originalid = obj.GUID
-        obj.originalname = obj.name
+        obj.originalname = obj:GetDisplayName()
         -- bug: the ACTIONS.LIGHT will get printed even if it fails
         -- I see no way around this, because if the light action gets printed AFTER it completes, it will look weird with the object igniting before it gets lit on fire
         -- ex. it will look like this:
@@ -422,7 +422,7 @@ GLOBAL.ACTIONS.COOK.fn = function(act)
         if successful then
             local obj = act.target
             obj.cookedbyid = act.doer.userid or act.doer.GUID
-            obj.cookedbyname = act.doer.name
+            obj.cookedbyname = act.doer:GetDisplayName()
         end
     end, successful, act)
     return successful
@@ -461,10 +461,10 @@ GLOBAL.ACTIONS.ATTACK.fn = function(act)
         if obj ~= nil and act.doer ~= nil and act.doer.components ~= nil and act.doer.components.combat ~= nil then
             local weapon = act.doer.components.combat:GetWeapon()
             if weapon ~= nil and weapon.prefab == "firestaff" then
-                obj.litbyname = act.doer.name
+                obj.litbyname = act.doer:GetDisplayName()
                 obj.litbyid = act.doer.userid
                 obj.originalid = obj.GUID
-                obj.originalname = obj.name
+                obj.originalname = obj:GetDisplayName()
             end
         end
     end, act)
@@ -566,7 +566,7 @@ AddComponentPostInit("inventory", function(self, inst)
         GLOBAL.pcall(function(successful)
             if successful then
                 if (self.inst ~= nil and self.inst.userid ~= nil) then
-                    successful.builtbyname = self.inst.name
+                    successful.builtbyname = self.inst:GetDisplayName()
                     successful.builtbyid = self.inst.userid
                 end
             end
@@ -583,11 +583,11 @@ local function OnDeathEv(inst, data)
         local afflicter_name = cause
         local afflicter_id = ""
         if afflicter ~= nil then
-            afflicter_name = afflicter.name
+            afflicter_name = afflicter:GetDisplayName()
             afflicter_id = data.afflicter.userid or data.afflicter.GUID
         end
         local selfid = inst.userid or inst.GUID
-        local logstring = inst.name .. "[" .. selfid .. "]" .. " was killed by " .. afflicter_name .. "[" .. afflicter_id .. "]"
+        local logstring = inst:GetDisplayName() .. "[" .. selfid .. "]" .. " was killed by " .. afflicter_name .. "[" .. afflicter_id .. "]"
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":skull: " .. logstring
         if (GetModConfigData("dying") == "all" or 
@@ -611,8 +611,8 @@ local function OnBuildEv(inst, data)
         local theitem = data.item
         local id = inst.userid or inst.GUID
         theitem.builtbyid = inst.userid
-        theitem.builtbyname = inst.name
-        local logstring = inst.name .. "[" .. id .. "]" .. " crafts " .. theitem.name .. "[" .. theitem.GUID .. "]"
+        theitem.builtbyname = inst:GetDisplayName()
+        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " crafts " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]"
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":hammer: " .. logstring
         if GetModConfigData("building") == "all" then
@@ -630,16 +630,16 @@ local function OnBuildStructureEv(inst, data)
     GLOBAL.pcall(function(inst, data)
         local theitem = data.item
         local id = inst.userid or inst.GUID
-        local logstring = inst.name .. "[" .. id .. "]" .. " builds " .. theitem.name .. "[" .. theitem.GUID .. "]"
+        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " builds " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]"
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":classical_building: " .. logstring
         theitem.builtbyid = inst.userid
-        theitem.builtbyname = inst.name
+        theitem.builtbyname = inst:GetDisplayName()
         if theitem.prefab == "campfire" then
             theitem.litbyname = theitem.builtbyname
             theitem.litbyid = theitem.builtbyid
             theitem.originalid = theitem.GUID
-            theitem.originalname = theitem.name
+            theitem.originalname = theitem:GetDisplayName()
         end
         if GetModConfigData("building") == "all" then
             print(logstring)
@@ -667,8 +667,8 @@ AddComponentPostInit("deployable", function(self, inst)
                 if #ents > 0 then
                     for i, v in ipairs(ents) do
                         v.builtbyid = deployer.userid or deployer.GUID
-                        v.builtbyname = deployer.name
-                        local logstring = deployer.name .. "[" .. v.builtbyid .. "] places a " .. v.name .. "[" .. v.GUID .."]"
+                        v.builtbyname = deployer:GetDisplayName()
+                        local logstring = deployer:GetDisplayName() .. "[" .. v.builtbyid .. "] places a " .. v:GetDisplayName() .. "[" .. v.GUID .."]"
                         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                         local discord_logstring = ":arrow_heading_down: " .. logstring
                         if GetModConfigData("building") == "all" then
@@ -690,7 +690,7 @@ end)
 local function OnDeconstruct(self, caster)
     GLOBAL.pcall(function(self, caster)
         local doerid = caster.userid or caster.GUID
-        local logstring = caster.name .. "[" .. doerid .. "] deconstructs " .. self.name .. "[" .. self.GUID .. "]"
+        local logstring = caster:GetDisplayName() .. "[" .. doerid .. "] deconstructs " .. self:GetDisplayName() .. "[" .. self.GUID .. "]"
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":boom: " .. logstring
         if GetModConfigData("hammering") == "all" then
@@ -707,13 +707,13 @@ local function OnOpenBox(self, data)
         local id = self.GUID
         container_cache[id] = {}
         for k,v in pairs(self.components.container.slots) do
-            if container_cache[id][v.name] == nil then
-                container_cache[id][v.name] = 0
+            if container_cache[id][v:GetDisplayName()] == nil then
+                container_cache[id][v:GetDisplayName()] = 0
             end
             if v.components.stackable ~= nil then
-                container_cache[id][v.name] = container_cache[id][v.name] + v.components.stackable.stacksize
+                container_cache[id][v:GetDisplayName()] = container_cache[id][v:GetDisplayName()] + v.components.stackable.stacksize
             else
-                container_cache[id][v.name] = container_cache[id][v.name] + 1
+                container_cache[id][v:GetDisplayName()] = container_cache[id][v:GetDisplayName()] + 1
             end
         end
     end, self, data, container_cache)
@@ -727,13 +727,13 @@ local function OnCloseBox(self, data)
         local old_cache = container_cache[id]
         local doerid = doer.userid or doer.GUID
         for k,v in pairs(self.components.container.slots) do
-            if new_cache[v.name] == nil then
-                new_cache[v.name] = 0
+            if new_cache[v:GetDisplayName()] == nil then
+                new_cache[v:GetDisplayName()] = 0
             end
             if v.components.stackable ~= nil then
-                new_cache[v.name] = new_cache[v.name] + v.components.stackable.stacksize
+                new_cache[v:GetDisplayName()] = new_cache[v:GetDisplayName()] + v.components.stackable.stacksize
             else
-                new_cache[v.name] = new_cache[v.name] + 1
+                new_cache[v:GetDisplayName()] = new_cache[v:GetDisplayName()] + 1
             end
         end
         -- compute the differences between the old cache and new cache
@@ -741,7 +741,7 @@ local function OnCloseBox(self, data)
             local old_amount = 0
             if old_cache[k] ~= nil then old_amount = old_cache[k] end
             if v > old_amount then
-                local logstring =  doer.name .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. self.name .. "[" .. self.GUID .. "]"
+                local logstring =  doer:GetDisplayName() .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. self:GetDisplayName() .. "[" .. self.GUID .. "]"
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
@@ -756,7 +756,7 @@ local function OnCloseBox(self, data)
             local new_amount = 0
             if new_cache[k] ~= nil then new_amount = new_cache[k] end
             if v > new_amount then
-                local logstring = doer.name .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. self.name .. "[" .. self.GUID .. "]"
+                local logstring = doer:GetDisplayName() .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. self:GetDisplayName() .. "[" .. self.GUID .. "]"
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
@@ -803,15 +803,15 @@ AddComponentPostInit("workable", function(self, inst)
                     discord_ownedby =  " :key:" .. ownedby 
                 end
                 if (worker.components ~= nil and worker.components.combat ~= nil and worker.components.combat.target ~= nil) then
-                    local targetname = worker.components.combat.target.name or ""
+                    local targetname = worker.components.combat.target:GetDisplayName() or ""
                     local targetid = worker.components.combat.target.userid or worker.components.combat.target.GUID
                     target = " Targetting: " .. targetname .. "[" .. targetid .. "]"
                     discord_target = " :crossed_swords: " .. target
                 end
                 local action = self.action.str:lower()
-                local logstring = worker.name .. workerid .. " " .. action .. "s " .. self.inst.name .. workedid .. ownedby .. target
+                local logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. ownedby .. target
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-                local discord_logstring = worker.name .. workerid .. " " .. action .. "s " .. self.inst.name .. workedid .. discord_ownedby .. discord_target
+                local discord_logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. discord_ownedby .. discord_target
                 
                 --if ((action ~= "chop" or self.inst.prefab == "livingtree" or self.inst.prefab == "livingtree_halloween") and (action ~= "dig" or self.inst.prefab == "livingtree" or self.inst.prefab == "livingtree_halloween" or not self.inst:HasTag("tree"))  and (action ~= "mine" or not self.inst:HasTag("boulder"))) then
                 if (action == "chop") then
