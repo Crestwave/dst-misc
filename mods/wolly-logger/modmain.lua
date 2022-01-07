@@ -153,7 +153,9 @@ local function logdebugaction(act, obj, desc, emoji)
             chef = " Chef: " .. obj.cookedbyname .. "[" .. obj.cookedbyid .. "]"
             discord_chef = " :man_cook: " .. chef
         end
-        local logstring = act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. ownedby .. chef
+
+        local pos = tostring(act:GetActionPoint() or string.format("(%.2f, %.2f, %.2f)", obj.Transform:GetWorldPosition()))
+        local logstring = act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. ownedby .. chef .. " @" .. pos
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = theemoji .. act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. discord_ownedby .. discord_chef
         if (desc == " eats " and (GetModConfigData("eating") == "all" or GetModConfigData("eating") == "valuables" and valuables[obj.prefab] ~= nil) or
