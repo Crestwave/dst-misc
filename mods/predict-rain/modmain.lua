@@ -113,15 +113,15 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 
 		local TheWorld = GLOBAL.TheWorld
 
-		local function Say(str)
-			GLOBAL.TheNet:Say(str)
+		local function Announce(str)
+			GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, str))
 		end
 
 		if params.mode ~= nil then
 			if params.mode == "1" then
-				Say = function(str) GLOBAL.TheNet:Say(str, true) end
+				Announce = function(str) GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, str), true) end
 			elseif params.mode == "2" then
-				Say = function(str) GLOBAL.ChatHistory:SendCommandResponse(str) end
+				Announce = function(str) GLOBAL.ChatHistory:SendCommandResponse(str) end
 			elseif params.mode ~= "0" then
 				GLOBAL.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
 				return
@@ -137,9 +137,9 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 				local m = math.floor(totalseconds / 60)
 				local s = totalseconds % 60
 	
-				Say(string.format("%s %s will rain on day %.2f (%dm %ds).", GLOBAL.STRINGS.LMB, world, d, m, s))
+				Announce(string.format("%s will rain on day %.2f (%dm %ds).", world, d, m, s))
 			else
-				Say(string.format("%s %s will no longer rain this %s.", GLOBAL.STRINGS.LMB, world, TheWorld.state.season))
+				Announce(string.format("%s will no longer rain this %s.", world, TheWorld.state.season))
 			end
 		else
 			local world, totalseconds = PredictRainStop()
@@ -148,7 +148,7 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 			local m = math.floor(totalseconds / 60)
 			local s = totalseconds % 60
 
-			Say(string.format("%s %s will stop raining on day %.2f (%dm %ds).", GLOBAL.STRINGS.LMB, world, d, m, s))
+			Announce(string.format("%s will stop raining on day %.2f (%dm %ds).", world, d, m, s))
 		end
 	end,
 })
