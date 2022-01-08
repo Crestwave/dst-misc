@@ -324,6 +324,7 @@ local old_HARVEST = GLOBAL.ACTIONS.HARVEST.fn
 local old_ATTACK = GLOBAL.ACTIONS.ATTACK.fn
 local old_PICKUP = GLOBAL.ACTIONS.PICKUP.fn
 local old_CASTSPELL = GLOBAL.ACTIONS.CASTSPELL.fn
+local old_BLINK = GLOBAL.ACTIONS.BLINK.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -509,6 +510,28 @@ GLOBAL.ACTIONS.CASTSPELL.fn = function(act)
     GLOBAL.pcall(function(successful, act)
         local obj = act.invobject or act.doer.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
         if successful then
+            logdebugaction(act, obj, " casts ", ":magic_wand: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.BLINK.fn = function(act)
+    local successful = old_BLINK(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject or act.doer.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " casts ", ":magic_wand: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.PLAY.fn = function(act)
+    local successful = old_PLAY(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject
+        if successful and obj ~= nil then
             logdebugaction(act, obj, " casts ", ":magic_wand: ")
         end
     end, successful, act)
