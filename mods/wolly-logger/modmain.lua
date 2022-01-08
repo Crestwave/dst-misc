@@ -325,6 +325,7 @@ local old_ATTACK = GLOBAL.ACTIONS.ATTACK.fn
 local old_PICKUP = GLOBAL.ACTIONS.PICKUP.fn
 local old_CASTSPELL = GLOBAL.ACTIONS.CASTSPELL.fn
 local old_BLINK = GLOBAL.ACTIONS.BLINK.fn
+local old_PLAY = GLOBAL.ACTIONS.PLAY.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -517,13 +518,21 @@ GLOBAL.ACTIONS.CASTSPELL.fn = function(act)
 end
 
 GLOBAL.ACTIONS.BLINK.fn = function(act)
+    local obj = act.invobject
+    if obj == nil then
+	    local items = act.doer.components.inventory:GetItemByName("wortox_soul", 1)
+	    for i, v in pairs(items) do
+		    obj = i
+		    break
+	    end
+    end
+
     local successful = old_BLINK(act)
-    GLOBAL.pcall(function(successful, act)
-        local obj = act.invobject or act.doer.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
-        if successful and obj ~= nil then
+    GLOBAL.pcall(function(successful, act, obj)
+        if successful then
             logdebugaction(act, obj, " casts ", ":magic_wand: ")
         end
-    end, successful, act)
+    end, successful, act, obj)
     return successful
 end
 
