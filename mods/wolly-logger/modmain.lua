@@ -520,11 +520,11 @@ end
 GLOBAL.ACTIONS.BLINK.fn = function(act)
     local obj = act.invobject
     if obj == nil then
-	    local items = act.doer.components.inventory:GetItemByName("wortox_soul", 1)
-	    for i, v in pairs(items) do
-		    obj = i
-		    break
-	    end
+        local items = act.doer.components.inventory:GetItemByName("wortox_soul", 1)
+        for i, v in pairs(items) do
+            obj = i
+            break
+        end
     end
 
     local successful = old_BLINK(act)
@@ -578,6 +578,30 @@ AddPrefabPostInit("boat_leak", function(inst)
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         print(logstring)
     end)
+end)
+
+AddPrefabPostInit("beefalo", function(inst)
+    inst:ListenForEvent("attacked", function(inst, data)
+        if data.attacker ~= nil and data.attacker:HasTag("player") then
+            if inst.components.follower ~= nil and inst.components.follower:GetLeader() ~= nil then
+                local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %2.f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
+                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                print(logstring)
+            end
+        end
+    end)
+end)
+
+AddComponentPostInit("sinkholespawner", function(self, inst)
+    local _DoTargetAttack = self.DoTargetAttack
+    self.DoTargetAttack = function(self, targetinfo)
+        if targetinfo.player ~= nil then
+                local logstring = GLOBAL.string.format("%s[%s] spawns a sinkhole @(%.2f, %.2f, %2.f)", targetinfo.player:GetDisplayName(), targetinfo.player.userid, targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
+                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                print(logstring)
+        end
+        _DoTargetAttack(self, targetinfo)
+    end
 end)
 
 AddComponentPostInit("unwrappable", function(self, inst)
@@ -876,7 +900,7 @@ AddComponentPostInit("workable", function(self, inst)
                     discord_target = " :crossed_swords: " .. target
                 end
                 local action = self.action.str:lower()
-                local logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. ownedby .. target
+                local logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. ownedby .. target .. string.format(" @(%.2f, %.2f, %.2f)", self.inst.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. discord_ownedby .. discord_target
                 
