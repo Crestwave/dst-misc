@@ -691,7 +691,7 @@ local function OnDeathEv(inst, data)
             afflicter_id = data.afflicter.userid or data.afflicter.GUID
         end
         local selfid = inst.userid or inst.GUID
-        local logstring = inst:GetDisplayName() .. "[" .. selfid .. "]" .. " was killed by " .. afflicter_name .. "[" .. afflicter_id .. "]"
+        local logstring = inst:GetDisplayName() .. "[" .. selfid .. "]" .. " was killed by " .. afflicter_name .. "[" .. afflicter_id .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", inst.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":skull: " .. logstring
         if (GetModConfigData("dying") == "all" or 
@@ -716,7 +716,7 @@ local function OnBuildEv(inst, data)
         local id = inst.userid or inst.GUID
         theitem.builtbyid = inst.userid
         theitem.builtbyname = inst:GetDisplayName()
-        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " crafts " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]"
+        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " crafts " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", theitem.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":hammer: " .. logstring
         if GetModConfigData("building") == "all" then
@@ -734,7 +734,7 @@ local function OnBuildStructureEv(inst, data)
     GLOBAL.pcall(function(inst, data)
         local theitem = data.item
         local id = inst.userid or inst.GUID
-        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " builds " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]"
+        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " builds " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", theitem.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":classical_building: " .. logstring
         theitem.builtbyid = inst.userid
@@ -772,7 +772,7 @@ AddComponentPostInit("deployable", function(self, inst)
                     for i, v in ipairs(ents) do
                         v.builtbyid = deployer.userid or deployer.GUID
                         v.builtbyname = deployer:GetDisplayName()
-                        local logstring = deployer:GetDisplayName() .. "[" .. v.builtbyid .. "] places a " .. v:GetDisplayName() .. "[" .. v.GUID .."]"
+                        local logstring = deployer:GetDisplayName() .. "[" .. v.builtbyid .. "] places a " .. v:GetDisplayName() .. "[" .. v.GUID .."]" .. string.format(" @(%.2f, %.2f, %.2f)", v.Transform:GetWorldPosition())
                         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                         local discord_logstring = ":arrow_heading_down: " .. logstring
                         if GetModConfigData("building") == "all" then
@@ -845,7 +845,7 @@ local function OnCloseBox(self, data)
             local old_amount = 0
             if old_cache[k] ~= nil then old_amount = old_cache[k] end
             if v > old_amount then
-                local logstring =  doer:GetDisplayName() .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. self:GetDisplayName() .. "[" .. self.GUID .. "]"
+                local logstring =  doer:GetDisplayName() .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. self:GetDisplayName() .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
@@ -860,7 +860,7 @@ local function OnCloseBox(self, data)
             local new_amount = 0
             if new_cache[k] ~= nil then new_amount = new_cache[k] end
             if v > new_amount then
-                local logstring = doer:GetDisplayName() .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. self:GetDisplayName() .. "[" .. self.GUID .. "]"
+                local logstring = doer:GetDisplayName() .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. self:GetDisplayName() .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
