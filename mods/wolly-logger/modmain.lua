@@ -99,6 +99,19 @@ AddSimPostInit(function()
         return old_AnnounceRoll(userid, name, prefab, colour, rolls, max)
     end
 
+    if not GLOBAL.TheWorld.ismastershard then
+        GLOBAL.TheWorld:ListenForEvent("ms_miniquake", function(inst, data)
+            if data ~= nil and data.debrisfn ~= nil then
+                local prefab, density = data.debrisfn()
+                if prefab == "cavein_boulder" then
+                        local logstring = GLOBAL.string.format("Cave-in targets %s[%s] @(%.2f, %.2f, %.2f)", data.target:GetDisplayName(), data.target.userid, data.pos.x, data.pos.y, data.pos.x)
+                        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                        print(logstring)
+                end
+            end
+        end)
+    end
+
     -- this is to make player inventories accessible even after they log off
    --[[  GLOBAL.TheWorld:ListenForEvent("ms_playerleft", function(world, player)
         if player.components ~= nil and player.components.inventory ~= nil then
@@ -596,7 +609,7 @@ AddComponentPostInit("sinkholespawner", function(self, inst)
     local _DoTargetAttack = self.DoTargetAttack
     self.DoTargetAttack = function(self, targetinfo)
         if targetinfo.player ~= nil then
-                local logstring = GLOBAL.string.format("%s[%s] spawns a sinkhole @(%.2f, %.2f, %2.f)", targetinfo.player:GetDisplayName(), targetinfo.player.userid, targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
+                local logstring = GLOBAL.string.format("%s[%s] targets %s[%s] @(%.2f, %.2f, %2.f)", self.inst:GetDisplayName(), self.inst.GUID, targetinfo.player:GetDisplayName(), targetinfo.player.userid, targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 print(logstring)
         end
