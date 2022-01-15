@@ -176,6 +176,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("reading") == "all" or
             desc == " casts " or
+            desc == " unwraps " or
             desc == " picks " and (GetModConfigData("picking") == "all" or GetModConfigData("picking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("crockpot") == "all") then
         print(logstring)
@@ -187,6 +188,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("discordpickup") == "all" or GetModConfigData("discordpickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
             desc == " casts " or
+            desc == " unwraps " or
             desc == " picks " and (GetModConfigData("discordpicking") == "all" or GetModConfigData("discordpicking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("discordcrockpot") == "all") then
                 io.write("[" .. GLOBAL.os.date("%x %X") .. "] " .. discord_logstring .. "\n")
@@ -339,6 +341,7 @@ local old_PICKUP = GLOBAL.ACTIONS.PICKUP.fn
 local old_CASTSPELL = GLOBAL.ACTIONS.CASTSPELL.fn
 local old_BLINK = GLOBAL.ACTIONS.BLINK.fn
 local old_PLAY = GLOBAL.ACTIONS.PLAY.fn
+local old_UNWRAP = GLOBAL.ACTIONS.UNWRAP.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -560,6 +563,17 @@ GLOBAL.ACTIONS.PLAY.fn = function(act)
     return successful
 end
 
+GLOBAL.ACTIONS.UNWRAP.fn = function(act)
+    local successful = old_UNWRAP(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.target or act.invobject
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " unwraps ", ":gift: ")
+        end
+    end, successful, act)
+    return successful
+end
+
 AddPlayerPostInit(function(inst)
     inst:ListenForEvent("done_embark_movement", function(inst)
         local platform = inst.components.embarker.embarkable
@@ -606,20 +620,20 @@ AddPrefabPostInit("beefalo", function(inst)
 end)
 
 AddComponentPostInit("burnable", function(self, inst)
-	self.SetOnBurntFn = function(self, fn)
-		self.onburnt = function(inst)
-	                local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
-	                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-	                print(logstring)
-			fn(inst)
-		end
-	end
+    self.SetOnBurntFn = function(self, fn)
+        self.onburnt = function(inst)
+            local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+            fn(inst)
+        end
+    end
 
-	self.onburnt = function(inst)
-		local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
-		logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-		print(logstring)
-	end
+    self.onburnt = function(inst)
+        local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+    end
 end)
 
 AddComponentPostInit("sinkholespawner", function(self, inst)
@@ -635,46 +649,21 @@ AddComponentPostInit("sinkholespawner", function(self, inst)
 end)
 
 AddComponentPostInit("unwrappable", function(self, inst)
+    local _Unwrap = self.Unwrap
     self.Unwrap = function(self, doer)
-        local pos = self.inst:GetPosition()
-        pos.y = 0
         if self.itemdata ~= nil then
-            if doer ~= nil and
-                self.inst.components.inventoryitem ~= nil and
-                self.inst.components.inventoryitem:GetGrandOwner() == doer then
-                local doerpos = doer:GetPosition()
-                local offset = GLOBAL.FindWalkableOffset(doerpos, doer.Transform:GetRotation() * GLOBAL.DEGREES, 1, 8, false, true, self.NoHoles)
-                if offset ~= nil then
-                    pos.x = doerpos.x + offset.x
-                    pos.z = doerpos.z + offset.z
-                else
-                    pos.x, pos.z = doerpos.x, doerpos.z
-                end
-            end
-            local creator = self.origin ~= nil and GLOBAL.TheWorld.meta.session_identifier ~= self.origin and { sessionid = self.origin } or nil
+            local items = "{"
             for i, v in ipairs(self.itemdata) do
-                local item = GLOBAL.SpawnPrefab(v.prefab, v.skinname, v.skin_id, creator)
                 local stack = v.data ~= nil and v.data.stackable ~= nil and v.data.stackable.stack or 1
-                local logstring = GLOBAL.string.format("%s[%s] unwraps %s[%d] (x%d) from %s[%s]", doer:GetDisplayName(), doer.userid or doer.GUID, item:GetDisplayName(), item.GUID, stack, self.inst:GetDisplayName(), self.inst.GUID)
-                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-                print(logstring)
-                if item ~= nil and item:IsValid() then
-                    if item.Physics ~= nil then
-                        item.Physics:Teleport(pos:Get())
-                    else
-                        item.Transform:SetPosition(pos:Get())
-                    end
-                    item:SetPersistData(v.data)
-                    if item.components.inventoryitem ~= nil then
-                        item.components.inventoryitem:OnDropped(true, .5)
-                    end
-                end
+                items = string.format("%s\"%s\"=%d%s", items, v.prefab, stack, i ~= #self.itemdata and "," or "}")
             end
-            self.itemdata = nil
+
+            local logstring = GLOBAL.string.format("%s[%s] drops %s @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.GUID, items, self.inst.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
         end
-        if self.onunwrappedfn ~= nil then
-            self.onunwrappedfn(self.inst, pos, doer)
-        end
+
+        _Unwrap(self, doer)
     end
 end)
 
