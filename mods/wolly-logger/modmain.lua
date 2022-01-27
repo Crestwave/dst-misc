@@ -166,8 +166,11 @@ local function logdebugaction(act, obj, desc, emoji)
             chef = " Chef: " .. obj.cookedbyname .. "[" .. obj.cookedbyid .. "]"
             discord_chef = " :man_cook: " .. chef
         end
-
         local pos = tostring(act:GetActionPoint() or string.format("(%.2f, %.2f, %.2f)", obj.Transform:GetWorldPosition()))
+	if pos == "(0.00, 0.00, 0.00)" then
+		pos = string.format("(%.2f, %.2f, %.2f)", act.doer.Transform:GetWorldPosition())
+	end
+
         local logstring = act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. ownedby .. chef .. " @" .. pos
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = theemoji .. act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. discord_ownedby .. discord_chef
@@ -722,7 +725,7 @@ local function OnBuildEv(inst, data)
         local id = inst.userid or inst.GUID
         theitem.builtbyid = inst.userid
         theitem.builtbyname = inst:GetDisplayName()
-        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " crafts " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", theitem.Transform:GetWorldPosition())
+        local logstring = inst:GetDisplayName() .. "[" .. id .. "]" .. " crafts " .. theitem:GetDisplayName() .. "[" .. theitem.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", inst.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         local discord_logstring = ":hammer: " .. logstring
         if GetModConfigData("building") == "all" then
