@@ -167,9 +167,9 @@ local function logdebugaction(act, obj, desc, emoji)
             discord_chef = " :man_cook: " .. chef
         end
         local pos = tostring(act:GetActionPoint() or string.format("(%.2f, %.2f, %.2f)", obj.Transform:GetWorldPosition()))
-	if pos == "(0.00, 0.00, 0.00)" then
-		pos = string.format("(%.2f, %.2f, %.2f)", act.doer.Transform:GetWorldPosition())
-	end
+        if pos == "(0.00, 0.00, 0.00)" then
+            pos = string.format("(%.2f, %.2f, %.2f)", act.doer.Transform:GetWorldPosition())
+        end
 
         local logstring = act.doer:GetDisplayName() .. id .. desc .. obj:GetDisplayName() .. otherid .. amount .. ownedby .. chef .. " @" .. pos
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
@@ -586,30 +586,6 @@ AddPlayerPostInit(function(inst)
     end)
 end)
 
-AddComponentPostInit("hullhealth", function(self, inst)
-    local _OnCollide = self.OnCollide
-    self.OnCollide = function(self, data)
-        local oldpercent = self.inst.components.health:GetPercent()
-        _OnCollide(self, data)
-        local newpercent = self.inst.components.health:GetPercent()
-
-        if oldpercent ~= newpercent then
-            local logstring = GLOBAL.string.format("%s[%s] collides @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.GUID, self.inst.Transform:GetWorldPosition())
-            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-            print(logstring)
-        end
-    end
-end)
-
-AddPrefabPostInit("boat_leak", function(inst)
-    inst:DoTaskInTime(0, function(inst)
-        local boat = inst.components.boatleak.boat
-        local logstring = GLOBAL.string.format("%s[%s] springs a leak! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, boat.Transform:GetWorldPosition())
-        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-        print(logstring)
-    end)
-end)
-
 AddPrefabPostInit("beefalo", function(inst)
     inst:ListenForEvent("attacked", function(inst, data)
         if data.attacker ~= nil and data.attacker:HasTag("player") then
@@ -622,6 +598,15 @@ AddPrefabPostInit("beefalo", function(inst)
     end)
 end)
 
+AddPrefabPostInit("boat_leak", function(inst)
+    inst:DoTaskInTime(0, function(inst)
+        local boat = inst.components.boatleak.boat
+        local logstring = GLOBAL.string.format("%s[%s] springs a leak! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, boat.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+    end)
+end)
+
 AddComponentPostInit("burnable", function(self, inst)
     self.SetOnBurntFn = function(self, fn)
         self.onburnt = function(inst)
@@ -629,9 +614,9 @@ AddComponentPostInit("burnable", function(self, inst)
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
 
-	        if fn ~= nil then
+            if fn ~= nil then
                 fn(inst)
-	        end
+            end
         end
     end
 
@@ -639,6 +624,21 @@ AddComponentPostInit("burnable", function(self, inst)
         local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         print(logstring)
+    end
+end)
+
+AddComponentPostInit("hullhealth", function(self, inst)
+    local _OnCollide = self.OnCollide
+    self.OnCollide = function(self, data)
+        local oldpercent = self.inst.components.health:GetPercent()
+        _OnCollide(self, data)
+        local newpercent = self.inst.components.health:GetPercent()
+
+        if oldpercent ~= newpercent then
+            local logstring = GLOBAL.string.format("%s[%s] collides @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.GUID, self.inst.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+        end
     end
 end)
 
