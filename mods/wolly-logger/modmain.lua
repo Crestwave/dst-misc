@@ -180,6 +180,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " casts spell " and GetModConfigData("reading") == "all" or
             desc == " casts " or
             desc == " unwraps " or
+            desc == " patches " or
             desc == " picks " and (GetModConfigData("picking") == "all" or GetModConfigData("picking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("crockpot") == "all") then
         print(logstring)
@@ -192,6 +193,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
             desc == " casts " or
             desc == " unwraps " or
+            desc == " patches " or
             desc == " picks " and (GetModConfigData("discordpicking") == "all" or GetModConfigData("discordpicking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("discordcrockpot") == "all") then
                 io.write("[" .. GLOBAL.os.date("%x %X") .. "] " .. discord_logstring .. "\n")
@@ -345,6 +347,7 @@ local old_CASTSPELL = GLOBAL.ACTIONS.CASTSPELL.fn
 local old_BLINK = GLOBAL.ACTIONS.BLINK.fn
 local old_PLAY = GLOBAL.ACTIONS.PLAY.fn
 local old_UNWRAP = GLOBAL.ACTIONS.UNWRAP.fn
+local old_REPAIR_LEAK = GLOBAL.ACTIONS.REPAIR_LEAK.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -577,6 +580,17 @@ GLOBAL.ACTIONS.UNWRAP.fn = function(act)
     return successful
 end
 
+GLOBAL.ACTIONS.REPAIR_LEAK.fn = function(act)
+    local successful = old_REPAIR_LEAK(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.target
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " patches ", ":adhesive_bandage: ")
+        end
+    end, successful, act)
+    return successful
+end
+
 AddPlayerPostInit(function(inst)
     inst:ListenForEvent("done_embark_movement", function(inst)
         local platform = inst.components.embarker.embarkable
@@ -600,10 +614,21 @@ end)
 
 AddPrefabPostInit("boat_leak", function(inst)
     inst:DoTaskInTime(0, function(inst)
-        local boat = inst.components.boatleak.boat
-        local logstring = GLOBAL.string.format("%s[%s] springs a leak! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, boat.Transform:GetWorldPosition())
-        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-        print(logstring)
+        if not inst:HasTag("boat_repaired_patch") then
+            local boat = inst.components.boatleak.boat
+            local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+        end
+
+        _onsprungleak = inst.components.boatleak.onsprungleak
+        inst.components.boatleak.onsprungleak = function(inst)
+            _onsprungleak(inst)
+            local boat = inst.components.boatleak.boat
+            local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+        end
     end)
 end)
 
