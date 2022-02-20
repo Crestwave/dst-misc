@@ -591,15 +591,6 @@ GLOBAL.ACTIONS.REPAIR_LEAK.fn = function(act)
     return successful
 end
 
-AddPlayerPostInit(function(inst)
-    inst:ListenForEvent("done_embark_movement", function(inst)
-        local platform = inst.components.embarker.embarkable
-        local logstring = GLOBAL.string.format("%s[%s] embarks %s @(%.2f, %.2f, %.2f)", inst:GetDisplayName(), inst.userid or inst.GUID, platform ~= nil and platform:GetDisplayName() .. "[" .. platform.GUID .. "]" or "land", inst.Transform:GetWorldPosition())
-        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-        print(logstring)
-    end)
-end)
-
 AddPrefabPostInit("beefalo", function(inst)
     inst:ListenForEvent("attacked", function(inst, data)
         if data.attacker ~= nil and data.attacker:HasTag("player") then
@@ -695,6 +686,28 @@ AddComponentPostInit("unwrappable", function(self, inst)
         end
 
         _Unwrap(self, doer)
+    end
+end)
+
+AddComponentPostInit("walkableplatformplayer", function(self, inst)
+    _GetOnPlatform = self.GetOnPlatform
+    self.GetOnPlatform = function(self, platform)
+        local logstring = GLOBAL.string.format("%s[%s] boards %s[%s] @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.userid or self.inst.GUID, platform:GetDisplayName(), platform.GUID, self.inst.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+        _GetOnPlatform(self, platform)
+    end
+
+    _GetOffPlatform = self.GetOffPlatform
+    self.GetOffPlatform = function(self)
+        if self.inst:GetCurrentPlatform() == nil and self.inst.components.embarker.embarkable == nil then
+            local x, y, z = self.inst.Transform:GetWorldPosition()
+            local _x, _z = self.inst.components.embarker:GetEmbarkPosition()
+            local logstring = GLOBAL.string.format("%s[%s] returns to land @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.userid or self.inst.GUID, _x ~= nil and _x or x, y, _z ~= nil and _z or z)
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+            _GetOffPlatform(self)
+        end
     end
 end)
 
