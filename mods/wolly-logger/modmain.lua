@@ -104,7 +104,7 @@ AddSimPostInit(function()
             if data ~= nil and data.debrisfn ~= nil then
                 local prefab, density = data.debrisfn()
                 if prefab == "cavein_boulder" then
-                        local logstring = GLOBAL.string.format("Cave-in targets %s[%s] @(%.2f, %.2f, %.2f)", data.target:GetDisplayName(), data.target.userid, data.pos.x, data.pos.y, data.pos.x)
+                        local logstring = GLOBAL.string.format("Cave-in targets %s[%s] @(%.2f, %.2f, %.2f)", data.target:GetDisplayName() or "NIL", data.target.userid or "", data.pos.x, data.pos.y, data.pos.x)
                         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                         print(logstring)
                 end
