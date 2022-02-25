@@ -104,7 +104,7 @@ AddSimPostInit(function()
             if data ~= nil and data.debrisfn ~= nil then
                 local prefab, density = data.debrisfn()
                 if prefab == "cavein_boulder" then
-                        local logstring = GLOBAL.string.format("Cave-in targets %s[%s] @(%.2f, %.2f, %.2f)", data.target:GetDisplayName() or "NIL", data.target.userid or "", data.pos.x, data.pos.y, data.pos.x)
+                        local logstring = GLOBAL.string.format("Cave-in targets %s[%s] @(%.2f, %.2f, %.2f)", data.target:GetDisplayName() or "nil", data.target.userid or "", data.pos.x, data.pos.y, data.pos.x)
                         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                         print(logstring)
                 end
@@ -703,7 +703,7 @@ AddComponentPostInit("walkableplatformplayer", function(self, inst)
         if self.inst:GetCurrentPlatform() == nil and self.inst.components.embarker.embarkable == nil then
             local x, y, z = self.inst.Transform:GetWorldPosition()
             local _x, _z = self.inst.components.embarker:GetEmbarkPosition()
-            local logstring = GLOBAL.string.format("%s[%s] returns to land @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.userid or self.inst.GUID, _x ~= nil and _x or x, y, _z ~= nil and _z or z)
+            local logstring = GLOBAL.string.format("%s[%s] disembarks @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.userid or self.inst.GUID, _x ~= nil and _x or x, y, _z ~= nil and _z or z)
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
             _GetOffPlatform(self)
