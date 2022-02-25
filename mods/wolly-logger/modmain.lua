@@ -623,6 +623,16 @@ AddPrefabPostInit("boat_leak", function(inst)
     end)
 end)
 
+AddPrefabPostInit("terrarium", function(inst)
+    _OnActivate = inst.components.activatable.OnActivate
+    inst.components.activatable.OnActivate = function(inst, doer)
+        local logstring = GLOBAL.string.format("%s[%s] %s %s[%s] @(%.2f, %.2f, %.2f)", doer:GetDisplayName(), doer.userid or doer.GUID, inst.is_on and "deactivates" or "activates", inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
+        _OnActivate(inst, doer)
+    end
+end)
+
 AddComponentPostInit("burnable", function(self, inst)
     self.SetOnBurntFn = function(self, fn)
         self.onburnt = function(inst)
