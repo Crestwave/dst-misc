@@ -636,7 +636,7 @@ end)
 AddComponentPostInit("burnable", function(self, inst)
     self.SetOnBurntFn = function(self, fn)
         self.onburnt = function(inst)
-            local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
+            local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %.2f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
 
