@@ -1,8 +1,15 @@
 #!/bin/sh
 awk -F \" '
-	BEGIN  { RS = "," }
+	BEGIN  {
+		connections = 0
+		RS = ","
+	}
 	/"name"/ { name = $4 }
 	/"season"/ { season = $4 }
+	/"maxconnections"/ {
+		sub(/:/, "")
+		maxconnections = $3
+	}
 	/day=/ {
 		sub(/.*=/, "")
 		day = $0
@@ -12,9 +19,10 @@ awk -F \" '
 		sub(/ .*/, "")
 		days = $0
 	}
+	/netid=/ { connections += 1 }
 	END {
-		printf("%s: Day %s - %s days left in %s\n\n",
-			name, day, days, season)
+		printf("%s (%s/%s): Day %s - %s days left in %s\n\n",
+			name, connections, maxconnections, day, days, season)
 	}
 	' "$1"
 awk -F '\\\\"' '
