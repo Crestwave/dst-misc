@@ -35,6 +35,7 @@ get_server() {
 			esac
 
 			./row-info.sh row/"$id".json
+			printf "\n"
 		done
 }
 

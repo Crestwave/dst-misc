@@ -21,7 +21,7 @@ awk -F \" '
 	}
 	/netid=/ { connections += 1 }
 	END {
-		printf("%s (%s/%s): Day %s - %s days left in %s\n\n",
+		printf("%s (%s/%s): Day %s - %s days left in %s\n",
 			name, connections, maxconnections, day, days, season)
 	}
 	' "$1"
