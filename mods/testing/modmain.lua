@@ -1,3 +1,5 @@
+local _G = GLOBAL
+
 -- Remove name obfuscation for Wagstaff tools
 for i=1,5 do
 	AddPrefabPostInit("wagstaff_tool_" ..i, function(inst)
@@ -8,7 +10,7 @@ end
 -- Remove name obfuscation for hiding worms
 AddPrefabPostInit("worm", function(inst)
 	inst.displaynamefn = function(inst)
-		return GLOBAL.STRINGS.NAMES[(inst:HasTag("dirt") and "WORM_DIRT") or "WORM"]
+		return _G.STRINGS.NAMES[(inst:HasTag("dirt") and "WORM_DIRT") or "WORM"]
 	end
 end)
 
@@ -18,6 +20,23 @@ AddPrefabPostInit("carrat_planted", function(inst)
 		inst:SetPrefabNameOverride("CARRAT")
 	end)
 end)
+
+-- Mark buried moon altars
+for i=1,2 do
+	AddPrefabPostInit("moon_altar_astral_marker_"..i, function(inst)
+		inst:DoTaskInTime(0, function(inst)
+			local x, y, z = inst.Transform:GetWorldPosition()
+			local mark = _G.SpawnPrefab(inst.product)
+			mark.Transform:SetPosition(x, y, z)
+			mark.AnimState:SetMultColour(1, 1, 1, .1)
+			mark:AddTag("NOBLOCK")
+			_G.RemovePhysicsColliders(mark)
+			inst:ListenForEvent("onremove", function(inst)
+				mark:Remove()
+			end)
+		end)
+	end)
+end
 
 -- Light boats directly on fire
 AddPrefabPostInit("burnable_locator_medium", function(inst)
@@ -51,7 +70,7 @@ for i, prefab in ipairs(prefabs) do
 		inst:DoTaskInTime(0, function(inst)
 			inst.components.talker.resolvechatterfn = function(inst, strid, strtbl)
 				-- prefabs/merm.lua, ResolveMermChatter()
-				local stringtable = GLOBAL.STRINGS[strtbl:value()]
+				local stringtable = _G.STRINGS[strtbl:value()]
 				if stringtable then
 					if stringtable[strid:value()] ~= nil then
 						return stringtable[strid:value()][1] -- First value is always the translated one
@@ -69,7 +88,7 @@ local prefabs = { "critter_lamb", "critter_puppy", "critter_kitten", "critter_pe
 for i, prefab in ipairs(prefabs) do
 	AddPrefabPostInit(prefab, function(inst)
 		inst.displayadjectivefn = function(self)
-			local STRINGS = GLOBAL.STRINGS
+			local STRINGS = _G.STRINGS
 			for k,_ in pairs(TUNING.CRITTER_TRAITS) do
 				if self:HasTag("trait_"..k) then
 					return ((self:HasTag("stale") and STRINGS.UI.HUD.HUNGRY.." "..STRINGS.UI.HUD.CRITTER_TRAITS[k]) or
