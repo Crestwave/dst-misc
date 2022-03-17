@@ -1,6 +1,7 @@
 #!/bin/sh
 mkdir -p listings
 cd ./listings || exit
+printf '%s\n' parallel remote-name-all >curlrc
 
 url=https://s3.amazonaws.com/klei-lobby
 
@@ -24,7 +25,10 @@ else
 					if ! printf '%s  %s\n' "$md5" "$file" |
 						md5sum -c 2>/dev/null
 					then
-						curl -s "$url"/"$file" -o "$file" &
+						printf 'url = "%s"\n' \
+							"$url/$file" >>curlrc
 					fi
 				done
 fi
+
+curl -K curlrc
