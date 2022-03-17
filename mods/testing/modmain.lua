@@ -21,6 +21,13 @@ AddPrefabPostInit("carrat_planted", function(inst)
 	end)
 end)
 
+-- Remove name obfuscation for mutating hounds
+AddPrefabPostInit("houndcorpse", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		inst:SetPrefabNameOverride("MUTATEDHOUND")
+	end)
+end)
+
 -- Mark buried moon altars
 for i=1,2 do
 	AddPrefabPostInit("moon_altar_astral_marker_"..i, function(inst)
