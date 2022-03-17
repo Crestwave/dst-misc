@@ -24,7 +24,7 @@ else
 					if ! printf '%s  %s\n' "$md5" "$file" |
 						md5sum -c 2>/dev/null
 					then
-						curl "$url"/"$file" -o "$file"
+						curl -s "$url"/"$file" -o "$file" &
 					fi
 				done
 fi
