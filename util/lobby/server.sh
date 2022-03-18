@@ -2,6 +2,7 @@
 [[ -f env.sh ]] && . env.sh
 
 while read -p "Server: " -er line; do
+	history -s "$line"
 	if [[ $line == "~" ]]; then
 		./lobby.sh
 		./get-hosts.sh > hosts-full.csv
