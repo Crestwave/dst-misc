@@ -348,6 +348,7 @@ local old_BLINK = GLOBAL.ACTIONS.BLINK.fn
 local old_PLAY = GLOBAL.ACTIONS.PLAY.fn
 local old_UNWRAP = GLOBAL.ACTIONS.UNWRAP.fn
 local old_REPAIR_LEAK = GLOBAL.ACTIONS.REPAIR_LEAK.fn
+local old_SMOTHER = GLOBAL.ACTIONS.SMOTHER.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -586,6 +587,17 @@ GLOBAL.ACTIONS.REPAIR_LEAK.fn = function(act)
         local obj = act.target
         if successful and obj ~= nil then
             logdebugaction(act, obj, " patches ", ":adhesive_bandage: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.SMOTHER.fn = function(act)
+    local successful = old_SMOTHER(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.target
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " extinguishes ", ":fire_extinguisher: ")
         end
     end, successful, act)
     return successful
