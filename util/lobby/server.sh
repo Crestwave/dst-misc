@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 [[ -f env.sh ]] && . env.sh
+(( $# )) && exec <<<"$*"
 
 while read -p "Server: " -er line; do
 	history -s "$line"
 	if [[ $line == "~" ]]; then
 		./lobby.sh
-		./get-hosts.sh "$@" >hosts-full.csv
+		./get-hosts.sh >hosts-full.csv
 		continue
 	fi
 
