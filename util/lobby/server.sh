@@ -10,7 +10,7 @@ while read -p "Server: " -er line; do
 	fi
 
 	printf '\nProcessing the following matches:\n'
-	grep -i "$line" hosts-full.csv
+	grep -i -- "$line" hosts-full.csv
 	printf "\n"
-	./watch.sh <(grep -i "$line" hosts-full.csv)
+	./watch.sh <(grep -i -- "$line" hosts-full.csv)
 done
