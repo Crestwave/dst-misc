@@ -8,7 +8,7 @@ url=https://s3.amazonaws.com/klei-lobby
 if [ "$#" -gt 0 ]; then
 	for i; do
 		printf 'Downloading %s...\n' "$url"/"$i".json.gz
-		printf 'url = "%s"\n' "$i".json.gz >>curlrc
+		printf 'url = "%s"\n' "$url"/"$i".json.gz >>curlrc
 	done
 else
 	curl "$url" |
