@@ -5,7 +5,7 @@ AddPlayerPostInit(function(inst)
 				if lastmounted == nil then
 					lastmounted = GLOBAL.GetTime()
 
-					inst:DoTaskInTime(GLOBAL.FRAMES, function(inst)
+					inst:DoTaskInTime(0, function(inst)
 						mount = inst.replica.rider:GetMount()
 
 						if type(mount) == "table" and mount.prefab == "beefalo" then
