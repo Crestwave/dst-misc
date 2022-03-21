@@ -113,15 +113,15 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 
 		local TheWorld = GLOBAL.TheWorld
 
-		local function Announce(str)
-			GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, str))
+		local function Announce(msg)
+			GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, msg))
 		end
 
 		if params.mode ~= nil then
 			if params.mode == "1" then
-				Announce = function(str) GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, str), true) end
+				Announce = function(msg) GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, msg), true) end
 			elseif params.mode == "2" then
-				Announce = function(str) GLOBAL.ChatHistory:SendCommandResponse(str) end
+				Announce = function(msg) GLOBAL.ChatHistory:SendCommandResponse(msg) end
 			elseif params.mode ~= "0" then
 				GLOBAL.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
 				return
