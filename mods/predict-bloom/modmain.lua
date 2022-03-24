@@ -28,6 +28,14 @@ local function CalcFullBloomDurationFn(inst, value, remaining, full_bloom_durati
 	return math.min(remaining + value, TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION)
 end
 
+local function OnSeasonChange(inst, season)
+	if season == "spring" and not inst:HasTag("playerghost") then
+		inst.components._bloomness:Fertilize()
+	else
+		inst.components._bloomness:UpdateRate()
+	end
+end
+
 local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
 end
@@ -35,16 +43,20 @@ end
 local function SyncBloomStage(inst, force)
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
-	if stage ~= inst.components._bloomness:GetLevel() or force then
+	local level = inst.components._bloomness:GetLevel()
+	if stage ~= level or force then
 		local timer = inst.components._bloomness.timer
 		inst.components._bloomness:SetLevel(stage)
 		inst.components._bloomness.timer = inst.components._bloomness.timer - timer
+		if _G.TheWorld.state.isspring then
+			inst.components._bloomness:Fertilze()
+		end
 	end
 end
 
 local function OnBloomFXDirty(inst)
-	inst:DoTaskInTime(0, SyncBloomStage, true)
-        --inst.components._bloomness:SetLevel(_G.RoundBiasedUp(_G.Remap(inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3)))
+	inst:DoTaskInTime(1, SyncBloomStage, true)
+		--inst.components._bloomness:SetLevel(_G.RoundBiasedUp(_G.Remap(inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3)))
 end
 
 local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
@@ -79,12 +91,21 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
 			inst.components._bloomness.calcratefn = CalcBloomRateFn
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
-    			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
+			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
+			inst:WatchWorldState("season", OnSeasonChange)
 
 			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, inst.components._bloomness)
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
+
+			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
+				if inst.isghostmode:value() then
+					_G.ThePlayer.components._bloomness:SetLevel(0)
+				elseif _G.TheWorld.state.isspring then
+					_G.ThePlayer.components._bloomness:Fertilize()
+				end
+			end)
 
 			inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
 				if inst.isperformactionsuccess:value() and act then

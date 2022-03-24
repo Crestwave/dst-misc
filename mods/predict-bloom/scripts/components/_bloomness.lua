@@ -91,6 +91,7 @@ end
 
 function _Bloomness:OnUpdate(dt)
 	self.timer = self.timer - dt * self.rate
+	--[[
 	if self.timer <= 0 then
 		if self.is_blooming then
 			self:SetLevel(self.level + 1)
@@ -103,6 +104,7 @@ function _Bloomness:OnUpdate(dt)
 			end
 		end
 	end
+	--]]
 end
 
 function _Bloomness:LongUpdate(dt)
