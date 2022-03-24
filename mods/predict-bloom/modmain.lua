@@ -51,6 +51,8 @@ local function SyncBloomStage(inst, force)
 		if _G.TheWorld.state.isspring then
 			inst.components._bloomness:Fertilize()
 		end
+	else
+		inst.components._bloomness:UpdateRate()
 	end
 end
 
@@ -112,7 +114,9 @@ AddPlayerPostInit(function(inst)
 					if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
 						local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 						print("FERTILIZE SUCCESS: " ..tostring(val))
-						_G.ThePlayer.components._bloomness:Fertilize(val)
+						if val > 0 then
+							_G.ThePlayer.components._bloomness:Fertilize(val)
+						end
 						act = false
 						fert = nil
 					end
