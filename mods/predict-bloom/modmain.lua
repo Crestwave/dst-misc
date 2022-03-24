@@ -32,8 +32,17 @@ local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
 end
 
+local function SyncBloomStage(inst)
+	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
+	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
+	if stage ~= inst.components._bloomness:GetLevel() then
+		inst.components._bloomness.timer = 0
+		inst.components._bloomness:SetLevel(stage)
+	end
+end
+
 local function OnBloomFXDirty(inst)
-	return
+	inst:DoTaskInTime(0, SyncBloomStage)
         --inst.components._bloomness:SetLevel(_G.RoundBiasedUp(_G.Remap(inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3)))
 end
 
@@ -74,6 +83,7 @@ AddPlayerPostInit(function(inst)
 			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, inst.components._bloomness)
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
+			SyncBloomStage(inst)
 
 			inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
 				if inst.isperformactionsuccess:value() and act then
