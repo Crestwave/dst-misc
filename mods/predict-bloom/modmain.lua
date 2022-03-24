@@ -32,10 +32,10 @@ local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
 end
 
-local function SyncBloomStage(inst)
+local function SyncBloomStage(inst, force)
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
-	if stage ~= inst.components._bloomness:GetLevel() then
+	if stage ~= inst.components._bloomness:GetLevel() or force then
 		local timer = inst.components._bloomness.timer
 		inst.components._bloomness:SetLevel(stage)
 		inst.components._bloomness.timer = inst.components._bloomness.timer - timer
@@ -43,7 +43,7 @@ local function SyncBloomStage(inst)
 end
 
 local function OnBloomFXDirty(inst)
-	inst:DoTaskInTime(0, SyncBloomStage)
+	inst:DoTaskInTime(0, SyncBloomStage, true)
         --inst.components._bloomness:SetLevel(_G.RoundBiasedUp(_G.Remap(inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3)))
 end
 
