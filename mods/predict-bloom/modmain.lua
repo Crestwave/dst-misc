@@ -36,8 +36,9 @@ local function SyncBloomStage(inst)
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	if stage ~= inst.components._bloomness:GetLevel() then
-		inst.components._bloomness.timer = 0
+		local timer = inst.components._bloomness.timer
 		inst.components._bloomness:SetLevel(stage)
+		inst.components._bloomness.timer = inst.components._bloomness.timer - timer
 	end
 end
 
