@@ -49,7 +49,7 @@ local function SyncBloomStage(inst, force)
 		inst.components._bloomness:SetLevel(stage)
 		inst.components._bloomness.timer = inst.components._bloomness.timer - timer
 		if _G.TheWorld.state.isspring then
-			inst.components._bloomness:Fertilze()
+			inst.components._bloomness:Fertilize()
 		end
 	end
 end
