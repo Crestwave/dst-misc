@@ -3,7 +3,7 @@ mkdir -p listings
 cd ./listings || exit
 printf '%s\n' parallel remote-name-all >curlrc
 
-url=https://s3.amazonaws.com/klei-lobby
+url=https://lobby-cdn.klei.com
 
 if [ "$#" -gt 0 ]; then
 	for i; do

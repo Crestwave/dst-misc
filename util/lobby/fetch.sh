@@ -7,7 +7,7 @@ EOF
 
 mkdir -p data
 for i; do
-	url=https://lobby-$i.kleientertainment.com/lobby/read
+	url=https://lobby-$i.klei.com/lobby/read
 
 	printf 'Fetching %s lobby data...\n' "$i"
 	curl -w '\n' -d "$data" "$url" >data/"$i".json
