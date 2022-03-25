@@ -72,14 +72,16 @@ _G.SendRPCToServer = function(...)
 		act = true
 
 		if arg[1] == _G.RPC.LeftClick then
+			active = true
 			fert = _G.ThePlayer.replica.inventory:GetActiveItem()
 		elseif arg[1] == _G.RPC.UseItemFromInvTile then
 			fert = arg[3]
 		else
 			act = false
 		end
-	elseif arg[1] == _G.RPC.InspectItemFromInvTile then
+	elseif arg[1] == _G.RPC.InspectItemFromInvTile or arg[1] == _G.RPC.ClearActionHold then
 		act = false
+		active = false
 	end
 
 	_SendRPCToServer(...)
@@ -117,8 +119,11 @@ AddPlayerPostInit(function(inst)
 						if val > 0 then
 							_G.ThePlayer.components._bloomness:Fertilize(val)
 						end
-						act = false
-						fert = nil
+						--act = false
+						if not active then
+							act = false
+							fert = nil
+						end
 					end
 				end
 			end)
