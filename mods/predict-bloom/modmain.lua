@@ -63,6 +63,7 @@ end
 
 local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
 local act = false
+local active = false
 local fert = nil
 local _SendRPCToServer = _G.SendRPCToServer
 _G.SendRPCToServer = function(...)
@@ -79,11 +80,14 @@ _G.SendRPCToServer = function(...)
 		else
 			act = false
 		end
-	elseif arg[1] == _G.RPC.InspectItemFromInvTile then
-		act = false
-	elseif arg[1] == _G.RPC.ClearActionHold then
-		act = false
-		active = false
+	elseif act then
+		if arg[1] == _G.RPC.InspectItemFromInvTile then
+			act = false
+		elseif arg[1] == _G.RPC.ClearActionHold then
+			active = false
+		elseif not active and not _G.ThePlayer:HasTag("busy") then
+			act = false
+		end
 	end
 
 	_SendRPCToServer(...)
