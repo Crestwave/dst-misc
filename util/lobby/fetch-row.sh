@@ -5,6 +5,6 @@ EOF
 
 mkdir -p row
 
-url=https://lobby-$1.kleientertainment.com/lobby/read
+url=https://lobby-$1.klei.com/lobby/read
 printf 'Fetching %s lobby data for %s...\n' "$1" "$2"
 curl -w '\n' -d "$data" "$url" >row/"$2".json
