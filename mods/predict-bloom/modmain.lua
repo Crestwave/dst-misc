@@ -79,7 +79,9 @@ _G.SendRPCToServer = function(...)
 		else
 			act = false
 		end
-	elseif arg[1] == _G.RPC.InspectItemFromInvTile or arg[1] == _G.RPC.ClearActionHold then
+	elseif arg[1] == _G.RPC.InspectItemFromInvTile then
+		act = false
+	elseif arg[1] == _G.RPC.ClearActionHold then
 		act = false
 		active = false
 	end
