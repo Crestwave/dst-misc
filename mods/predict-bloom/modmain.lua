@@ -45,9 +45,9 @@ local function SyncBloomStage(inst, force)
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
 	if stage ~= level or force then
-		local timer = inst.components._bloomness.timer
+		--local timer = inst.components._bloomness.timer
 		inst.components._bloomness:SetLevel(stage)
-		inst.components._bloomness.timer = inst.components._bloomness.timer - timer
+		--inst.components._bloomness.timer = inst.components._bloomness.timer - timer
 		if _G.TheWorld.state.isspring then
 			inst.components._bloomness:Fertilize()
 		end

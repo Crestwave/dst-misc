@@ -38,9 +38,11 @@ function _Bloomness:SetLevel(level)
 		self.level = level
 
 		if level == self.max then
-			self.timer = self.timer + self.full_bloom_duration
+			--self.timer = self.timer + self.full_bloom_duration
+			self.timer = self.full_bloom_duration
 		else
-			self.timer = self.timer + self.stage_duration
+			--self.timer = self.timer + self.stage_duration
+			self.timer = self.stage_duration
 		end
 
 		self:UpdateRate()
