@@ -92,7 +92,13 @@ function _Bloomness:Fertilize(value)
 end
 
 function _Bloomness:OnUpdate(dt)
+	local oldval = self.timer
 	self.timer = self.timer - dt * self.rate
+	--self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = 480, stuck = false, jump = false })
+	local max = self.level == self.max and TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION or self.stage_duration
+	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = max, stuck = false, jump = false })
+
+	--self.inst:PushEvent("chargechange", { oldval = oldval, newval = self.charge, max = self.max_charge, stuck = stuck, jump = jump })
 	--[[
 	if self.timer <= 0 then
 		if self.is_blooming then
@@ -116,6 +122,7 @@ function _Bloomness:LongUpdate(dt)
 end
 
 function _Bloomness:Save()
+	print(self.rate)
 	return self.level > 0 and {
 		level = self.level,
 		timer = self.timer,

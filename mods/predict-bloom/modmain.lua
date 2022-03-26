@@ -1,5 +1,7 @@
 local _G = GLOBAL
 local AutoSaveManager = require("autosavemanager")
+local BloomBadge = require("widgets/bloombadge")
+local Text = require("widgets/text")
 local BloomSaver
 
 local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
@@ -141,4 +143,170 @@ _G.ww_debug = function(delete)
 	if BloomSaver then
 		BloomSaver:PrintDebugInfo(delete)
 	end
+	if _G.ThePlayer.components._bloomness then
+		print(_G.ThePlayer.components._bloomness:GetDebugString())
+	end
+end
+
+-- Mod compatibility stuff by rezecib (https://steamcommunity.com/profiles/76561198025931302)
+local CHECK_MODS = {
+	["workshop-376333686"] = "COMBINED_STATUS",
+	["workshop-1583765151"] = "VICTORIAN_HUD",
+	["workshop-1824509831"] = "FORGE_HUD",
+	["workshop-343753877"] = "STATUS_ANNOUNCEMENTS",
+}
+local HAS_MOD = {}
+--If the mod is already loaded at this point
+for mod_name, key in pairs(CHECK_MODS) do
+	HAS_MOD[key] = HAS_MOD[key] or (GLOBAL.KnownModIndex:IsModEnabled(mod_name) and mod_name)
+end
+--If the mod hasn't loaded yet
+for k, v in pairs(GLOBAL.KnownModIndex:GetModsToLoad()) do
+	local mod_type = CHECK_MODS[v]
+	if mod_type then
+		HAS_MOD[mod_type] = v
+	end
+end
+if GetModConfigData("meter") then
+AddClassPostConstruct("widgets/statusdisplays", function(self)
+	print("CONSTRUCT1")
+	--if not self.owner or self.owner:HasTag("self_fertilizable") then return end
+	if not self.owner or self.owner.prefab ~= "wormwood" then return end
+	print("CONSTRUCT")
+	
+	self.UpdateBoatChargePosition = function(self) -- Charge badge is at the top. Boat badge goes as high as possible.
+		if not self.boatmeter then return end
+		
+		if HAS_MOD.COMBINED_STATUS then -- Values based off combined status
+			if self.charge.shown then self.boatmeter:SetPosition(-62, -139) -- temp position until status announcements is updated
+			else self.boatmeter:SetPosition(-62, -52) end -- temp position until status announcements is updated
+		else -- values based off defaults 
+			if self.charge.shown then self.boatmeter:SetPosition(-80, -113)
+			else self.boatmeter:SetPosition(-80, -40) end
+		end
+	end
+	
+	--self.charge = self:AddChild(BloomBadge(self, MOD_SETTINGS.FORMAT_CHARGE))
+	--self.charge = self:AddChild(BloomBadge(self, "hour"))
+	self.charge = self:AddChild(BloomBadge(self, "second"))
+	self.charge:SetPosition(-80, -40)
+	--self.charge:Hide()
+	self.charge:Show()
+	
+	--self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
+	--self.inst:ListenForEvent("chargechange", self.onchargedelta, self.owner)
+	self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
+	self.inst:ListenForEvent("bloomdelta", self.onchargedelta, self.owner)
+	
+	function self:SetChargePercent(val, max, stuck)
+		if _G.ThePlayer.components._bloomness ~= nil then
+			self.charge:SetPercent(val, max, stuck, _G.ThePlayer.components._bloomness.rate)
+		else
+			self.charge:SetPercent(val, max, stuck, nil)
+		end
+	end
+
+	--self:SetChargePercent(100, 100, false)
+	
+	function self:ChargeDelta(data)
+		if not self.charge.shown then
+			self.charge:Show()
+		end
+		self:SetChargePercent(data.newval, data.max, data.stuck)
+		
+		if data.jump then
+			self.charge:PulseRed()
+			
+			if self.owner then
+				self.owner.SoundEmitter:PlaySound("dontstarve/characters/wx78/levelup")
+			end
+		end
+		
+		if data.newval <= 0 then
+			self.charge:Hide()
+		elseif data.newval > data.oldval then
+			--[[
+			if not self.charge.shown then
+				self.charge:Show()
+			end
+			--]]
+			
+			self.charge:PulseGreen()
+			_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
+		end
+	end
+	
+	local old_SetGhostMode = self.SetGhostMode
+	self.SetGhostMode = function(self, ghostmode)
+		if not self.isghostmode == not ghostmode then
+			-- pass on to old_SetGhostMode
+		elseif ghostmode then
+			self.charge:Hide()
+			self.charge:StopWarning()
+		end
+		
+		old_SetGhostMode(self, ghostmode)
+	end
+	
+	if self.boatmeter then -- Lazy way to make the boatmeter look good with the charge
+		if not self.boatmeter.owner then self.boatmeter.owner = self end
+		self.boatmeter.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
+		self.boatmeter.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
+		self.charge.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
+		self.charge.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
+		self:UpdateBoatChargePosition()
+	end
+	
+	if HAS_MOD.COMBINED_STATUS then
+		self.charge:SetPosition(-62, -52)
+
+		--self.charge.bg:SetScale(.5, .7, 0)
+		--self.charge.bg:SetPosition(-.5, -40, 0)
+		--self.charge.num:SetPosition(2, -40.5, 0)
+	--badges[self.charge] = self.charge
+	--self.charge.rate = self.charge.bg:AddChild(Text(_G.NUMBERFONT, SHOWMAXONNUMBERS and 25 or 33))
+	self.charge.rate = self.charge:AddChild(Text(_G.NUMBERFONT, 28))
+	self.charge.rate:SetPosition(2, -40.5, 0)
+	--self.charge.rate:SetSize(25)
+	--self.charge.rate:SetPosition(6, 0, 0)
+	self.charge.rate:MoveToFront()
+	self.charge.rate:Hide()
+	self.charge.rate:SetScale(1,.78,1)
+	
+	local OldOnGainFocus = self.charge.OnGainFocus
+	function self.charge:OnGainFocus()
+		OldOnGainFocus(self)
+		self.num:Hide()
+		if self.active then
+			self.rate:Show()
+		end
+	end
+
+	local OldOnLoseFocus = self.charge.OnLoseFocus
+	function self.charge:OnLoseFocus()
+		OldOnLoseFocus(self)
+		self.rate:Hide()
+		if self.active then
+			self.num:Show()
+		end
+	end
+	
+	--[[
+	local maxtxt = SHOWMAXONNUMBERS and "Max:\n" or ""
+	function self:CombinedStatusUpdateNumbers(max)
+		-- avoid updating numbers on hidden badges
+		if not self.active then return end
+		if self._iswandaoldagebadge then
+			max = GLOBAL.TUNING.WANDA_MAX_YEARS_OLD
+		end
+		local maxnum_str = tostring(math.ceil(max or 100))
+		self.maxnum:SetString(maxtxt..maxnum_str)
+		if SHOWDETAILEDSTATNUMBERS then
+			self.num:SetString(self.num:GetString().."/"..maxnum_str)
+		end
+	end
+	--]]
+
+	end
+end)
 end
