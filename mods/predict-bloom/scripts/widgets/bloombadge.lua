@@ -74,7 +74,7 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 	end
 end
 
-function BloomBadge:Update(stage)
+function BloomBadge:Update()
 	if not self.head_anim or not self.head_animstate then return end
 
 	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())

@@ -12,16 +12,12 @@ local _Bloomness = Class(function(self, inst)
 
 	self.rate = 1
 	self.fertilizer = 0
-	--self.inst:StartUpdatingComponent(self)
 end)
 
 function _Bloomness:SetLevel(level)
-	--self.level = GLOBAL.RoundBiasedUp(Remap(self.inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3))
 	level = math.min(level, self.max)
 	if self.level == level then
 		return
-	--else
-	--	print("MISMATCH: " .. tostring(level) .. " " .. tostring(self.level))
 	end
 
 	self.fertilizer = 0
@@ -39,11 +35,9 @@ function _Bloomness:SetLevel(level)
 		self.level = level
 
 		if level == self.max then
-			--self.timer = self.timer + self.full_bloom_duration
 			self.timer = self.full_bloom_duration
 			self.max_timer = self.full_bloom_duration
 		else
-			--self.timer = self.timer + self.stage_duration
 			self.timer = self.stage_duration
 			self.max_timer = self.stage_duration
 		end
@@ -63,7 +57,6 @@ function _Bloomness:SetDurations(stage, full)
 end
 
 function _Bloomness:GetLevel()
-	--return GLOBAL.RoundBiasedUp(Remap(self.inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3))
 	return self.level
 end
 
@@ -77,8 +70,7 @@ function _Bloomness:Fertilize(value)
 	value = value or 0
 
 	if self.level == self.max then
-		self.timer = self.calcfullbloomdurationfn ~= nil and self.calcfullbloomdurationfn(self.inst, value, self.timer, self.full_bloom_duration) or self.timer
-		--self.timer = math.min(self.timer + value, self.full_bloom_duration + value)
+		self:DoDelta((self.calcfullbloomdurationfn ~= nil and self.calcfullbloomdurationfn(self.inst, value, self.timer, self.full_bloom_duration) or self.timer) - self.timer)
 		self:UpdateRate()
 	else
 		if self.level == 0 then
@@ -96,27 +88,7 @@ function _Bloomness:Fertilize(value)
 end
 
 function _Bloomness:OnUpdate(dt)
-	local oldval = self.timer
-	self.timer = self.timer - dt * self.rate
-	--self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = 480, stuck = false, jump = false })
-	local max = self.level == self.max and TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION or self.stage_duration
-	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = max, stuck = false, jump = false, is_blooming = self.is_blooming })
-
-	--self.inst:PushEvent("chargechange", { oldval = oldval, newval = self.charge, max = self.max_charge, stuck = stuck, jump = jump })
-	--[[
-	if self.timer <= 0 then
-		if self.is_blooming then
-			self:SetLevel(self.level + 1)
-		else
-			self:SetLevel(self.level - 1)
-
-			if self.level == 0 then
-				self.timer = 0
-				self.inst:StopUpdatingComponent(self)
-			end
-		end
-	end
-	--]]
+	self:DoDelta(-dt * self.rate)
 end
 
 function _Bloomness:LongUpdate(dt)
@@ -130,6 +102,7 @@ function _Bloomness:Save()
 	return self.level > 0 and {
 		level = self.level,
 		timer = self.timer,
+		max_timer = self.max_timer,
 		rate = self.rate,
 		is_blooming = self.is_blooming,
 		fertilizer = self.fertilizer,
@@ -139,6 +112,7 @@ end
 function _Bloomness:Load(data)
 	if data ~= nil then
 		self.timer = data.timer or 0
+		self.max_timer = data.max_timer or 0
 		self.rate = data.rate or 1
 		self.is_blooming = data.is_blooming or false
 		self.fertilizer = data.fertilizer or 0
@@ -151,6 +125,12 @@ function _Bloomness:Load(data)
 			self.inst:StopUpdatingComponent(self)
 		end
 	end
+end
+
+function _Bloomness:DoDelta(amount)
+	local oldval = self.timer
+	self.timer = self.timer + amount
+	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = self.max_timer, rate = self.rate, is_blooming = self.is_blooming })
 end
 
 function _Bloomness:GetDebugString()

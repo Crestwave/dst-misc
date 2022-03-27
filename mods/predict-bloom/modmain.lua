@@ -54,10 +54,6 @@ local function SyncBloomStage(inst, force)
 			inst.components._bloomness:Fertilize()
 		end
 
-		if level == 0 then
-			badge:Hide()
-		end
-
 		if stage > level then
 			badge:PulseGreen()
 		elseif stage < level then
@@ -187,13 +183,13 @@ if GetModConfigData("meter") then
 	AddClassPostConstruct("widgets/statusdisplays", function(self)
 		if not self.owner or self.owner.prefab ~= "wormwood" then return end
 		
-		self.UpdateBoatBloomPosition = function(self) -- Bloom badge is at the top. Boat badge goes as high as possible.
+		self.UpdateBoatBloomPosition = function(self)
 			if not self.boatmeter then return end
 			
-			if HAS_MOD.COMBINED_STATUS then -- Values based off combined status
-				if self.bloom.shown then self.boatmeter:SetPosition(-62, -139) -- temp position until status announcements is updated
-				else self.boatmeter:SetPosition(-62, -52) end -- temp position until status announcements is updated
-			else -- values based off defaults 
+			if HAS_MOD.COMBINED_STATUS then
+				if self.bloom.shown then self.boatmeter:SetPosition(-62, -139)
+				else self.boatmeter:SetPosition(-62, -52) end
+			else
 				if self.bloom.shown then self.boatmeter:SetPosition(-80, -113)
 				else self.boatmeter:SetPosition(-80, -40) end
 			end
@@ -201,42 +197,22 @@ if GetModConfigData("meter") then
 		
 		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
 		self.bloom:SetPosition(-80, -40)
+		self.bloom:Hide()
 		self._custombadge = self.bloom
 		
-		self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
-		self.inst:ListenForEvent("bloomdelta", self.onchargedelta, self.owner)
-		
-		function self:SetChargePercent(val, max, stuck)
-			if _G.ThePlayer.components._bloomness ~= nil then
-				self.bloom:SetPercent(val, max, _G.ThePlayer.components._bloomness.rate, _G.ThePlayer.components._bloomness.is_blooming)
-			else
-				self.bloom:SetPercent(val, max, nil)
-			end
-		end
-	
-		function self:ChargeDelta(data)
+		self.onbloomdelta = function(owner, data) self:BloomDelta(data) end
+		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
+
+		function self:BloomDelta(data)
 			if not self.bloom.shown then
 				self.bloom:Show()
 			end
-			self:SetChargePercent(data.newval, data.max, data.stuck)
+
+			self.bloom:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			
-			if data.jump then
-				self.bloom:PulseRed()
-				
-				if self.owner then
-					self.owner.SoundEmitter:PlaySound("dontstarve/characters/wx78/levelup")
-				end
-			end
-			
-			if data.newval <= 0 then
-				--self.bloom:Hide()
-			elseif data.newval > data.oldval then
-				--[[
-				if not self.bloom.shown then
-					self.bloom:Show()
-				end
-				--]]
-				
+			if data.newval <= 0 and not data.is_blooming then
+				self.bloom:Hide()
+			elseif (data.newval - data.oldval) > 3 then
 				self.bloom:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
@@ -254,7 +230,7 @@ if GetModConfigData("meter") then
 			old_SetGhostMode(self, ghostmode)
 		end
 		
-		if self.boatmeter then -- Lazy way to make the boatmeter look good with the charge
+		if self.boatmeter then
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
 			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatBloomPosition() end)
