@@ -279,10 +279,12 @@ if GetModConfigData("meter") then
 			if maincharacter.prefab == "wormwood" then
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Feeling droopy." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Droopy." } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_4 = { BLOOM = { ANY = "Need smelly stuff." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_5 = { BLOOM = { ANY = "Feeling droopy." } }
 
 				self.inst:DoTaskInTime(0, function()
 					if self._StatusAnnouncer then
@@ -297,7 +299,12 @@ if GetModConfigData("meter") then
 										self.controls.status._custombadge.max
 							end,
 							function(ThePlayer)
-								return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
+								local level = ThePlayer.components._bloomness:GetLevel()
+								if (level == 1 or level == 2) and not ThePlayer.components._bloomness.is_blooming then
+									level = level + 3
+								end
+
+								return	"STAGE_" .. level
 							end
 						)
 					end
