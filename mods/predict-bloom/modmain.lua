@@ -187,7 +187,7 @@ if GetModConfigData("meter") then
 	AddClassPostConstruct("widgets/statusdisplays", function(self)
 		if not self.owner or self.owner.prefab ~= "wormwood" then return end
 		
-		self.UpdateBoatChargePosition = function(self) -- Charge badge is at the top. Boat badge goes as high as possible.
+		self.UpdateBoatBloomPosition = function(self) -- Bloom badge is at the top. Boat badge goes as high as possible.
 			if not self.boatmeter then return end
 			
 			if HAS_MOD.COMBINED_STATUS then -- Values based off combined status
@@ -256,11 +256,11 @@ if GetModConfigData("meter") then
 		
 		if self.boatmeter then -- Lazy way to make the boatmeter look good with the charge
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
-			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatChargePosition() end)
-			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatChargePosition() end)
-			self.bloom.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
-			self.bloom.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
-			self:UpdateBoatChargePosition()
+			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
+			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatBloomPosition() end)
+			self.bloom.OnHide = function(self) self.owner:UpdateBoatBloomPosition() end
+			self.bloom.OnShow = function(self) self.owner:UpdateBoatBloomPosition() end
+			self:UpdateBoatBloomPosition()
 		end
 		
 		if HAS_MOD.COMBINED_STATUS then
