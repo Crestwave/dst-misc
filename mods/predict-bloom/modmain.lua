@@ -276,31 +276,33 @@ if GetModConfigData("meter") then
 		local PlayerHud_SetMainCharacter = PlayerHud.SetMainCharacter
 		function PlayerHud:SetMainCharacter(maincharacter, ...)
 			PlayerHud_SetMainCharacter(self, maincharacter, ...)
-			self.inst:DoTaskInTime(0, function()
-				if self._StatusAnnouncer and maincharacter.prefab == "wormwood" then
-					_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
-					_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
-					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Feeling droopy." } }
-					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
-					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
-					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
-	
-					self._StatusAnnouncer:RegisterStat(
-						"Bloom",
-						self.controls.status._custombadge,
-						_G.CONTROL_ROTATE_LEFT,
-						{},
-						{"ANY"},
-						function(ThePlayer)
-							return	self.controls.status._custombadge.val,
-									self.controls.status._custombadge.max
-						end,
-						function(ThePlayer)
-							return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
-						end
-					)
-				end
-			end)
+			if maincharacter.prefab == "wormwood" then
+				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
+				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Feeling droopy." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
+
+				self.inst:DoTaskInTime(0, function()
+					if self._StatusAnnouncer then
+						self._StatusAnnouncer:RegisterStat(
+							"Bloom",
+							self.controls.status._custombadge,
+							_G.CONTROL_ROTATE_LEFT,
+							{},
+							{"ANY"},
+							function(ThePlayer)
+								return	self.controls.status._custombadge.val,
+										self.controls.status._custombadge.max
+							end,
+							function(ThePlayer)
+								return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
+							end
+						)
+					end
+				end)
+			end
 		end
 	end
 end
