@@ -24,8 +24,8 @@ function _Bloomness:SetLevel(level)
 
 	if level == 0 then
 		self.level = 0
-		self.timer = 0
 		self.is_blooming = false
+		self:DoDelta(-self.timer)
 		self:UpdateRate()
 		self.inst:StopUpdatingComponent(self)
 	else
@@ -36,7 +36,7 @@ function _Bloomness:SetLevel(level)
 
 		if level == self.max then
 			self.timer = self.full_bloom_duration
-			self.max_timer = self.full_bloom_duration
+			self.max_timer = TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION
 		else
 			self.timer = self.stage_duration
 			self.max_timer = self.stage_duration
@@ -130,7 +130,7 @@ end
 function _Bloomness:DoDelta(amount)
 	local oldval = self.timer
 	self.timer = self.timer + amount
-	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = self.max_timer, rate = self.rate, is_blooming = self.is_blooming })
+	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = self.max_timer, rate = self.rate, is_blooming = self.is_blooming, level = self.level })
 end
 
 function _Bloomness:GetDebugString()

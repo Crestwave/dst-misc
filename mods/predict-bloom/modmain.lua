@@ -210,7 +210,7 @@ if GetModConfigData("meter") then
 
 			self.bloom:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			
-			if data.newval <= 0 and not data.is_blooming then
+			if data.level == 0 then
 				self.bloom:Hide()
 			elseif (data.newval - data.oldval) > 3 then
 				self.bloom:PulseGreen()
