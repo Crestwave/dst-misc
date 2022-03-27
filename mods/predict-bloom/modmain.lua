@@ -117,6 +117,10 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
 
+			inst:ListenForEvent("dressedup", function(inst, data)
+				_G.bb:Update()
+			end)
+
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
 					_G.ThePlayer.components._bloomness:SetLevel(0)
@@ -145,20 +149,22 @@ AddPlayerPostInit(function(inst)
 	end)
 end)
 
-_G.ww_debug = function(delete)
+_G.ww_debug = function(delete, sync)
 	if BloomSaver then
 		BloomSaver:PrintDebugInfo(delete)
 	end
 	if _G.ThePlayer.components._bloomness then
 		print(_G.ThePlayer.components._bloomness:GetDebugString())
 	end
+
+	if sync then
+		SyncBloomStage(_G.ThePlayer)
+	end
 end
 
 -- Mod compatibility stuff by rezecib (https://steamcommunity.com/profiles/76561198025931302)
 local CHECK_MODS = {
 	["workshop-376333686"] = "COMBINED_STATUS",
-	["workshop-1583765151"] = "VICTORIAN_HUD",
-	["workshop-1824509831"] = "FORGE_HUD",
 	["workshop-343753877"] = "STATUS_ANNOUNCEMENTS",
 }
 local HAS_MOD = {}
@@ -315,6 +321,79 @@ if GetModConfigData("meter") then
 			self.charge.num:SetSize(25)
 			--self.charge.num:SetScale(1,.78,1)
 			self.charge.num:SetScale(1,.9,1)
+			self.charge.num:SetPosition(3, 3)
 		end
 	end)
 end
+
+
+
+--[[
+if HAS_MOD.STATUS_ANNOUNCEMENTS then
+	AddPrefabPostInit("world", function()
+		local StatusAnnouncer = require("statusannouncer")
+		
+		local S = _G.STRINGS._STATUS_ANNOUNCEMENTS
+		S._.STAT_NAMES.Charge = "Charge"
+		S._.STAT_EMOJI.Charge = "lightbulb"
+		S.WX78.CHARGE = {
+			FULL = "POWER STATUS: OVERLOADED",
+			HIGH = "POWER STATUS: SUFFICIENT",
+			MID = "POWER STATUS: DRAINING",
+			LOW = "POWER STATUS: NEAR DEPLETION",
+			EMPTY = "POWER STATUS: CONCERNING",
+			DYING = "POWER STATUS: DYING",
+			STUCK = "POWER STATUS: AWAITING DEMISE",
+		}
+		S.UNKNOWN.CHARGE = { -- no one else should have charge
+			FULL = "Fully charged.",
+			HIGH = "Highly charged.",
+			MID = "Roughly half charged.",
+			LOW = "Slightly charged.",
+			EMPTY = "Barely charged.",
+			DYING = "Lights fading, limbs growing cold.",
+			STUCK = "Charge unknown. At least a minute remains.",
+		}
+		
+		--                     {"STUCK",  "DYING",  "EMPTY",  "LOW",  "MID",  "HIGH",  "FULL"}
+		local realthresholds = {         0,        0,      .15,    .35,     .55,    .75,     }
+		local thresholds = {}
+		local metatable = { __index = function(_, key)
+			if not _G.ThePlayer or not _G.ThePlayer.components._bloomness then return 1 end 
+			local charge = _G.ThePlayer.components._bloomness.timer
+			
+			if key == 1 and charge == 60 then
+				return 1
+			elseif key == 2 and charge < 60 then
+				return 1
+			else
+				return realthresholds[key]
+			end
+		end}
+		_G.setmetatable(thresholds, metatable)
+		
+		-- Status Announcements clears stats before calling RegisterCommonStats, so we hijack RegisterCommonStats.
+		local old_RegisterCommonStats = StatusAnnouncer.RegisterCommonStats
+		StatusAnnouncer.RegisterCommonStats = function(self, HUD, prefab, hunger, sanity, health, moisture, beaverness, ...)
+			old_RegisterCommonStats(self, HUD, prefab, hunger, sanity, health, moisture, beaverness, ...)
+			
+			-- This is kinda lazy however ThePlayer is nil at this point, we can't check if we have the charge component.
+			if prefab == "wormwood" then
+				self:RegisterStat(
+					"Charge",
+					HUD.controls.status.charge,
+					_G.CONTROL_ROTATE_LEFT, -- Left Bumper, same as log meter
+					thresholds,
+				  --{       1/0,      1/0,      .15,    .35,     .55,    .75,     }
+					{"STUCK",  "DYING",  "EMPTY",  "LOW",  "MID",  "HIGH",  "FULL"},
+					function(ThePlayer)
+						return	ThePlayer.components._bloomness.timer,
+								ThePlayer.components._bloomness.max
+					end,
+					nil
+				)
+			end
+		end
+	end)
+end
+--]]

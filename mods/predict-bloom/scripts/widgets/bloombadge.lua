@@ -41,6 +41,7 @@ local BloomBadge = Class(Badge, function(self, owner, combined_status)
 	self.anim:Show()
 	self.backing:GetAnimState():PlayAnimation("open")
 	self.circleframe:GetAnimState():PlayAnimation("open")
+	self.circleframe:MoveToFront()
 
 	if self.combined_status then
 		self.bg:MoveToFront()
