@@ -6,6 +6,7 @@ local _Bloomness = Class(function(self, inst)
 	self.onlevelchangedfn = nil
 
 	self.timer = 0
+	self.max_timer = 0
 	self.stage_duration = 0
 	self.full_bloom_duration = 0
 
@@ -40,9 +41,11 @@ function _Bloomness:SetLevel(level)
 		if level == self.max then
 			--self.timer = self.timer + self.full_bloom_duration
 			self.timer = self.full_bloom_duration
+			self.max_timer = self.full_bloom_duration
 		else
 			--self.timer = self.timer + self.stage_duration
 			self.timer = self.stage_duration
+			self.max_timer = self.stage_duration
 		end
 
 		self:UpdateRate()
@@ -85,6 +88,7 @@ function _Bloomness:Fertilize(value)
 		if not self.is_blooming then
 			self.is_blooming = true
 			self.timer = self.stage_duration
+			self.max_timer = self.stage_duration
 		end
 		self.fertilizer = self.fertilizer + value
 		self:UpdateRate()

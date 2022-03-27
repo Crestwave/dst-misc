@@ -4,7 +4,9 @@ local UIAnim = require "widgets/uianim"
 local BloomBadge = Class(Badge, function(self, owner, combined_status)
 	self.owner = owner
 	self.combined_status = combined_status or false
+	self.max = 0
 	self.rate = nil
+	self.val = 0
 
 	Badge._ctor(self, nil, owner, { 0 / 255, 127 / 255, 0 / 255, 1 })
 
@@ -54,6 +56,9 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 		val = max - val
 	end
 
+	self.val = val
+	self.max = max
+
 	self.anim:GetAnimState():SetPercent("anim", 1 - val / max)
 	Badge.SetPercent(self, (val / max), max)
 
@@ -69,7 +74,7 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 	end
 end
 
-function BloomBadge:Update()
+function BloomBadge:Update(stage)
 	if not self.head_anim or not self.head_animstate then return end
 
 	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())

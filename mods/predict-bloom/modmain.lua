@@ -51,9 +51,7 @@ local function SyncBloomStage(inst, force)
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
 	if stage ~= level or force then
-		--local timer = inst.components._bloomness.timer
 		inst.components._bloomness:SetLevel(stage)
-		--inst.components._bloomness.timer = inst.components._bloomness.timer - timer
 		if _G.TheWorld.state.isspring then
 			inst.components._bloomness:Fertilize()
 		end
@@ -66,7 +64,6 @@ end
 
 local function OnBloomFXDirty(inst)
 	inst:DoTaskInTime(1, SyncBloomStage, true)
-		--inst.components._bloomness:SetLevel(_G.RoundBiasedUp(_G.Remap(inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED, 1, 1.2, 0, 3)))
 end
 
 local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
@@ -103,7 +100,7 @@ end
 
 AddPlayerPostInit(function(inst)
 	inst:DoTaskInTime(0, function(inst)
-		if inst == _G.ThePlayer and inst:HasTag("self_fertilizable") and inst.player_classified ~= nil then
+		if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
 			inst:AddComponent("_bloomness")
 			inst.components._bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
 			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
@@ -116,10 +113,6 @@ AddPlayerPostInit(function(inst)
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
-
-			inst:ListenForEvent("dressedup", function(inst, data)
-				_G.bb:Update()
-			end)
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
@@ -188,53 +181,39 @@ if GetModConfigData("meter") then
 			if not self.boatmeter then return end
 			
 			if HAS_MOD.COMBINED_STATUS then -- Values based off combined status
-				if self.charge.shown then self.boatmeter:SetPosition(-62, -139) -- temp position until status announcements is updated
+				if self.bloom.shown then self.boatmeter:SetPosition(-62, -139) -- temp position until status announcements is updated
 				else self.boatmeter:SetPosition(-62, -52) end -- temp position until status announcements is updated
-				--print("BOAT METER")
-				--print(self.charge.shown)
-				--self.boatmeter:SetPosition(-62, -139)
-				--self.boatmeter:SetPosition(-62, -139)
 			else -- values based off defaults 
-				--print("BOAT METER 2")
-				--print(self.charge.shown)
-				if self.charge.shown then self.boatmeter:SetPosition(-80, -113)
+				if self.bloom.shown then self.boatmeter:SetPosition(-80, -113)
 				else self.boatmeter:SetPosition(-80, -40) end
 			end
 		end
 		
-		--self.charge = self:AddChild(BloomBadge(self, MOD_SETTINGS.FORMAT_CHARGE))
-		--self.charge = self:AddChild(BloomBadge(self, "hour"))
-		--self.charge = self:AddChild(BloomBadge(self, "second"))
-		self.charge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
-		--self.charge.combined_status = HAS_MOD.COMBINED_STATUS
-		_G.bb = self.charge
-		self.charge:SetPosition(-80, -40)
-		--self.charge:Hide()
-		self.charge:Show()
+		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
+		self._custombadge = self.bloom
+		_G.bb = self.bloom
+		self.bloom:SetPosition(-80, -40)
+		self.bloom:Show()
 		
-		--self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
-		--self.inst:ListenForEvent("chargechange", self.onchargedelta, self.owner)
 		self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
 		self.inst:ListenForEvent("bloomdelta", self.onchargedelta, self.owner)
 		
 		function self:SetChargePercent(val, max, stuck)
 			if _G.ThePlayer.components._bloomness ~= nil then
-				self.charge:SetPercent(val, max, _G.ThePlayer.components._bloomness.rate, _G.ThePlayer.components._bloomness.is_blooming)
+				self.bloom:SetPercent(val, max, _G.ThePlayer.components._bloomness.rate, _G.ThePlayer.components._bloomness.is_blooming)
 			else
-				self.charge:SetPercent(val, max, nil)
+				self.bloom:SetPercent(val, max, nil)
 			end
 		end
 	
-		--self:SetChargePercent(100, 100, false)
-		
 		function self:ChargeDelta(data)
-			if not self.charge.shown then
-				self.charge:Show()
+			if not self.bloom.shown then
+				self.bloom:Show()
 			end
 			self:SetChargePercent(data.newval, data.max, data.stuck)
 			
 			if data.jump then
-				self.charge:PulseRed()
+				self.bloom:PulseRed()
 				
 				if self.owner then
 					self.owner.SoundEmitter:PlaySound("dontstarve/characters/wx78/levelup")
@@ -242,15 +221,15 @@ if GetModConfigData("meter") then
 			end
 			
 			if data.newval <= 0 then
-				--self.charge:Hide()
+				--self.bloom:Hide()
 			elseif data.newval > data.oldval then
 				--[[
-				if not self.charge.shown then
-					self.charge:Show()
+				if not self.bloom.shown then
+					self.bloom:Show()
 				end
 				--]]
 				
-				self.charge:PulseGreen()
+				self.bloom:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
 		end
@@ -260,8 +239,8 @@ if GetModConfigData("meter") then
 			if not self.isghostmode == not ghostmode then
 				-- pass on to old_SetGhostMode
 			elseif ghostmode then
-				self.charge:Hide()
-				self.charge:StopWarning()
+				self.bloom:Hide()
+				self.bloom:StopWarning()
 			end
 			
 			old_SetGhostMode(self, ghostmode)
@@ -269,39 +248,22 @@ if GetModConfigData("meter") then
 		
 		if self.boatmeter then -- Lazy way to make the boatmeter look good with the charge
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
-			print(self.boatmeter.inst)
-			print(self.inst)
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatChargePosition() end)
 			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatChargePosition() end)
-			--self.boatmeter.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
-			--self.boatmeter.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
-			self.charge.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
-			self.charge.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
+			self.bloom.OnHide = function(self) self.owner:UpdateBoatChargePosition() end
+			self.bloom.OnShow = function(self) self.owner:UpdateBoatChargePosition() end
 			self:UpdateBoatChargePosition()
 		end
 		
 		if HAS_MOD.COMBINED_STATUS then
-			self.charge:SetPosition(-62, -52)
-		
-				--self.charge.bg:SetScale(.5, .7, 0)
-				--self.charge.bg:SetPosition(-.5, -40, 0)
-				--self.charge.num:SetPosition(2, -40.5, 0)
-			--badges[self.charge] = self.charge
-			--self.charge.rate = self.charge.bg:AddChild(Text(_G.NUMBERFONT, SHOWMAXONNUMBERS and 25 or 33))
-			self.charge.rate = self.charge:AddChild(Text(_G.NUMBERFONT, 28))
-			self.charge.rate:SetPosition(2, -40.5, 0)
-			--self.charge.rate:SetSize(25)
-			--self.charge.rate:SetPosition(6, 0, 0)
-			self.charge.rate:MoveToFront()
-			self.charge.rate:Hide()
-			self.charge.rate:SetScale(1,.78,1)
-			self.charge.rate:MoveToFront()
+			self.bloom:SetPosition(-62, -52)
+			self.bloom.rate = self.bloom:AddChild(Text(_G.NUMBERFONT, 28))
+			self.bloom.rate:SetPosition(2, -40.5, 0)
+			self.bloom.rate:SetScale(1,.78,1)
+			self.bloom.rate:Hide()
 			
-			if self.maxnum then
-				self.maxnum:MoveToFront()
-			end
-			local OldOnGainFocus = self.charge.OnGainFocus
-			function self.charge:OnGainFocus()
+			local OldOnGainFocus = self.bloom.OnGainFocus
+			function self.bloom:OnGainFocus()
 				OldOnGainFocus(self)
 				self.num:Hide()
 				if self.active then
@@ -309,8 +271,8 @@ if GetModConfigData("meter") then
 				end
 			end
 		
-			local OldOnLoseFocus = self.charge.OnLoseFocus
-			function self.charge:OnLoseFocus()
+			local OldOnLoseFocus = self.bloom.OnLoseFocus
+			function self.bloom:OnLoseFocus()
 				OldOnLoseFocus(self)
 				self.rate:Hide()
 				if self.active then
@@ -318,82 +280,43 @@ if GetModConfigData("meter") then
 				end
 			end
 		else
-			self.charge.num:SetSize(25)
-			--self.charge.num:SetScale(1,.78,1)
-			self.charge.num:SetScale(1,.9,1)
-			self.charge.num:SetPosition(3, 3)
+			self.bloom.num:SetSize(25)
+			self.bloom.num:SetScale(1,.9,1)
+			self.bloom.num:SetPosition(3, 3)
 		end
 	end)
 end
 
 
 
---[[
 if HAS_MOD.STATUS_ANNOUNCEMENTS then
-	AddPrefabPostInit("world", function()
-		local StatusAnnouncer = require("statusannouncer")
-		
-		local S = _G.STRINGS._STATUS_ANNOUNCEMENTS
-		S._.STAT_NAMES.Charge = "Charge"
-		S._.STAT_EMOJI.Charge = "lightbulb"
-		S.WX78.CHARGE = {
-			FULL = "POWER STATUS: OVERLOADED",
-			HIGH = "POWER STATUS: SUFFICIENT",
-			MID = "POWER STATUS: DRAINING",
-			LOW = "POWER STATUS: NEAR DEPLETION",
-			EMPTY = "POWER STATUS: CONCERNING",
-			DYING = "POWER STATUS: DYING",
-			STUCK = "POWER STATUS: AWAITING DEMISE",
-		}
-		S.UNKNOWN.CHARGE = { -- no one else should have charge
-			FULL = "Fully charged.",
-			HIGH = "Highly charged.",
-			MID = "Roughly half charged.",
-			LOW = "Slightly charged.",
-			EMPTY = "Barely charged.",
-			DYING = "Lights fading, limbs growing cold.",
-			STUCK = "Charge unknown. At least a minute remains.",
-		}
-		
-		--                     {"STUCK",  "DYING",  "EMPTY",  "LOW",  "MID",  "HIGH",  "FULL"}
-		local realthresholds = {         0,        0,      .15,    .35,     .55,    .75,     }
-		local thresholds = {}
-		local metatable = { __index = function(_, key)
-			if not _G.ThePlayer or not _G.ThePlayer.components._bloomness then return 1 end 
-			local charge = _G.ThePlayer.components._bloomness.timer
-			
-			if key == 1 and charge == 60 then
-				return 1
-			elseif key == 2 and charge < 60 then
-				return 1
-			else
-				return realthresholds[key]
-			end
-		end}
-		_G.setmetatable(thresholds, metatable)
-		
-		-- Status Announcements clears stats before calling RegisterCommonStats, so we hijack RegisterCommonStats.
-		local old_RegisterCommonStats = StatusAnnouncer.RegisterCommonStats
-		StatusAnnouncer.RegisterCommonStats = function(self, HUD, prefab, hunger, sanity, health, moisture, beaverness, ...)
-			old_RegisterCommonStats(self, HUD, prefab, hunger, sanity, health, moisture, beaverness, ...)
-			
-			-- This is kinda lazy however ThePlayer is nil at this point, we can't check if we have the charge component.
-			if prefab == "wormwood" then
-				self:RegisterStat(
-					"Charge",
-					HUD.controls.status.charge,
-					_G.CONTROL_ROTATE_LEFT, -- Left Bumper, same as log meter
-					thresholds,
-				  --{       1/0,      1/0,      .15,    .35,     .55,    .75,     }
-					{"STUCK",  "DYING",  "EMPTY",  "LOW",  "MID",  "HIGH",  "FULL"},
+	local PlayerHud = require("screens/playerhud")
+	local PlayerHud_SetMainCharacter = PlayerHud.SetMainCharacter
+	function PlayerHud:SetMainCharacter(maincharacter, ...)
+		PlayerHud_SetMainCharacter(self, maincharacter, ...)
+		self.inst:DoTaskInTime(0, function()
+			if self._StatusAnnouncer and maincharacter.prefab == "wormwood" then
+				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
+				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
+
+				self._StatusAnnouncer:RegisterStat(
+					"Bloom",
+					self.controls.status._custombadge,
+					_G.CONTROL_ROTATE_LEFT,
+					{},
+					{"ANY"},
 					function(ThePlayer)
-						return	ThePlayer.components._bloomness.timer,
-								ThePlayer.components._bloomness.max
+						return	self.controls.status._custombadge.val,
+								self.controls.status._custombadge.max
 					end,
-					nil
+					function(ThePlayer)
+						return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
+					end
 				)
 			end
-		end
-	end)
+		end)
+	end
 end
---]]
