@@ -1,112 +1,65 @@
 local Badge = require "widgets/badge"
-local Image = require "widgets/image"
+local UIAnim = require "widgets/uianim"
 
-local BloomBadge = Class(Badge, function(self, owner, text_format)
-    Badge._ctor(self, "charge_meter", owner)
+local BloomBadge = Class(Badge, function(self, owner)
 	self.owner = owner
-	
-	--[[
-	self.bg_stuck = self:AddChild(Image("images/charge_meter_stuck_bg.xml", "charge_meter_stuck_bg.tex"))
-	self.bg_stuck:SetClickable(false)
-	self.bg_stuck:MoveToBack()
-	self.bg_stuck:Hide()
-	--]]
-	
-	self.text_format = text_format
-	self.day_format = string.find(self.text_format, "day")
+	self.combined_status = false
+	self.rate = nil
 
-	if self.day_format and TUNING.TOTAL_DAY_TIME < 60 * 10 then
-		self.leading_zero = false
-	else
-		self.leading_zero = true
-	end
+	Badge._ctor(self, nil, owner, { 174 / 255, 21 / 255, 21 / 255, 1 }, "status_health", nil, nil, true)
+
+	self.head_anim = self:AddChild(UIAnim())
+	self.head_animstate = self.head_anim:GetAnimState()
+
+	self.head_anim:SetScale(.15)
+	self.head_anim:SetPosition(0, -35)
+	self.head_anim:SetClickable(false)
 end)
 
-function BloomBadge:SetPercent(val, max, stuck, rate)
-	local str = "0"
-		
-	--[[
-	if stuck then
-		if not self.bg_stuck.shown then
-			self.bg_stuck:Show()
-		end
-	elseif self.bg_stuck.shown then
-		self.bg_stuck:Hide()
-	end
-	--]]
-	
-	if max > 0 then
-		Badge.SetPercent(self, (val / max), max)
-		
-		local days = "0"
-		local minutes = "0"
-		local seconds = "0"
-		
-		if stuck then
-			if self.text_format == "second" then
-				--str = ">60"
-				str = val
-			else
-				str = ">1:00"
-			end
-		else
-			if self.day_format then
-				days = tostring(math.floor(val / TUNING.TOTAL_DAY_TIME))
-				minutes = tostring(math.floor((val % TUNING.TOTAL_DAY_TIME) / 60))
-				seconds = tostring(math.floor((val % TUNING.TOTAL_DAY_TIME) % 60))
-			elseif self.text_format == "hour" then
-				days = tostring(math.floor(val / 3600))
-				minutes = tostring(math.floor((val % 3600) / 60))
-				seconds = tostring(math.floor((val % 3600) % 60))
-			elseif self.text_format == "minute" then
-				minutes = tostring(math.floor(val / 60))
-				seconds = tostring(math.floor(val % 60))
-			else
-				seconds = tostring(math.floor(val))
-			end
-			
-			str = days
-			
-			if str ~= "0" then
-				if string.len(minutes) < 2 and self.leading_zero then
-					minutes = "0"..minutes
-				end
-				
-				if self.text_format == "daydash" then
-					str = str.."d-"..minutes
-				else
-					str = str..":"..minutes
-				end
-			else
-				str = minutes
-			end
-			
-			if str ~= "0" then
-				if string.len(seconds) < 2 then
-					seconds = "0"..seconds
-				end
-				
-				str = str..":"..seconds
-			else
-				str = seconds
-			end
-		end
-	else
-		Badge.SetPercent(self, 0, max)
+function BloomBadge:SetPercent(val, max, rate, is_blooming)
+	if is_blooming then
+		val = max - val
 	end
 
-	--[[
-	if rate ~= nil then
-		str = string.format("%s\nx%.2f", str, rate)
+	Badge.SetPercent(self, (val / max), max)
+
+	if self.combined_status then
+		self.num:SetString(string.format("%d", val))
+		if self.rate ~= nil and rate ~= nil then
+			self.rate:SetString(string.format("%.2f", rate))
+		end
+	elseif rate ~= nil then
+		self.num:SetString(string.format("%d\nx%.2f", val, rate))
+	else
+		self.num:SetString(string.format("%d", val))
 	end
-	--]]
-	
-	--self.num:SetScale(1, .78, 1)
-	--self.num:SetSize(25)
-	--self.num:SetSize(23)
-	self.num:SetString(str)
-	if self.rate ~= nil and rate ~= nil then
-		self.rate:SetString(string.format("%.2f", rate))
+end
+
+function BloomBadge:Update()
+	if not self.head_anim or not self.head_animstate then return end
+
+	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())
+	local state = client.userflags
+	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData( client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
+
+	self.head_animstate:SetBank(bank)
+	self.head_animstate:PlayAnimation(animation, true)
+	self.head_animstate:SetTime(0)
+	self.head_animstate:Pause()
+
+	local skindata = GetSkinData(client.base_skin or client.prefab.."_none")
+	local base_build = client.prefab
+
+	if skindata.skins ~= nil then
+		base_build = skindata.skins[skin_mode]
+	end
+
+	SetSkinsOnAnim(self.head_animstate, client.prefab, base_build, {}, skin_mode)
+
+	if self.maxnum then
+		self.maxnum:MoveToFront()
+	else
+		self.num:MoveToFront()
 	end
 end
 

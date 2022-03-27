@@ -1,6 +1,7 @@
 local _G = GLOBAL
 local AutoSaveManager = require("autosavemanager")
 local BloomBadge = require("widgets/bloombadge")
+_G.bb = nil
 local Text = require("widgets/text")
 local BloomSaver
 
@@ -40,6 +41,9 @@ end
 
 local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
+	if _G.bb then
+		_G.bb:Update()
+	end
 end
 
 local function SyncBloomStage(inst, force)
@@ -192,7 +196,10 @@ if GetModConfigData("meter") then
 		
 		--self.charge = self:AddChild(BloomBadge(self, MOD_SETTINGS.FORMAT_CHARGE))
 		--self.charge = self:AddChild(BloomBadge(self, "hour"))
-		self.charge = self:AddChild(BloomBadge(self, "second"))
+		--self.charge = self:AddChild(BloomBadge(self, "second"))
+		self.charge = self:AddChild(BloomBadge(self))
+		self.charge.combined_status = HAS_MOD.COMBINED_STATUS
+		_G.bb = self.charge
 		self.charge:SetPosition(-80, -40)
 		--self.charge:Hide()
 		self.charge:Show()
@@ -204,9 +211,9 @@ if GetModConfigData("meter") then
 		
 		function self:SetChargePercent(val, max, stuck)
 			if _G.ThePlayer.components._bloomness ~= nil then
-				self.charge:SetPercent(val, max, stuck, _G.ThePlayer.components._bloomness.rate, _G.ThePlayer.components._bloomness.is_blooming)
+				self.charge:SetPercent(val, max, _G.ThePlayer.components._bloomness.rate, _G.ThePlayer.components._bloomness.is_blooming)
 			else
-				self.charge:SetPercent(val, max, stuck, nil)
+				self.charge:SetPercent(val, max, nil)
 			end
 		end
 	
@@ -281,6 +288,9 @@ if GetModConfigData("meter") then
 			self.charge.rate:Hide()
 			self.charge.rate:SetScale(1,.78,1)
 			
+			if self.maxnum then
+				self.maxnum:MoveToFront()
+			end
 			local OldOnGainFocus = self.charge.OnGainFocus
 			function self.charge:OnGainFocus()
 				OldOnGainFocus(self)
@@ -298,6 +308,10 @@ if GetModConfigData("meter") then
 					self.num:Show()
 				end
 			end
+		else
+			self.charge.num:SetSize(25)
+			--self.charge.num:SetScale(1,.78,1)
+			self.charge.num:SetScale(1,.9,1)
 		end
 	end)
 end
