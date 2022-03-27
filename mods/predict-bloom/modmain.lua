@@ -1,9 +1,7 @@
 local _G = GLOBAL
 local AutoSaveManager = require("autosavemanager")
 local BloomBadge = require("widgets/bloombadge")
-_G.bb = nil
-local Text = require("widgets/text")
-local BloomSaver
+local BloomSaver = nil
 
 local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
 	local season_mult = 1
@@ -41,25 +39,35 @@ end
 
 local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
-	if _G.bb then
-		_G.bb:Update()
-	end
+	inst.HUD.controls.status.bloom:Update()
 end
 
 local function SyncBloomStage(inst, force)
+	local badge = inst.HUD.controls.status.bloom
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
 	if stage ~= level or force then
 		inst.components._bloomness:SetLevel(stage)
+
 		if _G.TheWorld.state.isspring then
 			inst.components._bloomness:Fertilize()
+		end
+
+		if level == 0 then
+			badge:Hide()
+		end
+
+		if stage > level then
+			badge:PulseGreen()
+		elseif stage < level then
+			badge:PulseRed()
 		end
 	else
 		inst.components._bloomness:UpdateRate()
 	end
 
-	_G.bb:Update()
+	badge:Update()
 end
 
 local function OnBloomFXDirty(inst)
@@ -71,6 +79,7 @@ local act = false
 local active = false
 local fert = nil
 local _SendRPCToServer = _G.SendRPCToServer
+
 _G.SendRPCToServer = function(...)
 	arg = { ... }
 
@@ -130,7 +139,7 @@ AddPlayerPostInit(function(inst)
 						if val > 0 then
 							_G.ThePlayer.components._bloomness:Fertilize(val)
 						end
-						--act = false
+
 						if not active then
 							act = false
 							fert = nil
@@ -146,6 +155,7 @@ _G.ww_debug = function(delete, sync)
 	if BloomSaver then
 		BloomSaver:PrintDebugInfo(delete)
 	end
+
 	if _G.ThePlayer.components._bloomness then
 		print(_G.ThePlayer.components._bloomness:GetDebugString())
 	end
@@ -190,10 +200,8 @@ if GetModConfigData("meter") then
 		end
 		
 		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
-		self._custombadge = self.bloom
-		_G.bb = self.bloom
 		self.bloom:SetPosition(-80, -40)
-		self.bloom:Show()
+		self._custombadge = self.bloom
 		
 		self.onchargedelta = function(owner, data) self:ChargeDelta(data) end
 		self.inst:ListenForEvent("bloomdelta", self.onchargedelta, self.owner)
@@ -256,6 +264,7 @@ if GetModConfigData("meter") then
 		end
 		
 		if HAS_MOD.COMBINED_STATUS then
+			local Text = require("widgets/text")
 			self.bloom:SetPosition(-62, -52)
 			self.bloom.rate = self.bloom:AddChild(Text(_G.NUMBERFONT, 28))
 			self.bloom.rate:SetPosition(2, -40.5, 0)
@@ -285,38 +294,37 @@ if GetModConfigData("meter") then
 			self.bloom.num:SetPosition(3, 3)
 		end
 	end)
-end
 
-
-
-if HAS_MOD.STATUS_ANNOUNCEMENTS then
-	local PlayerHud = require("screens/playerhud")
-	local PlayerHud_SetMainCharacter = PlayerHud.SetMainCharacter
-	function PlayerHud:SetMainCharacter(maincharacter, ...)
-		PlayerHud_SetMainCharacter(self, maincharacter, ...)
-		self.inst:DoTaskInTime(0, function()
-			if self._StatusAnnouncer and maincharacter.prefab == "wormwood" then
-				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
-				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
-
-				self._StatusAnnouncer:RegisterStat(
-					"Bloom",
-					self.controls.status._custombadge,
-					_G.CONTROL_ROTATE_LEFT,
-					{},
-					{"ANY"},
-					function(ThePlayer)
-						return	self.controls.status._custombadge.val,
-								self.controls.status._custombadge.max
-					end,
-					function(ThePlayer)
-						return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
-					end
-				)
-			end
-		end)
+	if HAS_MOD.STATUS_ANNOUNCEMENTS then
+		local PlayerHud = require("screens/playerhud")
+		local PlayerHud_SetMainCharacter = PlayerHud.SetMainCharacter
+		function PlayerHud:SetMainCharacter(maincharacter, ...)
+			PlayerHud_SetMainCharacter(self, maincharacter, ...)
+			self.inst:DoTaskInTime(0, function()
+				if self._StatusAnnouncer and maincharacter.prefab == "wormwood" then
+					_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
+					_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
+					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Feeling droopy." } }
+					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
+					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
+					_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
+	
+					self._StatusAnnouncer:RegisterStat(
+						"Bloom",
+						self.controls.status._custombadge,
+						_G.CONTROL_ROTATE_LEFT,
+						{},
+						{"ANY"},
+						function(ThePlayer)
+							return	self.controls.status._custombadge.val,
+									self.controls.status._custombadge.max
+						end,
+						function(ThePlayer)
+							return	"STAGE_" .. ThePlayer.components._bloomness:GetLevel()
+						end
+					)
+				end
+			end)
+		end
 	end
 end
