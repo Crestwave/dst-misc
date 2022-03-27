@@ -60,6 +60,8 @@ local function SyncBloomStage(inst, force)
 	else
 		inst.components._bloomness:UpdateRate()
 	end
+
+	_G.bb:Update()
 end
 
 local function OnBloomFXDirty(inst)
@@ -197,8 +199,8 @@ if GetModConfigData("meter") then
 		--self.charge = self:AddChild(BloomBadge(self, MOD_SETTINGS.FORMAT_CHARGE))
 		--self.charge = self:AddChild(BloomBadge(self, "hour"))
 		--self.charge = self:AddChild(BloomBadge(self, "second"))
-		self.charge = self:AddChild(BloomBadge(self))
-		self.charge.combined_status = HAS_MOD.COMBINED_STATUS
+		self.charge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
+		--self.charge.combined_status = HAS_MOD.COMBINED_STATUS
 		_G.bb = self.charge
 		self.charge:SetPosition(-80, -40)
 		--self.charge:Hide()
@@ -287,6 +289,7 @@ if GetModConfigData("meter") then
 			self.charge.rate:MoveToFront()
 			self.charge.rate:Hide()
 			self.charge.rate:SetScale(1,.78,1)
+			self.charge.rate:MoveToFront()
 			
 			if self.maxnum then
 				self.maxnum:MoveToFront()
