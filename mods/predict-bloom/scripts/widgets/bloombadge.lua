@@ -6,7 +6,7 @@ local BloomBadge = Class(Badge, function(self, owner)
 	self.combined_status = false
 	self.rate = nil
 
-	Badge._ctor(self, nil, owner, { 174 / 255, 21 / 255, 21 / 255, 1 }, "status_health", nil, nil, true)
+	Badge._ctor(self, nil, owner, { 0 / 255, 127 / 255, 0 / 255, 1 })
 
 	self.head_anim = self:AddChild(UIAnim())
 	self.head_animstate = self.head_anim:GetAnimState()
