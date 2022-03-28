@@ -75,15 +75,15 @@ local function OnBloomFXDirty(inst)
 end
 
 AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
-	local _SendRPCToServer
+	local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
+	local _SendRPCToServer = nil
+	local act = false
+	local active = false
+	local fert = nil
 
 	AddPlayerPostInit(function(inst)
 		inst:DoTaskInTime(0, function(inst)
 			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
-				local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
-				local act = false
-				local active = false
-				local fert = nil
 
 				if _SendRPCToServer == nil then
 					_SendRPCToServer = _G.SendRPCToServer
@@ -118,7 +118,7 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 					local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
 					_G.POPUPS.WARDROBE.Close = function(...)
 						_CloseWardrobe(...)
-						if SyncBloomStage then
+						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
 							inst:DoTaskInTime(1, SyncBloomStage)
 						end
 					end
@@ -126,7 +126,7 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 					local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
 					_G.POPUPS.GIFTITEM.Close = function(...)
 						_CloseGiftItem(...)
-						if SyncBloomStage then
+						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
 							inst:DoTaskInTime(1, SyncBloomStage)
 						end
 					end
