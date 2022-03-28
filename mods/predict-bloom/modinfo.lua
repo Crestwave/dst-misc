@@ -1,7 +1,9 @@
 name = "Wormwood Bloom Predictor"
 author = "Crestwave"
 description = [[
-Predict Wormwood's bloom.
+Displays a bloom meter for Wormwood, allowing you to easily manage and maintain your bloom in any season.
+
+Compatible with Combined Status and Status Announcements.
 ]]
 
 version = "1.0"
