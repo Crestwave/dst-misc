@@ -114,6 +114,22 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 
 						_SendRPCToServer(...)
 					end
+
+					local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
+					_G.POPUPS.WARDROBE.Close = function(...)
+						_CloseWardrobe(...)
+						if SyncBloomStage then
+							inst:DoTaskInTime(1, SyncBloomStage)
+						end
+					end
+
+					local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
+					_G.POPUPS.GIFTITEM.Close = function(...)
+						_CloseGiftItem(...)
+						if SyncBloomStage then
+							inst:DoTaskInTime(1, SyncBloomStage)
+						end
+					end
 				end
 
 				inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
@@ -146,6 +162,14 @@ else
 					if self.inst.components._bloomness ~= nil then
 						self.inst.components._bloomness:Fertilize(value)
 						print("FERTILIZE SUCCESS: " ..tostring(value))
+					end
+				end
+
+				if inst.components.skinner ~= nil then
+					local _SetSkinMode = inst.components.skinner.SetSkinMode
+					inst.components.skinner.SetSkinMode = function(...)
+						_SetSkinMode(...)
+						SyncBloomStage(inst)
 					end
 				end
 			end
