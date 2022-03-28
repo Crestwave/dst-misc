@@ -74,38 +74,79 @@ local function OnBloomFXDirty(inst)
 	inst:DoTaskInTime(1, SyncBloomStage, true)
 end
 
-local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
-local act = false
-local active = false
-local fert = nil
-local _SendRPCToServer = _G.SendRPCToServer
+AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
+	local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
+	local act = false
+	local active = false
+	local fert = nil
+	local _SendRPCToServer = _G.SendRPCToServer
 
-_G.SendRPCToServer = function(...)
-	arg = { ... }
+	_G.SendRPCToServer = function(...)
+		arg = { ... }
 
-	if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
-		act = true
+		if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
+			act = true
 
-		if arg[1] == _G.RPC.LeftClick then
-			active = true
-			fert = _G.ThePlayer.replica.inventory:GetActiveItem()
-		elseif arg[1] == _G.RPC.UseItemFromInvTile then
-			fert = arg[3]
-		else
-			act = false
+			if arg[1] == _G.RPC.LeftClick then
+				active = true
+				fert = _G.ThePlayer.replica.inventory:GetActiveItem()
+			elseif arg[1] == _G.RPC.UseItemFromInvTile then
+				fert = arg[3]
+			else
+				act = false
+			end
+		elseif act then
+			if arg[1] == _G.RPC.InspectItemFromInvTile then
+				act = false
+			elseif arg[1] == _G.RPC.ClearActionHold then
+				active = false
+			elseif not active and not _G.ThePlayer:HasTag("busy") then
+				act = false
+			end
 		end
-	elseif act then
-		if arg[1] == _G.RPC.InspectItemFromInvTile then
-			act = false
-		elseif arg[1] == _G.RPC.ClearActionHold then
-			active = false
-		elseif not active and not _G.ThePlayer:HasTag("busy") then
-			act = false
-		end
+
+		_SendRPCToServer(...)
 	end
 
-	_SendRPCToServer(...)
-end
+	AddPlayerPostInit(function(inst)
+		inst:DoTaskInTime(0, function(inst)
+			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
+				inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
+					if inst.isperformactionsuccess:value() and act then
+						if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+							local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+
+							if val > 0 then
+								_G.ThePlayer.components._bloomness:Fertilize(val)
+								print("FERTILIZE SUCCESS: " ..tostring(val))
+							end
+
+							if not active then
+								act = false
+								fert = nil
+							end
+						end
+					end
+				end)
+			end
+		end)
+	end)
+else
+	AddPlayerPostInit(function(inst)
+		inst:DoTaskInTime(0, function(inst)
+			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
+				local _Fertilize = inst.components.bloomness.Fertilize
+				inst.components.bloomness.Fertilize = function(self, value)
+					_Fertilize(self, value)
+					if self.inst.components._bloomness ~= nil then
+						self.inst.components._bloomness:Fertilize(value)
+						print("FERTILIZE SUCCESS: " ..tostring(value))
+					end
+				end
+			end
+		end)
+	end)
+end end)
 
 AddPlayerPostInit(function(inst)
 	inst:DoTaskInTime(0, function(inst)
@@ -128,23 +169,6 @@ AddPlayerPostInit(function(inst)
 					_G.ThePlayer.components._bloomness:SetLevel(0)
 				elseif _G.TheWorld.state.isspring then
 					_G.ThePlayer.components._bloomness:Fertilize()
-				end
-			end)
-
-			inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
-				if inst.isperformactionsuccess:value() and act then
-					if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
-						local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
-						print("FERTILIZE SUCCESS: " ..tostring(val))
-						if val > 0 then
-							_G.ThePlayer.components._bloomness:Fertilize(val)
-						end
-
-						if not active then
-							act = false
-							fert = nil
-						end
-					end
 				end
 			end)
 		end
