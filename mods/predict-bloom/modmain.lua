@@ -39,11 +39,13 @@ end
 
 local function UpdateBloomStage(inst, stage)
 	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
-	inst.HUD.controls.status.bloom:Update()
+	if GetModConfigData("meter") then
+		inst.HUD.controls.status.bloom:Update()
+	end
 end
 
 local function SyncBloomStage(inst, force)
-	local badge = inst.HUD.controls.status.bloom
+	local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
@@ -54,16 +56,18 @@ local function SyncBloomStage(inst, force)
 			inst.components._bloomness:Fertilize()
 		end
 
-		if stage > level then
+		if badge ~= nil and stage > level then
 			badge:PulseGreen()
-		elseif stage < level then
+		elseif badge ~= nil and stage < level then
 			badge:PulseRed()
 		end
 	else
 		inst.components._bloomness:UpdateRate()
 	end
 
-	badge:Update()
+	if badge ~= nil then
+		badge:Update()
+	end
 end
 
 local function OnBloomFXDirty(inst)
@@ -114,7 +118,7 @@ AddPlayerPostInit(function(inst)
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
 			inst:WatchWorldState("season", OnSeasonChange)
 
-			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, inst.components._bloomness)
+			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
@@ -182,10 +186,10 @@ end
 if GetModConfigData("meter") then
 	AddClassPostConstruct("widgets/statusdisplays", function(self)
 		if not self.owner or self.owner.prefab ~= "wormwood" then return end
-		
+
 		self.UpdateBoatBloomPosition = function(self)
 			if not self.boatmeter then return end
-			
+
 			if HAS_MOD.COMBINED_STATUS then
 				if self.bloom.shown then self.boatmeter:SetPosition(-62, -139)
 				else self.boatmeter:SetPosition(-62, -52) end
@@ -194,12 +198,12 @@ if GetModConfigData("meter") then
 				else self.boatmeter:SetPosition(-80, -40) end
 			end
 		end
-		
+
 		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
 		self.bloom:SetPosition(-80, -40)
 		self.bloom:Hide()
 		self._custombadge = self.bloom
-		
+
 		self.onbloomdelta = function(owner, data) self:BloomDelta(data) end
 		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
 
@@ -209,7 +213,7 @@ if GetModConfigData("meter") then
 			end
 
 			self.bloom:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
-			
+
 			if data.level == 0 then
 				self.bloom:Hide()
 			elseif (data.newval - data.oldval) > 3 then
@@ -217,7 +221,7 @@ if GetModConfigData("meter") then
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
 		end
-		
+
 		local old_SetGhostMode = self.SetGhostMode
 		self.SetGhostMode = function(self, ghostmode)
 			if not self.isghostmode == not ghostmode then
@@ -226,10 +230,10 @@ if GetModConfigData("meter") then
 				self.bloom:Hide()
 				self.bloom:StopWarning()
 			end
-			
+
 			old_SetGhostMode(self, ghostmode)
 		end
-		
+
 		if self.boatmeter then
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
@@ -238,7 +242,7 @@ if GetModConfigData("meter") then
 			self.bloom.OnShow = function(self) self.owner:UpdateBoatBloomPosition() end
 			self:UpdateBoatBloomPosition()
 		end
-		
+
 		if HAS_MOD.COMBINED_STATUS then
 			local Text = require("widgets/text")
 			self.bloom:SetPosition(-62, -52)
@@ -246,7 +250,7 @@ if GetModConfigData("meter") then
 			self.bloom.rate:SetPosition(2, -40.5, 0)
 			self.bloom.rate:SetScale(1,.78,1)
 			self.bloom.rate:Hide()
-			
+
 			local OldOnGainFocus = self.bloom.OnGainFocus
 			function self.bloom:OnGainFocus()
 				OldOnGainFocus(self)
@@ -255,7 +259,7 @@ if GetModConfigData("meter") then
 					self.rate:Show()
 				end
 			end
-		
+
 			local OldOnLoseFocus = self.bloom.OnLoseFocus
 			function self.bloom:OnLoseFocus()
 				OldOnLoseFocus(self)
