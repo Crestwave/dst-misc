@@ -52,17 +52,11 @@ local function SyncBloomStage(inst, force)
 	if stage ~= level or force then
 		inst.components._bloomness:SetLevel(stage)
 
-		if _G.TheWorld.state.isspring then
-			inst.components._bloomness:Fertilize()
-		end
-
 		if badge ~= nil and stage > level then
 			badge:PulseGreen()
 		elseif badge ~= nil and stage < level then
 			badge:PulseRed()
 		end
-	else
-		inst.components._bloomness:UpdateRate()
 	end
 
 	if badge ~= nil then
