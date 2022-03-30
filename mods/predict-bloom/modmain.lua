@@ -38,7 +38,6 @@ local function OnSeasonChange(inst, season)
 end
 
 local function UpdateBloomStage(inst, stage)
-	print("Stage: " .. tostring(stage or inst.components._bloomness:GetLevel()))
 	if GetModConfigData("meter") then
 		inst.HUD.controls.status.bloom:Update()
 	end
@@ -78,7 +77,6 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 	AddPlayerPostInit(function(inst)
 		inst:DoTaskInTime(0, function(inst)
 			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
-
 				if _SendRPCToServer == nil then
 					_SendRPCToServer = _G.SendRPCToServer
 
@@ -186,6 +184,17 @@ AddPlayerPostInit(function(inst)
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
+
+			_G.TheWorld:ListenForEvent("playeractivated", function(inst, player)
+				if inst == _G.TheWorld and player == _G.ThePlayer then
+					player:DoTaskInTime(1, function(inst)
+						if inst.components._bloomness ~= nil then
+							inst.components._bloomness:SetLevel(0)
+							SyncBloomStage(inst, true)
+						end
+					end)
+				end
+			end)
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
