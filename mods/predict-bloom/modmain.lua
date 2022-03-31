@@ -41,6 +41,10 @@ local function UpdateBloomStage(inst, stage)
 	if GetModConfigData("meter") then
 		inst.HUD.controls.status.bloom:Update()
 	end
+
+	if stage then
+		print("Stage: " .. stage)
+	end
 end
 
 local function SyncBloomStage(inst, force)
@@ -49,7 +53,6 @@ local function SyncBloomStage(inst, force)
 	local level = inst.components._bloomness:GetLevel()
 	if stage ~= level or force then
 		inst.components._bloomness:SetLevel(stage)
-		print("Stage: " .. stage)
 
 		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
 		if badge ~= nil then
@@ -66,108 +69,122 @@ local function OnBloomFXDirty(inst)
 	SyncBloomStage(inst, true)
 end
 
-AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
-	local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
-	local _SendRPCToServer = nil
-	local act = false
-	local active = false
-	local fert = nil
-
-	AddPlayerPostInit(function(inst)
-		inst:DoTaskInTime(0, function(inst)
-			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
-				if _SendRPCToServer == nil then
-					_SendRPCToServer = _G.SendRPCToServer
-
-					_G.SendRPCToServer = function(...)
-						arg = { ... }
-
-						if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
-							act = true
-
-							if arg[1] == _G.RPC.LeftClick then
-								active = true
-								fert = _G.ThePlayer.replica.inventory:GetActiveItem()
-							elseif arg[1] == _G.RPC.UseItemFromInvTile then
-								fert = arg[3]
-							else
-								act = false
-							end
-						elseif act then
-							if arg[1] == _G.RPC.InspectItemFromInvTile then
-								act = false
-							elseif arg[1] == _G.RPC.ClearActionHold then
-								active = false
-							elseif not active and not _G.ThePlayer:HasTag("busy") then
-								act = false
-							end
-						end
-
-						_SendRPCToServer(...)
-					end
-
-					local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
-					_G.POPUPS.WARDROBE.Close = function(...)
-						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-							inst:DoTaskInTime(1, UpdateBloomStage)
-						end
-						return _CloseWardrobe(...)
-					end
-
-					local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
-					_G.POPUPS.GIFTITEM.Close = function(...)
-						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-							inst:DoTaskInTime(1, UpdateBloomStage)
-						end
-						return _CloseGiftItem(...)
-					end
+AddPrefabPostInit("world", function(inst)
+	inst:ListenForEvent("playeractivated", function(inst, player)
+		if inst == _G.TheWorld and player == _G.ThePlayer then
+			player:DoTaskInTime(0, function(inst)
+				if inst.components._bloomness ~= nil then
+					inst:StopUpdatingComponent(inst.components._bloomness)
+					inst.components._bloomness:SetLevel(0)
+					inst:StartUpdatingComponent(inst.components._bloomness)
 				end
-
-				inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
-					if inst.isperformactionsuccess:value() and act then
-						if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
-							local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
-
-							if val > 0 then
-								_G.ThePlayer.components._bloomness:Fertilize(val)
-								print("FERTILIZE SUCCESS: " ..tostring(val))
-							end
-
-							if not active then
-								act = false
-								fert = nil
-							end
-						end
-					end
-				end)
-			end
-		end)
+			end)
+		end
 	end)
-else
-	AddPlayerPostInit(function(inst)
-		inst:DoTaskInTime(0, function(inst)
-			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
-				local _Fertilize = inst.components.bloomness.Fertilize
-				inst.components.bloomness.Fertilize = function(self, value)
-					if self.inst.components._bloomness ~= nil then
-						self.inst.components._bloomness:Fertilize(value)
-						print("FERTILIZE SUCCESS: " ..tostring(value))
-					end
-					return _Fertilize(self, value)
-				end
 
-				if inst.components.skinner ~= nil then
-					local _SetSkinMode = inst.components.skinner.SetSkinMode
-					inst.components.skinner.SetSkinMode = function(...)
-						local r = _SetSkinMode(...)
-						UpdateBloomStage(inst)
-						return r
+	if not inst.ismastersim then
+		local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
+		local _SendRPCToServer = nil
+		local act = false
+		local active = false
+		local fert = nil
+
+		AddPlayerPostInit(function(inst)
+			inst:DoTaskInTime(0, function(inst)
+				if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
+					if _SendRPCToServer == nil then
+						_SendRPCToServer = _G.SendRPCToServer
+
+						_G.SendRPCToServer = function(...)
+							arg = { ... }
+
+							if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
+								act = true
+
+								if arg[1] == _G.RPC.LeftClick then
+									active = true
+									fert = _G.ThePlayer.replica.inventory:GetActiveItem()
+								elseif arg[1] == _G.RPC.UseItemFromInvTile then
+									fert = arg[3]
+								else
+									act = false
+								end
+							elseif act then
+								if arg[1] == _G.RPC.InspectItemFromInvTile then
+									act = false
+								elseif arg[1] == _G.RPC.ClearActionHold then
+									active = false
+								elseif not active and not _G.ThePlayer:HasTag("busy") then
+									act = false
+								end
+							end
+
+							_SendRPCToServer(...)
+						end
+
+						local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
+						_G.POPUPS.WARDROBE.Close = function(...)
+							if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
+								inst:DoTaskInTime(1, UpdateBloomStage)
+							end
+							return _CloseWardrobe(...)
+						end
+
+						local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
+						_G.POPUPS.GIFTITEM.Close = function(...)
+							if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
+								inst:DoTaskInTime(1, UpdateBloomStage)
+							end
+							return _CloseGiftItem(...)
+						end
+					end
+
+					inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
+						if inst.isperformactionsuccess:value() and act then
+							if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+								local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+
+								if val > 0 then
+									_G.ThePlayer.components._bloomness:Fertilize(val)
+									print("FERTILIZE SUCCESS: " ..tostring(val))
+								end
+
+								if not active then
+									act = false
+									fert = nil
+								end
+							end
+						end
+					end)
+				end
+			end)
+		end)
+	else
+		AddPlayerPostInit(function(inst)
+			inst:DoTaskInTime(0, function(inst)
+				if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
+					local _Fertilize = inst.components.bloomness.Fertilize
+					inst.components.bloomness.Fertilize = function(self, value)
+						if self.inst.components._bloomness ~= nil then
+							self.inst.components._bloomness:Fertilize(value)
+							print("FERTILIZE SUCCESS: " ..tostring(value))
+						end
+						return _Fertilize(self, value)
+					end
+
+					if inst.components.skinner ~= nil then
+						local _SetSkinMode = inst.components.skinner.SetSkinMode
+						inst.components.skinner.SetSkinMode = function(...)
+							local r = _SetSkinMode(...)
+							UpdateBloomStage(inst)
+							return r
+						end
 					end
 				end
-			end
+			end)
 		end)
-	end)
-end end)
+	end
+end)
 
 AddPlayerPostInit(function(inst)
 	inst:DoTaskInTime(0, function(inst)
@@ -185,16 +202,7 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
 
-			_G.TheWorld:ListenForEvent("playeractivated", function(inst, player)
-				if inst == _G.TheWorld and player == _G.ThePlayer then
-					player:DoTaskInTime(1, function(inst)
-						if inst.components._bloomness ~= nil then
-							inst.components._bloomness:SetLevel(0)
-							SyncBloomStage(inst, true)
-						end
-					end)
-				end
-			end)
+
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
@@ -207,7 +215,7 @@ AddPlayerPostInit(function(inst)
 	end)
 end)
 
-_G.ww_debug = function(delete, fert)
+_G.ww_debug = function(delete, sync, fert)
 	if BloomSaver then
 		BloomSaver:PrintDebugInfo(delete)
 	end
@@ -215,6 +223,10 @@ _G.ww_debug = function(delete, fert)
 	if _G.ThePlayer.components._bloomness then
 		if fert then
 			_G.ThePlayer.components._bloomness:Fertilize(fert)
+		end
+
+		if sync then
+			SyncBloomStage(inst)
 		end
 
 		print(_G.ThePlayer.components._bloomness:GetDebugString())
