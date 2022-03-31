@@ -109,18 +109,18 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 
 					local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
 					_G.POPUPS.WARDROBE.Close = function(...)
-						_CloseWardrobe(...)
 						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
 							inst:DoTaskInTime(1, SyncBloomStage)
 						end
+						return _CloseWardrobe(...)
 					end
 
 					local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
 					_G.POPUPS.GIFTITEM.Close = function(...)
-						_CloseGiftItem(...)
 						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
 							inst:DoTaskInTime(1, SyncBloomStage)
 						end
+						return _CloseGiftItem(...)
 					end
 				end
 
@@ -150,18 +150,18 @@ else
 			if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
 				local _Fertilize = inst.components.bloomness.Fertilize
 				inst.components.bloomness.Fertilize = function(self, value)
-					_Fertilize(self, value)
 					if self.inst.components._bloomness ~= nil then
 						self.inst.components._bloomness:Fertilize(value)
 						print("FERTILIZE SUCCESS: " ..tostring(value))
 					end
+					return _Fertilize(self, value)
 				end
 
 				if inst.components.skinner ~= nil then
 					local _SetSkinMode = inst.components.skinner.SetSkinMode
 					inst.components.skinner.SetSkinMode = function(...)
-						_SetSkinMode(...)
 						SyncBloomStage(inst)
+						return _SetSkinMode(...)
 					end
 				end
 			end
