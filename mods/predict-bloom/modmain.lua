@@ -159,8 +159,9 @@ else
 				if inst.components.skinner ~= nil then
 					local _SetSkinMode = inst.components.skinner.SetSkinMode
 					inst.components.skinner.SetSkinMode = function(...)
+						local r = _SetSkinMode(...)
 						UpdateBloomStage(inst)
-						return _SetSkinMode(...)
+						return r
 					end
 				end
 			end
