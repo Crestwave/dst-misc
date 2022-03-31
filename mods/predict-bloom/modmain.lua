@@ -44,27 +44,26 @@ local function UpdateBloomStage(inst, stage)
 end
 
 local function SyncBloomStage(inst, force)
-	local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
 	if stage ~= level or force then
 		inst.components._bloomness:SetLevel(stage)
+		print("Stage: " .. stage)
 
-		if badge ~= nil and stage > level then
-			badge:PulseGreen()
-		elseif badge ~= nil and stage < level then
-			badge:PulseRed()
+		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
+		if badge ~= nil then
+			if stage > level then
+				badge:PulseGreen()
+			elseif stage < level then
+				badge:PulseRed()
+			end
 		end
-	end
-
-	if badge ~= nil then
-		badge:Update()
 	end
 end
 
 local function OnBloomFXDirty(inst)
-	inst:DoTaskInTime(1, SyncBloomStage, true)
+	SyncBloomStage(inst, true)
 end
 
 AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
@@ -110,7 +109,7 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 					local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
 					_G.POPUPS.WARDROBE.Close = function(...)
 						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-							inst:DoTaskInTime(1, SyncBloomStage)
+							inst:DoTaskInTime(1, UpdateBloomStage)
 						end
 						return _CloseWardrobe(...)
 					end
@@ -118,7 +117,7 @@ AddPrefabPostInit("world", function(inst) if not inst.ismastersim then
 					local _CloseGiftItem = _G.POPUPS.GIFTITEM.Close
 					_G.POPUPS.GIFTITEM.Close = function(...)
 						if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-							inst:DoTaskInTime(1, SyncBloomStage)
+							inst:DoTaskInTime(1, UpdateBloomStage)
 						end
 						return _CloseGiftItem(...)
 					end
@@ -160,7 +159,7 @@ else
 				if inst.components.skinner ~= nil then
 					local _SetSkinMode = inst.components.skinner.SetSkinMode
 					inst.components.skinner.SetSkinMode = function(...)
-						SyncBloomStage(inst)
+						UpdateBloomStage(inst)
 						return _SetSkinMode(...)
 					end
 				end
@@ -207,17 +206,17 @@ AddPlayerPostInit(function(inst)
 	end)
 end)
 
-_G.ww_debug = function(delete, sync)
+_G.ww_debug = function(delete, fert)
 	if BloomSaver then
 		BloomSaver:PrintDebugInfo(delete)
 	end
 
 	if _G.ThePlayer.components._bloomness then
-		print(_G.ThePlayer.components._bloomness:GetDebugString())
-	end
+		if fert then
+			_G.ThePlayer.components._bloomness:Fertilize(fert)
+		end
 
-	if sync then
-		SyncBloomStage(_G.ThePlayer)
+		print(_G.ThePlayer.components._bloomness:GetDebugString())
 	end
 end
 
@@ -269,6 +268,7 @@ if GetModConfigData("meter") then
 			end
 
 			self.bloom:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
+			SyncBloomStage(self.owner)
 
 			if data.level == 0 then
 				self.bloom:Hide()
