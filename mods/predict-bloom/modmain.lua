@@ -79,22 +79,12 @@ AddPrefabPostInit("world", function(inst)
 			end
 		end)
 
-		RemoveEventCallback("playeractivated", OnPlayerActivated)
+		inst:RemoveEventCallback("playeractivated", OnPlayerActivated)
 	end
 
-	local function OnEnterCharacterSelect(inst)
-		inst:ListenForEvent("playeractivated", function(inst)
-			inst:DoTaskInTime(0, function(inst)
-				if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-					if _G.TheWorld.state.isspring then
-						inst.components._bloomness:Fertilize()
-					end
-				end
-			end)
-		end)
-	end
-
-	inst:ListenForEvent("entercharacterselect", OnEnterCharacterSelect)
+	inst:ListenForEvent("entercharacterselect", function(inst)
+		inst:ListenForEvent("playeractivated", OnPlayerActivated)
+	end)
 
 	if not inst.ismastersim then
 		local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS

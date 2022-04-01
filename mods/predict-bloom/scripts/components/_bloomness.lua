@@ -11,6 +11,7 @@ local _Bloomness = Class(function(self, inst)
 
 	self.rate = 1
 	self.fertilizer = 0
+	self._fertilizer = 0
 end)
 
 function _Bloomness:SetLevel(level)
@@ -37,6 +38,11 @@ function _Bloomness:SetLevel(level)
 			self.timer = self.full_bloom_duration
 		else
 			self.timer = self.stage_duration
+		end
+
+		if self._fertilizer > 0 then
+			self.fertilizer = self._fertilizer
+			self._fertilizer = 0
 		end
 
 		self:UpdateRate()
@@ -70,10 +76,6 @@ function _Bloomness:Fertilize(value)
 		self:DoDelta((self.calcfullbloomdurationfn ~= nil and self.calcfullbloomdurationfn(self.inst, value, self.timer, self.full_bloom_duration) or self.timer) - self.timer)
 		self:UpdateRate()
 	else
-		if self.level == 0 then
-			self.inst:StartUpdatingComponent(self)
-		end
-
 		if not self.is_blooming then
 			self.is_blooming = true
 			self.timer = self.stage_duration
@@ -81,6 +83,11 @@ function _Bloomness:Fertilize(value)
 
 		self.fertilizer = self.fertilizer + value
 		self:UpdateRate()
+
+		if self.level == 0 then
+			self.inst:StartUpdatingComponent(self)
+			self._fertilizer = self.fertilizer
+		end
 	end
 end
 
