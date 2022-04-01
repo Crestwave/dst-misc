@@ -75,9 +75,9 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 end
 
 function BloomBadge:Update()
-	if not self.head_anim or not self.head_animstate then return end
-
 	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())
+	if not self.head_anim or not self.head_animstate or not client then return end
+
 	local state = client.userflags
 	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData( client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
 

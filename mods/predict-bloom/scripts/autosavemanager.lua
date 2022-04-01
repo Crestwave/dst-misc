@@ -111,6 +111,13 @@ local function makesavedata(self)
 	}
 end
 
+local function makeblanksavedata(self)
+	return {
+		time 		= TheWorld.state.time + TheWorld.state.cycles,
+		save_data 	= {},
+	}
+end
+
 local function shardsave(self)
 	if not caneditdata(self) then
 		return
@@ -284,6 +291,11 @@ function AutoSaveManager:StartAutoSave()
 		if ThePlayer and ThePlayer == _ThePlayer then
 			shardsave(self)
 		end
+	end)
+
+	TheWorld:ListenForEvent("entercharacterselect", function()
+		self.persistdata[1] = makeblanksavedata(self)
+		Save(self)
 	end)
 
 	-- Pushed by SavingIndicator, on autosaves

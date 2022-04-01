@@ -70,17 +70,31 @@ local function OnBloomFXDirty(inst)
 end
 
 AddPrefabPostInit("world", function(inst)
-	inst:ListenForEvent("playeractivated", function(inst, player)
-		if inst == _G.TheWorld and player == _G.ThePlayer then
-			player:DoTaskInTime(0, function(inst)
-				if inst.components._bloomness ~= nil then
-					inst:StopUpdatingComponent(inst.components._bloomness)
-					inst.components._bloomness:SetLevel(0)
-					inst:StartUpdatingComponent(inst.components._bloomness)
+	local function OnPlayerActivated(inst)
+		inst:DoTaskInTime(0, function(inst)
+			if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
+				if _G.TheWorld.state.isspring then
+					inst.components._bloomness:Fertilize()
+				end
+			end
+		end)
+
+		RemoveEventCallback("playeractivated", OnPlayerActivated)
+	end
+
+	local function OnEnterCharacterSelect(inst)
+		inst:ListenForEvent("playeractivated", function(inst)
+			inst:DoTaskInTime(0, function(inst)
+				if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
+					if _G.TheWorld.state.isspring then
+						inst.components._bloomness:Fertilize()
+					end
 				end
 			end)
-		end
-	end)
+		end)
+	end
+
+	inst:ListenForEvent("entercharacterselect", OnEnterCharacterSelect)
 
 	if not inst.ismastersim then
 		local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
@@ -201,8 +215,6 @@ AddPlayerPostInit(function(inst)
 			BloomSaver:StartAutoSave()
 			inst.components._bloomness:Load(BloomSaver:LoadData())
 			SyncBloomStage(inst)
-
-
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then

@@ -71,13 +71,14 @@ function _Bloomness:Fertilize(value)
 		self:UpdateRate()
 	else
 		if self.level == 0 then
-			self:SetLevel(1)
+			self.inst:StartUpdatingComponent(self)
 		end
 
 		if not self.is_blooming then
 			self.is_blooming = true
 			self.timer = self.stage_duration
 		end
+
 		self.fertilizer = self.fertilizer + value
 		self:UpdateRate()
 	end
