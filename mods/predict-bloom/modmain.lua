@@ -100,7 +100,7 @@ AddPrefabPostInit("world", function(inst)
 						_SendRPCToServer = _G.SendRPCToServer
 
 						_G.SendRPCToServer = function(...)
-							arg = { ... }
+							local arg = { ... }
 
 							if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
 								act = true
@@ -116,10 +116,8 @@ AddPrefabPostInit("world", function(inst)
 							elseif act then
 								if arg[1] == _G.RPC.InspectItemFromInvTile then
 									act = false
-								elseif arg[1] == _G.RPC.ClearActionHold then
+								elseif active and arg[1] == _G.RPC.ClearActionHold then
 									active = false
-								elseif not active and not _G.ThePlayer:HasTag("busy") then
-									act = false
 								end
 							end
 
@@ -152,11 +150,11 @@ AddPrefabPostInit("world", function(inst)
 									_G.ThePlayer.components._bloomness:Fertilize(val)
 									print("FERTILIZE SUCCESS: " ..tostring(val))
 								end
+							end
 
-								if not active then
-									act = false
-									fert = nil
-								end
+							if not active then
+								act = false
+								fert = nil
 							end
 						end
 					end)
