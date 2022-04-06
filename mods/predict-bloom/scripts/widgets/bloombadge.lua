@@ -59,8 +59,8 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 	self.val = val
 	self.max = max
 
-	self.anim:GetAnimState():SetPercent("anim", 1 - val / max)
-	Badge.SetPercent(self, (val / max), max)
+	self.anim:GetAnimState():SetPercent("anim", 1 - (val / max))
+	Badge.SetPercent(self, val / max, max)
 
 	if self.combined_status then
 		self.num:SetString(string.format("%d", val))
