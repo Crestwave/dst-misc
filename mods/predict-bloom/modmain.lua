@@ -142,20 +142,20 @@ AddPrefabPostInit("world", function(inst)
 					end
 
 					inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
-						if inst.isperformactionsuccess:value() and act then
-							if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
-								local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+						if not act then return end
 
-								if val > 0 then
-									_G.ThePlayer.components._bloomness:Fertilize(val)
-									print("FERTILIZE SUCCESS: " ..tostring(val))
-								end
-							end
+						if inst.isperformactionsuccess:value() and _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+							local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
-							if not active then
-								act = false
-								fert = nil
+							if val > 0 then
+								_G.ThePlayer.components._bloomness:Fertilize(val)
+								print("FERTILIZE SUCCESS: " ..tostring(val))
 							end
+						end
+
+						if not active then
+							act = false
+							fert = nil
 						end
 					end)
 				end
