@@ -79,7 +79,7 @@ function BloomBadge:Update()
 	if not self.head_anim or not self.head_animstate or not client then return end
 
 	local state = client.userflags
-	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData( client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
+	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData(client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
 
 	self.head_animstate:SetBank(bank)
 	self.head_animstate:PlayAnimation(animation, true)
