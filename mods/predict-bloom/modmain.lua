@@ -47,11 +47,11 @@ local function UpdateBloomStage(inst, stage)
 	end
 end
 
-local function SyncBloomStage(inst, force)
+local function SyncBloomStage(inst)
 	local mult = inst.player_classified.runspeed:value() / TUNING.WILSON_RUN_SPEED
 	local stage = _G.RoundBiasedUp(_G.Remap(mult, 1, 1.2, 0, 3))
 	local level = inst.components._bloomness:GetLevel()
-	if stage ~= level or force then
+	if stage ~= level then
 		inst.components._bloomness:SetLevel(stage)
 
 		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
@@ -66,7 +66,7 @@ local function SyncBloomStage(inst, force)
 end
 
 local function OnBloomFXDirty(inst)
-	SyncBloomStage(inst, true)
+	SyncBloomStage(inst)
 end
 
 AddPrefabPostInit("world", function(inst)
