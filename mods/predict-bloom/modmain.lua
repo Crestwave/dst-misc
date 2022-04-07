@@ -121,7 +121,7 @@ AddPrefabPostInit("world", function(inst)
 								end
 							end
 
-							_SendRPCToServer(...)
+							return _SendRPCToServer(...)
 						end
 
 						local _CloseWardrobe = _G.POPUPS.WARDROBE.Close
@@ -177,9 +177,9 @@ AddPrefabPostInit("world", function(inst)
 					if inst.components.skinner ~= nil then
 						local _SetSkinMode = inst.components.skinner.SetSkinMode
 						inst.components.skinner.SetSkinMode = function(...)
-							local r = _SetSkinMode(...)
+							local r = { _SetSkinMode(...) }
 							UpdateBloomStage(inst)
-							return r
+							return unpack(r)
 						end
 					end
 				end
@@ -291,18 +291,6 @@ if GetModConfigData("meter") then
 			end
 		end
 
-		local old_SetGhostMode = self.SetGhostMode
-		self.SetGhostMode = function(self, ghostmode)
-			if not self.isghostmode == not ghostmode then
-				-- pass on to old_SetGhostMode
-			elseif ghostmode then
-				self.bloom:Hide()
-				self.bloom:StopWarning()
-			end
-
-			old_SetGhostMode(self, ghostmode)
-		end
-
 		if self.boatmeter then
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
@@ -320,18 +308,18 @@ if GetModConfigData("meter") then
 			self.bloom.rate:SetScale(1,.78,1)
 			self.bloom.rate:Hide()
 
-			local OldOnGainFocus = self.bloom.OnGainFocus
+			local _OnGainFocus = self.bloom.OnGainFocus
 			function self.bloom:OnGainFocus()
-				OldOnGainFocus(self)
+				_OnGainFocus(self)
 				self.num:Hide()
 				if self.active then
 					self.rate:Show()
 				end
 			end
 
-			local OldOnLoseFocus = self.bloom.OnLoseFocus
+			local _OnLoseFocus = self.bloom.OnLoseFocus
 			function self.bloom:OnLoseFocus()
-				OldOnLoseFocus(self)
+				_OnLoseFocus(self)
 				self.rate:Hide()
 				if self.active then
 					self.num:Show()
