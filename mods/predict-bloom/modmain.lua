@@ -91,6 +91,7 @@ AddPrefabPostInit("world", function(inst)
 		local _SendRPCToServer = nil
 		local act = false
 		local active = false
+		local chain = false
 		local fert = nil
 
 		AddPlayerPostInit(function(inst)
@@ -102,8 +103,9 @@ AddPrefabPostInit("world", function(inst)
 						_G.SendRPCToServer = function(...)
 							local arg = { ... }
 
-							if arg[2] == _G.ACTIONS.FERTILIZE.code and not _G.ThePlayer:HasTag("busy") then
+							if arg[2] == _G.ACTIONS.FERTILIZE.code and (not _G.ThePlayer:HasTag("busy") or chain) then
 								act = true
+								chain = false
 
 								if arg[1] == _G.RPC.LeftClick then
 									active = true
@@ -144,13 +146,20 @@ AddPrefabPostInit("world", function(inst)
 					inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
 						if not act then return end
 
-						if inst.isperformactionsuccess:value() and _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
-							local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+						if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+							if inst.isperformactionsuccess:value() then
+								local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
-							if val > 0 then
-								_G.ThePlayer.components._bloomness:Fertilize(val)
-								print("FERTILIZE SUCCESS: " ..tostring(val))
+								if val > 0 then
+									_G.ThePlayer.components._bloomness:Fertilize(val)
+									print("FERTILIZE SUCCESS: " ..tostring(val))
+								end
+
 							end
+
+							chain = true
+						else
+							chain = false
 						end
 
 						if not active then
