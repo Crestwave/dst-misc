@@ -1,6 +1,7 @@
 --[[
 Auto-Save Manager v5
 By CossonWool
+Modified by Crestwave
 
 Made with PersistentData v1.2 By Blueberrys
 PersistentData: http://forums.kleientertainment.com/files/file/1150-persistent-data/
@@ -108,13 +109,6 @@ local function makesavedata(self)
 	return {
 		time 		= TheWorld.state.time + TheWorld.state.cycles,
 		save_data 	= self.savefn(unpack(self.savefnargs)),
-	}
-end
-
-local function makeblanksavedata(self)
-	return {
-		time 		= TheWorld.state.time + TheWorld.state.cycles,
-		save_data 	= {},
 	}
 end
 
@@ -291,11 +285,6 @@ function AutoSaveManager:StartAutoSave()
 		if ThePlayer and ThePlayer == _ThePlayer then
 			shardsave(self)
 		end
-	end)
-
-	TheWorld:ListenForEvent("entercharacterselect", function()
-		self.persistdata[1] = makeblanksavedata(self)
-		Save(self)
 	end)
 
 	-- Pushed by SavingIndicator, on autosaves

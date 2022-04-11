@@ -2,6 +2,7 @@ local _G = GLOBAL
 local AutoSaveManager = require("autosavemanager")
 local BloomBadge = require("widgets/bloombadge")
 local BloomSaver = nil
+local inittask = false
 
 local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
 	local season_mult = 1
@@ -69,22 +70,54 @@ local function OnBloomFXDirty(inst)
 	SyncBloomStage(inst)
 end
 
-AddPrefabPostInit("world", function(inst)
-	local function OnPlayerActivated(inst)
-		inst:DoTaskInTime(0, function(inst)
-			if inst == _G.ThePlayer and inst.components._bloomness ~= nil then
-				if _G.TheWorld.state.isspring then
-					inst.components._bloomness:Fertilize()
-				end
-			end
-		end)
-
-		inst:RemoveEventCallback("playeractivated", OnPlayerActivated)
+local function OnNewSpawn(inst)
+	inittask = false
+	if _G.TheWorld.state.isspring then
+		inst.components._bloomness:Fertilize()
 	end
+end
 
-	inst:ListenForEvent("entercharacterselect", function(inst)
-		inst:ListenForEvent("playeractivated", OnPlayerActivated)
+local function OnLoad(inst)
+	if inst.components._bloomness ~= nil and BloomSaver ~= nil then
+		inst.components._bloomness:Load(BloomSaver:LoadData())
+	end
+end
+
+AddPlayerPostInit(function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
+			inst:AddComponent("_bloomness")
+			inst.components._bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
+			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
+			inst.components._bloomness.calcratefn = CalcBloomRateFn
+			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
+			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
+			inst:WatchWorldState("season", OnSeasonChange)
+
+			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
+			BloomSaver:StartAutoSave()
+
+			if inittask then
+				OnNewSpawn(inst)
+			else
+				OnLoad(inst)
+			end
+
+			SyncBloomStage(inst)
+
+			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
+				if inst.isghostmode:value() then
+					_G.ThePlayer.components._bloomness:SetLevel(0)
+				elseif _G.TheWorld.state.isspring then
+					_G.ThePlayer.components._bloomness:Fertilize()
+				end
+			end)
+		end
 	end)
+end)
+
+AddPrefabPostInit("world", function(inst)
+	inst:ListenForEvent("entercharacterselect", function() inittask = true end)
 
 	if not inst.ismastersim then
 		local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
@@ -195,33 +228,6 @@ AddPrefabPostInit("world", function(inst)
 			end)
 		end)
 	end
-end)
-
-AddPlayerPostInit(function(inst)
-	inst:DoTaskInTime(0, function(inst)
-		if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
-			inst:AddComponent("_bloomness")
-			inst.components._bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
-			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
-			inst.components._bloomness.calcratefn = CalcBloomRateFn
-			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
-			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
-			inst:WatchWorldState("season", OnSeasonChange)
-
-			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
-			BloomSaver:StartAutoSave()
-			inst.components._bloomness:Load(BloomSaver:LoadData())
-			SyncBloomStage(inst)
-
-			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
-				if inst.isghostmode:value() then
-					_G.ThePlayer.components._bloomness:SetLevel(0)
-				elseif _G.TheWorld.state.isspring then
-					_G.ThePlayer.components._bloomness:Fertilize()
-				end
-			end)
-		end
-	end)
 end)
 
 _G.ww_debug = function(delete, sync, fert)
