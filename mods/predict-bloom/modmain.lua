@@ -78,9 +78,7 @@ local function OnNewSpawn(inst)
 end
 
 local function OnLoad(inst)
-	if inst.components._bloomness ~= nil and BloomSaver ~= nil then
-		inst.components._bloomness:Load(BloomSaver:LoadData())
-	end
+	inst.components._bloomness:Load(BloomSaver:LoadData())
 end
 
 AddPlayerPostInit(function(inst)
