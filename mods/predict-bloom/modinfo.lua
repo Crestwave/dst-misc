@@ -6,7 +6,7 @@ Displays a bloom meter for Wormwood, allowing you to easily manage and maintain 
 Compatible with Combined Status and Status Announcements.
 ]]
 
-version = "1.1"
+version = "1.2"
 api_version = 10
 
 dst_compatible = true
