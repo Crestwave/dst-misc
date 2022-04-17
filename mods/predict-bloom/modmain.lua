@@ -219,7 +219,7 @@ AddPrefabPostInit("world", function(inst)
 						inst.components.skinner.SetSkinMode = function(...)
 							local r = { _SetSkinMode(...) }
 							UpdateBloomStage(inst)
-							return unpack(r)
+							return _G.unpack(r)
 						end
 					end
 				end
