@@ -1,0 +1,104 @@
+#!/bin/sh
+cd "${0%%/*}" || exit
+cluster=${PWD##*/}
+master=${cluster}_Master
+caves=${cluster}_Caves
+
+archive() {
+	date=$(date "+%Y-%m-%d-%H-%M-%S")
+	for shard; do
+		dest="ar/$shard"
+		mkdir -p "$dest"
+		for log in log chat_log; do
+			if [ -e "$shard/server_${log}.txt" ]; then
+				mv "$shard/server_${log}.txt" "$dest/server_${log}_${date}.txt"
+			fi
+		done
+	done
+}
+
+down() {
+	send "$master" 'c_shutdown()'
+	tmux send-keys -t "$cluster" ^C
+}
+
+launch() (
+	cd ../dedi/bin64 || exit
+	set -- rlwrap ./dontstarve_dedicated_server_nullrenderer_x64 -cluster "$cluster"
+	
+	if ! tmux has-session -t "$master" 2>/dev/null; then
+		archive Master
+		tmux new-session -d -s "$master" "$@" -shard Master
+	fi
+
+	if ! tmux has-session -t "$caves" 2>/dev/null; then
+		archive Caves
+		ppid=$(tmux list-panes -t "$master" -F "#{pane_pid}")
+		tmux new-session -d -s "$caves" "$@" -shard Caves -monitor_parent_process "$ppid"
+	fi
+)
+
+monitor() {
+	while sleep 30; do
+		count=$(( count + 1 ))
+		if [ "$count" -ge 10 ]; then
+			if outdated; then
+				seconds=$(date +%s)
+				send "$master" "c_announce('Downloading server update $remote...')"
+				update
+				seconds=$(( 300 - ($(date +%s) - seconds) ))
+
+				if [ "$seconds" -gt 10 ]; then
+					send "$master" "c_announce('Initiating save and restart in $(( seconds - 10 )) seconds...')"
+					sleep "$(( seconds - 10 ))"
+				fi
+
+				send "$master" 'c_announce("Restarting server in 10 seconds...")'
+				send "$master" 'c_save()'
+				sleep 10
+				send "$master" 'c_shutdown()'
+			fi
+			count=0
+		fi
+		
+		if ! tmux has-session -t "$master" || ! tmux has-session -t "$caves"; then
+			launch
+		fi
+	done
+}
+
+outdated() {
+	read -r local <../dedi/version.txt
+	remote=$(curl https://s3.amazonaws.com/dstbuilds/builds.json | jq '.release[-1] | tonumber')
+	if [ "$local" != "$remote" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+send() {
+	shard=$1
+	shift
+	tmux send-keys -t "$shard" ^U "$@" Enter
+}
+
+update() {
+	~/Steam/steamcmd.sh +force_install_dir "$PWD"/../dedi +login anonymous +app_update 343050 validate +quit
+}
+
+main() {
+	if ! tmux has-session -t "$cluster" 2>/dev/null; then
+		exec tmux new-session -s "$cluster" "$0" "$@"
+	fi
+
+	if [ $# = 0 ]; then
+		outdated && update
+		launch
+		monitor
+	else
+		"$@"
+	fi
+}
+
+main "$@"
