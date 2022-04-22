@@ -728,8 +728,8 @@ AddComponentPostInit("walkableplatformplayer", function(self, inst)
             local logstring = GLOBAL.string.format("%s[%s] disembarks @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.userid or self.inst.GUID, _x ~= nil and _x or x, y, _z ~= nil and _z or z)
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
-            _GetOffPlatform(self)
         end
+        _GetOffPlatform(self)
     end
 end)
 
