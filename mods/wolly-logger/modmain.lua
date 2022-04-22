@@ -683,9 +683,11 @@ end)
 AddComponentPostInit("sinkholespawner", function(self, inst)
     local _DoTargetAttack = self.DoTargetAttack
     self.DoTargetAttack = function(self, targetinfo)
-        local logstring = GLOBAL.string.format("%s[%s] targets %s[%s] @(%.2f, %.2f, %2.f)", self.inst:GetDisplayName(), self.inst.GUID, targetinfo.player and targetinfo.player:GetDisplayName(), targetinfo.player and targetinfo.player.userid or "", targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
-        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-        print(logstring)
+        if targetinfo.pos ~= nil then
+            local logstring = GLOBAL.string.format("%s[%s] targets %s[%s] @(%.2f, %.2f, %2.f)", self.inst:GetDisplayName(), self.inst.GUID, targetinfo.player and targetinfo.player:GetDisplayName(), targetinfo.player and targetinfo.player.userid or "", targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
+        end
         _DoTargetAttack(self, targetinfo)
     end
 end)
