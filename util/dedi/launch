@@ -1,0 +1,32 @@
+#!/bin/sh
+cd "${0%%/*}" || exit
+cluster=${PWD##*/}
+date=$(date "+%Y-%m-%d-%H-%M-%S")
+
+master=${cluster}_Master
+caves=${cluster}_Caves
+
+for shard in Master Caves; do
+	dest="ar/$shard"
+	mkdir -p "$dest"
+	for log in log chat_log; do
+		if [ -e "$shard/server_${log}.txt" ]; then
+			mv "$shard/server_${log}.txt" "$dest/server_${log}_${date}.txt"
+		fi
+	done
+done
+
+read -r local <../dedi/version.txt
+remote=$(curl https://s3.amazonaws.com/dstbuilds/builds.json | jq '.release[-1] | tonumber')
+if [ "$local" != "$remote" ]; then
+	~/Steam/steamcmd.sh +login anonymous +force_install_dir ../dedi +app_update 343050 +quit
+fi
+
+cd ../dedi/bin64 || exit
+set -- rlwrap ./dontstarve_dedicated_server_nullrenderer_x64 -cluster "$cluster"
+
+tmux new-session -d -s "$master" "$@" -shard Master
+ppid=$(tmux list-panes -t "$master" -F "#{pane_pid}")
+tmux new-session -d -s "$caves" "$@" -shard Caves -monitor_parent_process "$ppid"
+
+tmux attach-session -t "$master"
