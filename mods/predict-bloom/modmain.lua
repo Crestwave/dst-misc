@@ -141,7 +141,7 @@ AddPrefabPostInit("world", function(inst)
 								if arg[1] == _G.RPC.LeftClick then
 									active = true
 									fert = _G.ThePlayer.replica.inventory:GetActiveItem()
-								elseif arg[1] == _G.RPC.UseItemFromInvTile then
+								elseif arg[1] == _G.RPC.UseItemFromInvTile or arg[1] == _G.RPC.ControllerUseItemOnSceneFromInvTile then
 									fert = arg[3]
 								else
 									act = false
@@ -308,40 +308,58 @@ if GetModConfigData("meter") then
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
 			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatBloomPosition() end)
-			self.bloom.OnHide = function(self) self.owner:UpdateBoatBloomPosition() end
-			self.bloom.OnShow = function(self) self.owner:UpdateBoatBloomPosition() end
+			function self.bloom:OnHide() self.owner:UpdateBoatBloomPosition() end
+			function self.bloom:OnShow() self.owner:UpdateBoatBloomPosition() end
 			self:UpdateBoatBloomPosition()
 		end
 
 		if HAS_MOD.COMBINED_STATUS then
 			local Text = require("widgets/text")
 			self.bloom:SetPosition(-62, -52)
+			self.bloom.maxnum:MoveToFront()
 			self.bloom.rate = self.bloom:AddChild(Text(_G.NUMBERFONT, 28))
 			self.bloom.rate:SetPosition(2, -40.5, 0)
 			self.bloom.rate:SetScale(1,.78,1)
 			self.bloom.rate:Hide()
 
-			local _OnGainFocus = self.bloom.OnGainFocus
-			function self.bloom:OnGainFocus()
-				_OnGainFocus(self)
-				self.num:Hide()
-				if self.active then
-					self.rate:Show()
+			local _OnShow = self.bloom.maxnum.OnShow
+			self.bloom.maxnum.OnShow = function(self, ...)
+				self.parent.num:Hide()
+				if self.parent.active then
+					self.parent.rate:Show()
 				end
+				return _OnShow(self, ...)
 			end
 
-			local _OnLoseFocus = self.bloom.OnLoseFocus
-			function self.bloom:OnLoseFocus()
-				_OnLoseFocus(self)
-				self.rate:Hide()
-				if self.active then
-					self.num:Show()
+			local _OnHide = self.bloom.maxnum.OnHide
+			self.bloom.maxnum.OnHide = function(self, ...)
+				self.parent.rate:Hide()
+				if self.parent.active then
+					self.parent.num:Show()
 				end
+				return _OnHide(self, ...)
 			end
 		else
 			self.bloom.num:SetSize(25)
 			self.bloom.num:SetScale(1,.9,1)
 			self.bloom.num:SetPosition(3, 3)
+			self.bloom.num:MoveToFront()
+
+			local _ShowStatusNumbers = self.ShowStatusNumbers
+			self.ShowStatusNumbers = function(self, ...)
+				if self.bloom ~= nil then
+					self.bloom.num:Show()
+				end
+				return _ShowStatusNumbers(self, ...)
+			end
+
+			local _HideStatusNumbers = self.HideStatusNumbers
+			self.HideStatusNumbers = function(self, ...)
+				if self.bloom ~= nil then
+					self.bloom.num:Hide()
+				end
+				return _HideStatusNumbers(self, ...)
+			end
 		end
 	end)
 

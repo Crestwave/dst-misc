@@ -94,12 +94,6 @@ function BloomBadge:Update()
 	end
 
 	SetSkinsOnAnim(self.head_animstate, client.prefab, base_build, {}, skin_mode)
-
-	if self.maxnum then
-		self.maxnum:MoveToFront()
-	else
-		self.num:MoveToFront()
-	end
 end
 
 return BloomBadge
