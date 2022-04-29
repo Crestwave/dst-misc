@@ -141,7 +141,7 @@ AddPrefabPostInit("world", function(inst)
 								if arg[1] == _G.RPC.LeftClick then
 									active = true
 									fert = _G.ThePlayer.replica.inventory:GetActiveItem()
-								elseif arg[1] == _G.RPC.UseItemFromInvTile or arg[1] == _G.RPC.ControllerUseItemOnSceneFromInvTile then
+								elseif arg[1] == _G.RPC.UseItemFromInvTile or arg[1] == _G.RPC.ControllerUseItemOnSceneFromInvTile or arg[1] == _G.RPC.ControllerUseItemOnSelfFromInvTile then
 									fert = arg[3]
 								else
 									act = false
