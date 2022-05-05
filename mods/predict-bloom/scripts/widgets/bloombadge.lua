@@ -11,7 +11,9 @@ local BloomBadge = Class(Badge, function(self, owner, combined_status)
 	Badge._ctor(self, nil, owner, { 0 / 255, 127 / 255, 0 / 255, 1 })
 
 	self.backing:GetAnimState():SetBank("status_meter")
+	self.backing:GetAnimState():SetBuild("status_meter")
 	self.backing:GetAnimState():SetBuild("status_wet")
+	self.backing:GetAnimState():Hide("icon")
 
 	self.anim:GetAnimState():SetBank("status_meter")
 	self.anim:GetAnimState():SetBuild("status_meter")
@@ -30,12 +32,35 @@ local BloomBadge = Class(Badge, function(self, owner, combined_status)
 	self.backing:GetAnimState():PlayAnimation("open")
 	self.circleframe:GetAnimState():PlayAnimation("open")
 	self.circleframe:MoveToFront()
+	self:UpdateIcon()
 
 	if self.combined_status then
 		self.bg:MoveToFront()
 		self.num:MoveToFront()
 	end
 end)
+
+function BloomBadge:UpdateIcon()
+	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())
+	if not self.head_anim or not self.head_animstate or not client then return end
+
+	local state = client.userflags
+	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData(client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
+
+	self.head_animstate:SetBank(bank)
+	self.head_animstate:PlayAnimation(animation, true)
+	self.head_animstate:SetTime(0)
+	self.head_animstate:Pause()
+
+	local skindata = GetSkinData(client.base_skin or client.prefab.."_none")
+	local base_build = client.prefab
+
+	if skindata.skins ~= nil then
+		base_build = skindata.skins[skin_mode]
+	end
+
+	SetSkinsOnAnim(self.head_animstate, client.prefab, base_build, {}, skin_mode)
+end
 
 function BloomBadge:SetPercent(val, max, rate, is_blooming)
 	if is_blooming then
@@ -57,28 +82,6 @@ function BloomBadge:SetPercent(val, max, rate, is_blooming)
 	else
 		self.num:SetString(string.format("%d", val))
 	end
-end
-
-function BloomBadge:Update()
-	local client = TheNet:GetClientTableForUser(TheNet:GetUserID())
-	if not self.head_anim or not self.head_animstate or not client then return end
-
-	local state = client.userflags
-	local bank, animation, skin_mode, scale, y_offset = GetPlayerBadgeData(client.prefab, false, state == USERFLAGS.CHARACTER_STATE_1, state == USERFLAGS.CHARACTER_STATE_2, state == USERFLAGS.CHARACTER_STATE_3)
-
-	self.head_animstate:SetBank(bank)
-	self.head_animstate:PlayAnimation(animation, true)
-	self.head_animstate:SetTime(0)
-	self.head_animstate:Pause()
-
-	local skindata = GetSkinData(client.base_skin or client.prefab.."_none")
-	local base_build = client.prefab
-
-	if skindata.skins ~= nil then
-		base_build = skindata.skins[skin_mode]
-	end
-
-	SetSkinsOnAnim(self.head_animstate, client.prefab, base_build, {}, skin_mode)
 end
 
 return BloomBadge

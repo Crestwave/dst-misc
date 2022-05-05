@@ -40,7 +40,7 @@ end
 
 local function UpdateBloomStage(inst, stage)
 	if GetModConfigData("meter") then
-		inst.HUD.controls.status.bloombadge:Update()
+		inst.HUD.controls.status.bloombadge:UpdateIcon()
 	end
 
 	if stage then
@@ -89,6 +89,7 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
 			inst.components._bloomness.calcratefn = CalcBloomRateFn
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
+			inst.components._bloomness:DoDelta(0)
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
 			inst:WatchWorldState("season", OnSeasonChange)
 
@@ -102,6 +103,7 @@ AddPlayerPostInit(function(inst)
 			end
 
 			SyncBloomStage(inst)
+			UpdateBloomStage(inst)
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
@@ -282,7 +284,6 @@ if GetModConfigData("meter") then
 
 		self.bloombadge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
 		self.bloombadge:SetPosition(-120, 20)
-		self.bloombadge:Hide()
 		self._custombadge = self.bloombadge
 
 		self.onbloomdelta = function(owner, data) self:BloomDelta(data) end
@@ -296,9 +297,7 @@ if GetModConfigData("meter") then
 			self.bloombadge:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
-			if data.level == 0 then
-				self.bloombadge:Hide()
-			elseif (data.newval - data.oldval) > 3 then
+			if (data.newval - data.oldval) > 3 then
 				self.bloombadge:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
@@ -371,11 +370,11 @@ if GetModConfigData("meter") then
 			if maincharacter.prefab == "wormwood" then
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Droopy." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Need smelly stuff." } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_4 = { BLOOM = { ANY = "Need smelly stuff." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_4 = { BLOOM = { ANY = "Drooping..." } }
 				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_5 = { BLOOM = { ANY = "Feeling droopy." } }
 
 				self.inst:DoTaskInTime(0, function()
