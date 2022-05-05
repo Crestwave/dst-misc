@@ -1,5 +1,5 @@
-local Badge = require "widgets/badge"
-local UIAnim = require "widgets/uianim"
+local Badge = require("widgets/badge")
+local UIAnim = require("widgets/uianim")
 
 local BloomBadge = Class(Badge, function(self, owner, combined_status)
 	self.owner = owner
