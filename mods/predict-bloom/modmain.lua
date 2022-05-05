@@ -272,16 +272,16 @@ if GetModConfigData("meter") then
 			if not self.boatmeter then return end
 
 			if HAS_MOD.COMBINED_STATUS then
-				if self.bloom.shown then self.boatmeter:SetPosition(-62, -139)
+				if self.bloom.shown then self.boatmeter:SetPosition(-124, -52)
 				else self.boatmeter:SetPosition(-62, -52) end
 			else
-				if self.bloom.shown then self.boatmeter:SetPosition(-80, -113)
+				if self.bloom.shown then self.boatmeter:SetPosition(-80, -40)
 				else self.boatmeter:SetPosition(-80, -40) end
 			end
 		end
 
 		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
-		self.bloom:SetPosition(-80, -40)
+		self.bloom:SetPosition(-120, 20)
 		self.bloom:Hide()
 		self._custombadge = self.bloom
 
