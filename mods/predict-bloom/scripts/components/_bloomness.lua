@@ -24,9 +24,9 @@ function _Bloomness:SetLevel(level)
 
 	if level == 0 then
 		self.level = 0
+		self.rate = 0
 		self.is_blooming = false
 		self:DoDelta(-self.timer)
-		self:UpdateRate()
 		self.inst:StopUpdatingComponent(self)
 	else
 		local prev_level = self.level
