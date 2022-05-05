@@ -248,39 +248,27 @@ _G.ww_debug = function(delete, sync, fert)
 	end
 end
 
--- Mod compatibility stuff by rezecib (https://steamcommunity.com/profiles/76561198025931302)
-local CHECK_MODS = {
-	["workshop-376333686"] = "COMBINED_STATUS",
-	["workshop-343753877"] = "STATUS_ANNOUNCEMENTS",
-}
-local HAS_MOD = {}
---If the mod is already loaded at this point
-for mod_name, key in pairs(CHECK_MODS) do
-	HAS_MOD[key] = HAS_MOD[key] or (GLOBAL.KnownModIndex:IsModEnabled(mod_name) and mod_name)
-end
---If the mod hasn't loaded yet
-for k, v in pairs(GLOBAL.KnownModIndex:GetModsToLoad()) do
-	local mod_type = CHECK_MODS[v]
-	if mod_type then
-		HAS_MOD[mod_type] = v
-	end
-end
-
 if GetModConfigData("meter") then
+	-- Mod compatibility stuff by rezecib (https://steamcommunity.com/profiles/76561198025931302)
+	local CHECK_MODS = {
+		["workshop-376333686"] = "COMBINED_STATUS",
+		["workshop-343753877"] = "STATUS_ANNOUNCEMENTS",
+	}
+	local HAS_MOD = {}
+	--If the mod is already loaded at this point
+	for mod_name, key in pairs(CHECK_MODS) do
+		HAS_MOD[key] = HAS_MOD[key] or (GLOBAL.KnownModIndex:IsModEnabled(mod_name) and mod_name)
+	end
+	--If the mod hasn't loaded yet
+	for k, v in pairs(GLOBAL.KnownModIndex:GetModsToLoad()) do
+		local mod_type = CHECK_MODS[v]
+		if mod_type then
+			HAS_MOD[mod_type] = v
+		end
+	end
+
 	AddClassPostConstruct("widgets/statusdisplays", function(self)
 		if not self.owner or self.owner.prefab ~= "wormwood" then return end
-
-		self.UpdateBoatBloomPosition = function(self)
-			if not self.boatmeter then return end
-
-			if HAS_MOD.COMBINED_STATUS then
-				if self.bloombadge.shown then self.boatmeter:SetPosition(-124, -52)
-				else self.boatmeter:SetPosition(-62, -52) end
-			else
-				if self.bloombadge.shown then self.boatmeter:SetPosition(-80, -40)
-				else self.boatmeter:SetPosition(-80, -40) end
-			end
-		end
 
 		self.bloombadge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
 		self.bloombadge:SetPosition(-120, 20)
@@ -297,19 +285,10 @@ if GetModConfigData("meter") then
 			self.bloombadge:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
-			if (data.newval - data.oldval) > 3 then
+			if (data.newval - data.oldval) >= TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD then
 				self.bloombadge:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
-		end
-
-		if self.boatmeter then
-			if not self.boatmeter.owner then self.boatmeter.owner = self end
-			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
-			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatBloomPosition() end)
-			function self.bloombadge:OnHide() self.owner:UpdateBoatBloomPosition() end
-			function self.bloombadge:OnShow() self.owner:UpdateBoatBloomPosition() end
-			self:UpdateBoatBloomPosition()
 		end
 
 		if HAS_MOD.COMBINED_STATUS then
@@ -337,6 +316,12 @@ if GetModConfigData("meter") then
 					self.parent.num:Show()
 				end
 				return _OnHide(self, ...)
+			end
+
+			if self.boatmeter then
+				self.boatmeter.inst:ListenForEvent("open_meter", function(inst)
+					inst.widget:SetPosition(-124, -52)
+				end)
 			end
 		else
 			self.bloombadge.num:SetSize(25)

@@ -9,7 +9,7 @@ local _Bloomness = Class(function(self, inst)
 	self.stage_duration = 0
 	self.full_bloom_duration = 0
 
-	self.rate = 1
+	self.rate = 0
 	self.fertilizer = 0
 	self._fertilizer = 0
 end)
