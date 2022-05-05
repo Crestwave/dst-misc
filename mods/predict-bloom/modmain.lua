@@ -40,7 +40,7 @@ end
 
 local function UpdateBloomStage(inst, stage)
 	if GetModConfigData("meter") then
-		inst.HUD.controls.status.bloom:Update()
+		inst.HUD.controls.status.bloombadge:Update()
 	end
 
 	if stage then
@@ -55,7 +55,7 @@ local function SyncBloomStage(inst)
 	if stage ~= level then
 		inst.components._bloomness:SetLevel(stage)
 
-		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloom or nil
+		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloombadge or nil
 		if badge ~= nil then
 			if stage > level then
 				badge:PulseGreen()
@@ -272,34 +272,34 @@ if GetModConfigData("meter") then
 			if not self.boatmeter then return end
 
 			if HAS_MOD.COMBINED_STATUS then
-				if self.bloom.shown then self.boatmeter:SetPosition(-124, -52)
+				if self.bloombadge.shown then self.boatmeter:SetPosition(-124, -52)
 				else self.boatmeter:SetPosition(-62, -52) end
 			else
-				if self.bloom.shown then self.boatmeter:SetPosition(-80, -40)
+				if self.bloombadge.shown then self.boatmeter:SetPosition(-80, -40)
 				else self.boatmeter:SetPosition(-80, -40) end
 			end
 		end
 
-		self.bloom = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
-		self.bloom:SetPosition(-120, 20)
-		self.bloom:Hide()
-		self._custombadge = self.bloom
+		self.bloombadge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
+		self.bloombadge:SetPosition(-120, 20)
+		self.bloombadge:Hide()
+		self._custombadge = self.bloombadge
 
 		self.onbloomdelta = function(owner, data) self:BloomDelta(data) end
 		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
 
 		function self:BloomDelta(data)
-			if not self.bloom.shown then
-				self.bloom:Show()
+			if not self.bloombadge.shown then
+				self.bloombadge:Show()
 			end
 
-			self.bloom:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
+			self.bloombadge:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
 			if data.level == 0 then
-				self.bloom:Hide()
+				self.bloombadge:Hide()
 			elseif (data.newval - data.oldval) > 3 then
-				self.bloom:PulseGreen()
+				self.bloombadge:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
 		end
@@ -308,22 +308,22 @@ if GetModConfigData("meter") then
 			if not self.boatmeter.owner then self.boatmeter.owner = self end
 			self.boatmeter.inst:ListenForEvent("open_meter", function() self:UpdateBoatBloomPosition() end)
 			self.boatmeter.inst:ListenForEvent("close_meter", function() self:UpdateBoatBloomPosition() end)
-			function self.bloom:OnHide() self.owner:UpdateBoatBloomPosition() end
-			function self.bloom:OnShow() self.owner:UpdateBoatBloomPosition() end
+			function self.bloombadge:OnHide() self.owner:UpdateBoatBloomPosition() end
+			function self.bloombadge:OnShow() self.owner:UpdateBoatBloomPosition() end
 			self:UpdateBoatBloomPosition()
 		end
 
 		if HAS_MOD.COMBINED_STATUS then
 			local Text = require("widgets/text")
-			self.bloom:SetPosition(-62, -52)
-			self.bloom.maxnum:MoveToFront()
-			self.bloom.rate = self.bloom:AddChild(Text(_G.NUMBERFONT, 28))
-			self.bloom.rate:SetPosition(2, -40.5, 0)
-			self.bloom.rate:SetScale(1,.78,1)
-			self.bloom.rate:Hide()
+			self.bloombadge:SetPosition(-62, -52)
+			self.bloombadge.maxnum:MoveToFront()
+			self.bloombadge.rate = self.bloombadge:AddChild(Text(_G.NUMBERFONT, 28))
+			self.bloombadge.rate:SetPosition(2, -40.5, 0)
+			self.bloombadge.rate:SetScale(1,.78,1)
+			self.bloombadge.rate:Hide()
 
-			local _OnShow = self.bloom.maxnum.OnShow
-			self.bloom.maxnum.OnShow = function(self, ...)
+			local _OnShow = self.bloombadge.maxnum.OnShow
+			self.bloombadge.maxnum.OnShow = function(self, ...)
 				self.parent.num:Hide()
 				if self.parent.active then
 					self.parent.rate:Show()
@@ -331,8 +331,8 @@ if GetModConfigData("meter") then
 				return _OnShow(self, ...)
 			end
 
-			local _OnHide = self.bloom.maxnum.OnHide
-			self.bloom.maxnum.OnHide = function(self, ...)
+			local _OnHide = self.bloombadge.maxnum.OnHide
+			self.bloombadge.maxnum.OnHide = function(self, ...)
 				self.parent.rate:Hide()
 				if self.parent.active then
 					self.parent.num:Show()
@@ -340,23 +340,23 @@ if GetModConfigData("meter") then
 				return _OnHide(self, ...)
 			end
 		else
-			self.bloom.num:SetSize(25)
-			self.bloom.num:SetScale(1,.9,1)
-			self.bloom.num:SetPosition(3, 3)
-			self.bloom.num:MoveToFront()
+			self.bloombadge.num:SetSize(25)
+			self.bloombadge.num:SetScale(1,.9,1)
+			self.bloombadge.num:SetPosition(3, 3)
+			self.bloombadge.num:MoveToFront()
 
 			local _ShowStatusNumbers = self.ShowStatusNumbers
 			self.ShowStatusNumbers = function(self, ...)
-				if self.bloom ~= nil then
-					self.bloom.num:Show()
+				if self.bloombadge ~= nil then
+					self.bloombadge.num:Show()
 				end
 				return _ShowStatusNumbers(self, ...)
 			end
 
 			local _HideStatusNumbers = self.HideStatusNumbers
 			self.HideStatusNumbers = function(self, ...)
-				if self.bloom ~= nil then
-					self.bloom.num:Hide()
+				if self.bloombadge ~= nil then
+					self.bloombadge.num:Hide()
 				end
 				return _HideStatusNumbers(self, ...)
 			end
