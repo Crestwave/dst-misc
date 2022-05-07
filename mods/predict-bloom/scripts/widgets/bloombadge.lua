@@ -46,6 +46,7 @@ local RATE_SCALE_ANIM =
     [RATE_SCALE.DECREASE_HIGH] = "arrow_loop_decrease_most",
     [RATE_SCALE.DECREASE_MED] = "arrow_loop_decrease_more",
     [RATE_SCALE.DECREASE_LOW] = "arrow_loop_decrease",
+    [RATE_SCALE.NEUTRAL] = "neutral",
 }
 
 function BloomBadge:SetPercent(val, max, rate, is_blooming)

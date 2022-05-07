@@ -24,9 +24,18 @@ configuration_options = {
 		name = "meter",
 		label = "Show Meter",
 		options = {
-				{ description = "Yes", data = true },
-				{ description = "No", data = false },
+			{ description = "Yes", data = true },
+			{ description = "No", data = false },
 		},
         	default = true,
+	},
+	{
+		name = "stage",
+		label = "Show Stage 0",
+		options = {
+			{ description = "Yes", data = true },
+			{ description = "No", data = false },
+		},
+		default = true,
 	},
 }

@@ -44,6 +44,10 @@ local function UpdateBloomStage(inst, stage)
 	end
 
 	if stage then
+		if not GetModConfigData("stage") and stage == 0 then
+			inst.HUD.controls.status.bloombadge:Hide()
+		end
+
 		print("Stage: " .. stage)
 	end
 end
@@ -103,7 +107,7 @@ AddPlayerPostInit(function(inst)
 			end
 
 			SyncBloomStage(inst)
-			UpdateBloomStage(inst)
+			UpdateBloomStage(inst, inst.components._bloomness:GetLevel())
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
@@ -299,15 +303,6 @@ if GetModConfigData("meter") then
 			self.bloombadge.rate:SetScale(1,.78,1)
 			self.bloombadge.rate:Hide()
 
-			local _OnShow = self.bloombadge.maxnum.OnShow
-			self.bloombadge.maxnum.OnShow = function(self, ...)
-				self.parent.num:Hide()
-				if self.parent.active then
-					self.parent.rate:Show()
-				end
-				return _OnShow(self, ...)
-			end
-
 			local _OnHide = self.bloombadge.maxnum.OnHide
 			self.bloombadge.maxnum.OnHide = function(self, ...)
 				self.parent.rate:Hide()
@@ -317,9 +312,35 @@ if GetModConfigData("meter") then
 				return _OnHide(self, ...)
 			end
 
+			local _OnShow = self.bloombadge.maxnum.OnShow
+			self.bloombadge.maxnum.OnShow = function(self, ...)
+				self.parent.num:Hide()
+				if self.parent.active then
+					self.parent.rate:Show()
+				end
+				return _OnShow(self, ...)
+			end
+
+
+			function self.bloombadge:OnHide()
+				if self.parent.boatmeter then
+					self.parent.boatmeter:SetPosition(-62, -52)
+				end
+			end
+
+			function self.bloombadge:OnShow()
+				if self.parent.boatmeter then
+					self.parent.boatmeter:SetPosition(-124, -52)
+				end
+			end
+
 			if self.boatmeter then
 				self.boatmeter.inst:ListenForEvent("open_meter", function(inst)
-					inst.widget:SetPosition(-124, -52)
+					if inst.widget.parent.bloombadge.shown then
+						inst.widget:SetPosition(-124, -52)
+					else
+						inst.widget:SetPosition(-62, -52)
+					end
 				end)
 			end
 		else
