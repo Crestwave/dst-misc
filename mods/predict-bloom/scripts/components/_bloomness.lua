@@ -10,6 +10,7 @@ local _Bloomness = Class(function(self, inst)
 	self.full_bloom_duration = 0
 
 	self.rate = 0
+	self.ratescale = RATE_SCALE.NEUTRAL
 	self.fertilizer = 0
 	self._fertilizer = 0
 end)
@@ -25,6 +26,7 @@ function _Bloomness:SetLevel(level)
 	if level == 0 then
 		self.level = 0
 		self.rate = 0
+		self.ratescale = RATE_SCALE.NEUTRAL
 		self.is_blooming = false
 		self:DoDelta(-self.timer)
 		self.inst:StopUpdatingComponent(self)
@@ -66,7 +68,25 @@ end
 function _Bloomness:UpdateRate()
 	if self.level > 0 then
 		self.rate = self.calcratefn ~= nil and self.calcratefn(self.inst, self.level, self.is_blooming, self.fertilizer) or 1
+
+		if self.is_blooming then
+			self.ratescale =
+				(self.rate >= 2.5 and RATE_SCALE.INCREASE_HIGH) or
+				(self.rate >= 1.5 and RATE_SCALE.INCREASE_MED) or
+				(self.rate > 0 and RATE_SCALE.INCREASE_LOW) or
+				RATE_SCALE.NEUTRAL
+		else
+			self.ratescale =
+				(self.rate >= 2.5 and RATE_SCALE.DECREASE_HIGH) or
+				(self.rate >= 1.5 and RATE_SCALE.DECREASE_MED) or
+				(self.rate > 0 and RATE_SCALE.DECREASE_LOW) or
+				RATE_SCALE.NEUTRAL
+		end
 	end
+end
+
+function _Bloomness:GetRateScale()
+	return self.ratescale
 end
 
 function _Bloomness:Fertilize(value)

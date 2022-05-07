@@ -270,7 +270,7 @@ if GetModConfigData("meter") then
 	AddClassPostConstruct("widgets/statusdisplays", function(self)
 		if not self.owner or self.owner.prefab ~= "wormwood" then return end
 
-		self.bloombadge = self:AddChild(BloomBadge(self, HAS_MOD.COMBINED_STATUS))
+		self.bloombadge = self:AddChild(BloomBadge(self.owner, HAS_MOD.COMBINED_STATUS))
 		self.bloombadge:SetPosition(-120, 20)
 		self._custombadge = self.bloombadge
 
@@ -294,7 +294,6 @@ if GetModConfigData("meter") then
 		if HAS_MOD.COMBINED_STATUS then
 			local Text = require("widgets/text")
 			self.bloombadge:SetPosition(-62, -52)
-			self.bloombadge.maxnum:MoveToFront()
 			self.bloombadge.rate = self.bloombadge:AddChild(Text(_G.NUMBERFONT, 28))
 			self.bloombadge.rate:SetPosition(2, -40.5, 0)
 			self.bloombadge.rate:SetScale(1,.78,1)
@@ -327,7 +326,6 @@ if GetModConfigData("meter") then
 			self.bloombadge.num:SetSize(25)
 			self.bloombadge.num:SetScale(1,.9,1)
 			self.bloombadge.num:SetPosition(3, 3)
-			self.bloombadge.num:MoveToFront()
 
 			local _ShowStatusNumbers = self.ShowStatusNumbers
 			self.ShowStatusNumbers = function(self, ...)
