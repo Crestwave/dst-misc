@@ -44,8 +44,12 @@ local function UpdateBloomStage(inst, stage)
 	end
 
 	if stage then
-		if not GetModConfigData("stage") and stage == 0 then
-			inst.HUD.controls.status.bloombadge:Hide()
+		if not GetModConfigData("stage") then
+			if stage == 0 then
+				inst.HUD.controls.status.bloombadge:Hide()
+			elseif not self.bloombadge.shown then
+				inst.HUD.controls.status.bloombadge:Show()
+			end
 		end
 
 		print("Stage: " .. stage)
@@ -282,10 +286,6 @@ if GetModConfigData("meter") then
 		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
 
 		function self:BloomDelta(data)
-			if not self.bloombadge.shown then
-				self.bloombadge:Show()
-			end
-
 			self.bloombadge:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
