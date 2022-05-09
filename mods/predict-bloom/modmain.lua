@@ -374,12 +374,12 @@ if GetModConfigData("meter") then
 			if maincharacter.prefab == "wormwood" then
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_NAMES.Bloom = "Bloom"
 				_G.STRINGS._STATUS_ANNOUNCEMENTS._.STAT_EMOJI.Bloom = "poop"
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_0 = { BLOOM = { ANY = "Need smelly stuff." } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_4 = { BLOOM = { ANY = "Drooping..." } }
-				_G.STRINGS._STATUS_ANNOUNCEMENTS.WORMWOOD.STAGE_5 = { BLOOM = { ANY = "Feeling droopy..." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_0 = { BLOOM = { ANY = "Need smelly stuff." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_1 = { BLOOM = { ANY = "Feeling bloomy!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_2 = { BLOOM = { ANY = "Grow!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_3 = { BLOOM = { ANY = "Blooming!" } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_4 = { BLOOM = { ANY = "Drooping..." } }
+				_G.STRINGS._STATUS_ANNOUNCEMENTS.UNKNOWN.STAGE_5 = { BLOOM = { ANY = "Feeling droopy..." } }
 
 				self.inst:DoTaskInTime(0, function()
 					if self._StatusAnnouncer then
