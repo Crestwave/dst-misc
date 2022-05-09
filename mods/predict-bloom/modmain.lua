@@ -260,7 +260,9 @@ if GetModConfigData("meter") then
 	-- Mod compatibility stuff by rezecib (https://steamcommunity.com/profiles/76561198025931302)
 	local CHECK_MODS = {
 		["workshop-376333686"] = "COMBINED_STATUS",
+		["CombinedStatus"] = "COMBINED_STATUS",
 		["workshop-343753877"] = "STATUS_ANNOUNCEMENTS",
+		["StatusAnnouncements"] = "STATUS_ANNOUNCEMENTS",
 	}
 	local HAS_MOD = {}
 	--If the mod is already loaded at this point
@@ -385,13 +387,13 @@ if GetModConfigData("meter") then
 					if self._StatusAnnouncer then
 						self._StatusAnnouncer:RegisterStat(
 							"Bloom",
-							self.controls.status._custombadge,
+							self.controls.status.bloombadge,
 							_G.CONTROL_ROTATE_LEFT,
 							{},
 							{"ANY"},
 							function(ThePlayer)
-								return	self.controls.status._custombadge.val,
-										self.controls.status._custombadge.max
+								return	self.controls.status.bloombadge.val,
+										self.controls.status.bloombadge.max
 							end,
 							function(ThePlayer)
 								local level = ThePlayer.components._bloomness:GetLevel()
