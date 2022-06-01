@@ -115,14 +115,16 @@ AddPrefabPostInit("world", function(inst)
 	local UpvalueHacker = GLOBAL.require("tools/upvaluehacker")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerFadeDirty")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerHUDDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerCameraSnap")
 
 	_DoRecipeClick = GLOBAL.DoRecipeClick
 	GLOBAL.DoRecipeClick = function(owner, recipe, skin)
 		if recipe ~= nil and owner ~= nil and owner.replica.builder ~= nil then
-			if owner:HasTag("busy") then
+			if recipe.placer == nil and owner:HasTag("busy") then
 				owner.replica.builder:MakeRecipeFromMenu(recipe, skin)
+				return true
 			else
-				_DoRecipeClick(owner, recipe, skin)
+				return _DoRecipeClick(owner, recipe, skin)
 			end
 		end
 	end
