@@ -127,3 +127,8 @@ AddPrefabPostInit("world", function(inst)
 		end
 	end
 end)
+
+AddClassPostConstruct("widgets/controls", function(self)
+	self._HideCraftingAndInventory = self.HideCraftingAndInventory
+	self.HideCraftingAndInventory = function() end
+end)
