@@ -110,3 +110,9 @@ for i, prefab in ipairs(prefabs) do
 		end
 	end)
 end
+
+AddPrefabPostInit("world", function(inst)
+	local UpvalueHacker = GLOBAL.require("tools/upvaluehacker")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerFadeDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerHUDDirty")
+end)
