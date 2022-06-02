@@ -113,7 +113,7 @@ end
 
 AddPrefabPostInit("world", function(inst)
 	local UpvalueHacker = GLOBAL.require("tools/upvaluehacker")
-	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerFadeDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() GLOBAL.TheCamera:Snap() end, "RegisterNetListeners", "OnPlayerFadeDirty")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerHUDDirty")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerCameraSnap")
 
