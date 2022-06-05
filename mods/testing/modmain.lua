@@ -1,4 +1,5 @@
 local _G = GLOBAL
+local UpvalueHacker = require("tools/upvaluehacker")
 
 -- Remove name obfuscation for Wagstaff tools
 for i=1,5 do
@@ -111,9 +112,9 @@ for i, prefab in ipairs(prefabs) do
 	end)
 end
 
+-- Prevent screen blackouts and inventory hiding
 AddPrefabPostInit("world", function(inst)
-	local UpvalueHacker = GLOBAL.require("tools/upvaluehacker")
-	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function(inst) if inst.fadetime:value() <= 0 then inst:DoTaskInTime(0, GLOBAL.TheCamera:Snap()) end end, "RegisterNetListeners", "OnPlayerFadeDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function(inst) if inst.fadetime:value() <= 0 then inst:DoTaskInTime(1, GLOBAL.TheCamera:Snap()) end end, "RegisterNetListeners", "OnPlayerFadeDirty")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerHUDDirty")
 	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerCameraSnap")
 
@@ -134,3 +135,12 @@ AddClassPostConstruct("widgets/controls", function(self)
 	self._HideCraftingAndInventory = self.HideCraftingAndInventory
 	self.HideCraftingAndInventory = function() end
 end)
+
+-- Disable lazy explorer telepoofs unless CONTROL_FORCE_STACK is held
+local COMPONENT_ACTIONS = UpvalueHacker.GetUpvalue(_G.EntityScript.CollectActions, "COMPONENT_ACTIONS")
+local _blinkstaff = COMPONENT_ACTIONS.POINT.blinkstaff
+COMPONENT_ACTIONS.POINT.blinkstaff = function(inst, doer, pos, actions, right)
+	if doer.components.playercontroller ~= nil and doer.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_STACK) then
+		return _blinkstaff(inst, doer, pos, actions, right)
+	end
+end
