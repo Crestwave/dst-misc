@@ -42,7 +42,22 @@ launch() (
 monitor() {
 	while sleep 30; do
 		count=$(( count + 1 ))
-		if [ "$count" -ge 10 ]; then
+		if [ "$count" -ge 20 ]; then
+			for shard in Master Caves; do
+				(cd ../dedi/bin64 || exit
+				./dontstarve_dedicated_server_nullrenderer_x64 -only_update_server_mods -secondary_log_prefix "$cluster"/"$shard"/mod -cluster "$cluster" -shard "$shard")
+			done
+
+			if grep -q 'DownloadPublishedFile' "$cluster"/Master/mod_server_log.txt "$cluster"/Caves/mod_server_log.txt; then
+				seconds=300
+				send "$master" "c_announce('Mods out of date; initiating save and restart in $(( seconds - 10 )) seconds...')"
+				sleep "$(( seconds - 10 ))"
+				send "$master" 'c_announce("Restarting server in 10 seconds...")'
+				send "$master" 'c_save()'
+				sleep 10
+				send "$master" 'c_shutdown()'
+			fi
+
 			if outdated; then
 				seconds=$(date +%s)
 				send "$master" "c_announce('Downloading server update $remote...')"
