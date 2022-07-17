@@ -634,7 +634,7 @@ AddPrefabPostInit("beefalo", function(inst)
     inst:ListenForEvent("attacked", function(inst, data)
         if data.attacker ~= nil and data.attacker:HasTag("player") then
             if inst.components.follower ~= nil and inst.components.follower:GetLeader() ~= nil then
-                local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %2.f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
+                local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %.2f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 print(logstring)
             end
@@ -645,7 +645,7 @@ end)
 AddPrefabPostInit("eyeturret", function(inst)
     inst:ListenForEvent("attacked", function(inst, data)
         if data.attacker ~= nil and data.attacker:HasTag("player") then
-            local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %2.f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
+            local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %.2f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
         end
@@ -704,7 +704,7 @@ AddComponentPostInit("burnable", function(self, inst)
     end
 
     self.onburnt = function(inst)
-        local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %2.f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
+        local logstring = GLOBAL.string.format("%s[%s] burns out! @(%.2f, %.2f, %.2f)", inst:GetDisplayName(), inst.userid or inst.GUID, inst.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         print(logstring)
     end
@@ -729,7 +729,7 @@ AddComponentPostInit("sinkholespawner", function(self, inst)
     local _DoTargetAttack = self.DoTargetAttack
     self.DoTargetAttack = function(self, targetinfo)
         if targetinfo.pos ~= nil then
-            local logstring = GLOBAL.string.format("%s[%s] targets %s[%s] @(%.2f, %.2f, %2.f)", self.inst:GetDisplayName(), self.inst.GUID, targetinfo.player and targetinfo.player:GetDisplayName() or "NIL", targetinfo.player and targetinfo.player.userid or "", targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
+            local logstring = GLOBAL.string.format("%s[%s] targets %s[%s] @(%.2f, %.2f, %.2f)", self.inst:GetDisplayName(), self.inst.GUID, targetinfo.player and targetinfo.player:GetDisplayName() or "NIL", targetinfo.player and targetinfo.player.userid or "", targetinfo.pos.x, targetinfo.pos.y, targetinfo.pos.z)
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
         end
