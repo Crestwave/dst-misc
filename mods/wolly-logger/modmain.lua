@@ -179,7 +179,9 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("reading") == "all" or
             desc == " casts " or
+            desc == " shoots " or
             desc == " unwraps " or
+            desc == " deploys " or
             desc == " patches " or
             desc == " picks " and (GetModConfigData("picking") == "all" or GetModConfigData("picking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("crockpot") == "all") then
@@ -192,7 +194,9 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("discordpickup") == "all" or GetModConfigData("discordpickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
             desc == " casts " or
+            desc == " shoots " or
             desc == " unwraps " or
+            desc == " deploys " or
             desc == " patches " or
             desc == " picks " and (GetModConfigData("discordpicking") == "all" or GetModConfigData("discordpicking") == "flower" and obj:HasTag("flower")) or 
             desc == " steals from " and GetModConfigData("discordcrockpot") == "all") then
@@ -349,6 +353,8 @@ local old_PLAY = GLOBAL.ACTIONS.PLAY.fn
 local old_UNWRAP = GLOBAL.ACTIONS.UNWRAP.fn
 local old_REPAIR_LEAK = GLOBAL.ACTIONS.REPAIR_LEAK.fn
 local old_SMOTHER = GLOBAL.ACTIONS.SMOTHER.fn
+local old_BOAT_CANNON_SHOOT = GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn
+local old_DEPLOY = GLOBAL.ACTIONS.DEPLOY.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -603,6 +609,27 @@ GLOBAL.ACTIONS.SMOTHER.fn = function(act)
     return successful
 end
 
+GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn = function(act)
+    local obj = act.doer.components.boatcannonuser and act.doer.components.boatcannonuser:GetCannon()
+    local successful = old_BOAT_CANNON_SHOOT(act)
+    GLOBAL.pcall(function(successful, act, obj)
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " shoots ", ":gun: ")
+        end
+    end, successful, act, obj)
+    return successful
+end
+
+GLOBAL.ACTIONS.DEPLOY.fn = function(act)
+    local successful = old_DEPLOY(act)
+    GLOBAL.pcall(function(successful, act, obj)
+    if successful and act.invobject:HasTag("groundtile") then
+            logdebugaction(act, act.invobject, " deploys ", ":beach_umbrella: ")
+        end
+    end, successful, act, obj)
+    return successful
+end
+
 AddPrefabPostInit("beefalo", function(inst)
     inst:ListenForEvent("attacked", function(inst, data)
         if data.attacker ~= nil and data.attacker:HasTag("player") then
@@ -611,6 +638,16 @@ AddPrefabPostInit("beefalo", function(inst)
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 print(logstring)
             end
+        end
+    end)
+end)
+
+AddPrefabPostInit("eyeturret", function(inst)
+    inst:ListenForEvent("attacked", function(inst, data)
+        if data.attacker ~= nil and data.attacker:HasTag("player") then
+            local logstring = GLOBAL.string.format("%s[%s] attacks %s[%s] @(%.2f, %.2f, %2.f)", data.attacker:GetDisplayName(), data.attacker.userid, inst:GetDisplayName(), inst.GUID, inst.Transform:GetWorldPosition())
+            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            print(logstring)
         end
     end)
 end)
@@ -632,6 +669,14 @@ AddPrefabPostInit("boat_leak", function(inst)
             logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
             print(logstring)
         end
+    end)
+end)
+
+AddPrefabPostInit("fx_dock_pop", function(inst)
+    inst:DoTaskInTime(0, function(inst)
+        local logstring = GLOBAL.string.format("Dock breaks @(%.2f, %.2f, %.2f)", inst.Transform:GetWorldPosition())
+        logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+        print(logstring)
     end)
 end)
 
