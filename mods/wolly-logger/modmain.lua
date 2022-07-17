@@ -674,7 +674,7 @@ end)
 
 AddPrefabPostInit("fx_dock_pop", function(inst)
     inst:DoTaskInTime(0, function(inst)
-        local logstring = GLOBAL.string.format("Dock breaks @(%.2f, %.2f, %.2f)", inst.Transform:GetWorldPosition())
+        local logstring = GLOBAL.string.format("Dock breaks! @(%.2f, %.2f, %.2f)", inst.Transform:GetWorldPosition())
         logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
         print(logstring)
     end)
