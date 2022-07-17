@@ -362,8 +362,8 @@ GLOBAL.ACTIONS.READ.fn = function(act)
     GLOBAL.pcall(function(successful, act)
         local obj = act.target or act.invobject
         if successful then
+            logdebugaction(act, obj, " casts spell ", ":sparkles: ")
             if obj.prefab == "book_brimstone" then
-                logdebugaction(act, obj, " casts spell ", ":sparkles: ")
                 local x,y,z = act.doer.Transform:GetWorldPosition()
                 local ents = GLOBAL.TheSim:FindEntities(x, y, z, 30, {"player"}, { "INLIMBO" })
                 local victim_count = 0
@@ -381,7 +381,6 @@ GLOBAL.ACTIONS.READ.fn = function(act)
                 end
                 end
             elseif (obj.prefab == "book_tentacles") then
-                logdebugaction(act, obj, " casts spell ", ":sparkles: ")
                 local x,y,z = act.doer.Transform:GetWorldPosition()
                 local ents = GLOBAL.TheSim:FindEntities(x, y, z, 30, nil, { "INLIMBO" })
                 for i,v in ipairs(ents) do
@@ -622,11 +621,12 @@ end
 
 GLOBAL.ACTIONS.DEPLOY.fn = function(act)
     local successful = old_DEPLOY(act)
-    GLOBAL.pcall(function(successful, act, obj)
-    if successful and act.invobject:HasTag("groundtile") then
-            logdebugaction(act, act.invobject, " deploys ", ":beach_umbrella: ")
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject
+        if successful and obj ~= nil and obj:HasTag("groundtile") then
+            logdebugaction(act, obj, " deploys ", ":beach_umbrella: ")
         end
-    end, successful, act, obj)
+    end, successful, act)
     return successful
 end
 
