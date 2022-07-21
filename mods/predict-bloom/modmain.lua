@@ -2,6 +2,7 @@ local _G = GLOBAL
 local AutoSaveManager = require("autosavemanager")
 local BloomBadge = require("widgets/bloombadge")
 local BloomSaver = nil
+local badge = nil
 local inittask = false
 
 local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
@@ -39,12 +40,12 @@ local function OnSeasonChange(inst, season)
 end
 
 local function UpdateBloomStage(inst, stage)
-	if GetModConfigData("meter") then
-		inst.HUD.controls.status.bloombadge:UpdateIcon()
+	if badge ~= nil then
+		badge:UpdateIcon()
 	end
 
 	if stage then
-		if not GetModConfigData("stage") then
+		if not GetModConfigData("stage") and badge ~= nil then
 			if stage == 0 then
 				inst.HUD.controls.status.bloombadge:Hide()
 			elseif not self.bloombadge.shown then
@@ -63,7 +64,6 @@ local function SyncBloomStage(inst)
 	if stage ~= level then
 		inst.components._bloomness:SetLevel(stage)
 
-		local badge = GetModConfigData("meter") and inst.HUD.controls.status.bloombadge or nil
 		if badge ~= nil then
 			if stage > level then
 				badge:PulseGreen()
@@ -116,8 +116,18 @@ AddPlayerPostInit(function(inst)
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
 					_G.ThePlayer.components._bloomness:SetLevel(0)
+					if badge ~= nil then
+						badge:Hide()
+					end
 				elseif _G.TheWorld.state.isspring then
 					_G.ThePlayer.components._bloomness:Fertilize()
+					if badge ~= nil then
+						badge:Show()
+					end
+				else
+					if GetModConfigData("stage") and badge ~= nil then
+						badge:Show()
+					end
 				end
 			end)
 		end
@@ -286,12 +296,13 @@ if GetModConfigData("meter") then
 		self.bloombadge = self:AddChild(BloomBadge(self.owner, HAS_MOD.COMBINED_STATUS))
 		self.bloombadge:SetPosition(-120, 20)
 		self._custombadge = self.bloombadge
+		badge = self.bloombadge
 
 		self.onbloomdelta = function(owner, data) self:BloomDelta(data) end
 		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
 
 		function self:BloomDelta(data)
-			self.bloombadge:SetPercent(data.newval, data.max, data.rate, data.is_blooming)
+			self.bloombadge:SetPercent(math.min(data.newval, 0), data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
 			if (data.newval - data.oldval) >= TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD then
