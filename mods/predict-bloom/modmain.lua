@@ -189,13 +189,15 @@ AddPrefabPostInit("world", function(inst)
 
 						if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
 							if inst.isperformactionsuccess:value() then
-								local val = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab].nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+								local defs = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab]
+								if defs ~= nil and defs.nutrients ~= nil then
+									local val = defs.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
-								if val > 0 then
-									_G.ThePlayer.components._bloomness:Fertilize(val)
-									print("FERTILIZE SUCCESS: " ..tostring(val))
+									if val > 0 then
+										_G.ThePlayer.components._bloomness:Fertilize(val)
+										print("FERTILIZE SUCCESS: " ..tostring(val))
+									end
 								end
-
 							end
 
 							chain = true
@@ -221,6 +223,7 @@ AddPrefabPostInit("world", function(inst)
 							self.inst.components._bloomness:Fertilize(value)
 							print("FERTILIZE SUCCESS: " ..tostring(value))
 						end
+
 						return _Fertilize(self, value)
 					end
 
@@ -305,24 +308,41 @@ if GetModConfigData("meter") then
 			self.bloombadge.rate:SetScale(1,.78,1)
 			self.bloombadge.rate:Hide()
 
-			local _OnHide = self.bloombadge.maxnum.OnHide
-			self.bloombadge.maxnum.OnHide = function(self, ...)
-				self.parent.rate:Hide()
-				if self.parent.active then
-					self.parent.num:Show()
+			local _ShowStatusNumbers = self.ShowStatusNumbers
+			function self:ShowStatusNumbers()
+				_ShowStatusNumbers(self)
+				if self.bloombadge ~= nil then
+					self.bloombadge.rate:Show()
+					self.bloombadge.num:Hide()
 				end
-				return _OnHide(self, ...)
 			end
 
-			local _OnShow = self.bloombadge.maxnum.OnShow
-			self.bloombadge.maxnum.OnShow = function(self, ...)
-				self.parent.num:Hide()
-				if self.parent.active then
-					self.parent.rate:Show()
+			local _HideStatusNumbers = self.HideStatusNumbers
+			function self:HideStatusNumbers()
+				_HideStatusNumbers(self)
+				if self.bloombadge ~= nil then
+					self.bloombadge.rate:Hide()
+					self.bloombadge.num:Show()
 				end
-				return _OnShow(self, ...)
 			end
 
+			local _OnLoseFocus = self.bloombadge.OnLoseFocus
+			function self.bloombadge:OnLoseFocus()
+				_OnLoseFocus(self)
+				self.rate:Hide()
+				if self.active then
+					self.num:Show()
+				end
+			end
+
+			local _OnGainFocus = self.bloombadge.OnGainFocus
+			function self.bloombadge:OnGainFocus()
+				_OnGainFocus(self)
+				self.num:Hide()
+				if self.active then
+					self.rate:Show()
+				end
+			end
 
 			function self.bloombadge:OnHide()
 				if self.parent.boatmeter then
@@ -351,19 +371,19 @@ if GetModConfigData("meter") then
 			self.bloombadge.num:SetPosition(3, 3)
 
 			local _ShowStatusNumbers = self.ShowStatusNumbers
-			self.ShowStatusNumbers = function(self, ...)
+			function self:ShowStatusNumbers()
+				_ShowStatusNumbers(self)
 				if self.bloombadge ~= nil then
 					self.bloombadge.num:Show()
 				end
-				return _ShowStatusNumbers(self, ...)
 			end
 
 			local _HideStatusNumbers = self.HideStatusNumbers
-			self.HideStatusNumbers = function(self, ...)
+			function self:HideStatusNumbers()
+				_HideStatusNumbers(self)
 				if self.bloombadge ~= nil then
 					self.bloombadge.num:Hide()
 				end
-				return _HideStatusNumbers(self, ...)
 			end
 		end
 	end)
