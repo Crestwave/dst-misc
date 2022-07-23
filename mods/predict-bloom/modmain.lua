@@ -302,7 +302,7 @@ if GetModConfigData("meter") then
 		self.inst:ListenForEvent("bloomdelta", self.onbloomdelta, self.owner)
 
 		function self:BloomDelta(data)
-			self.bloombadge:SetPercent(math.min(data.newval, 0), data.max, data.rate, data.is_blooming)
+			self.bloombadge:SetPercent(math.max(data.newval, 0), data.max, data.rate, data.is_blooming)
 			SyncBloomStage(self.owner)
 
 			if (data.newval - data.oldval) >= TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD then
