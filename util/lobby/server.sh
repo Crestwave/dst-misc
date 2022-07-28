@@ -19,6 +19,5 @@ while read -p "Server: " -er line; do
 	grep -i -- "$line" hosts-full.csv
 	printf "\n"
 	./watch.sh <(grep -i -- "$line" hosts-full.csv)
+	history -w
 done
-
-history -w
