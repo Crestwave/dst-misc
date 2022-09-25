@@ -99,6 +99,7 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
 			inst.components._bloomness:DoDelta(0)
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
+			inst:ListenForEvent("bloomdelta", function(data) SyncBloomStage(inst) end)
 			inst:WatchWorldState("season", OnSeasonChange)
 
 			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
@@ -303,7 +304,6 @@ if GetModConfigData("meter") then
 
 		function self:BloomDelta(data)
 			self.bloombadge:SetPercent(math.max(data.newval, 0), data.max, data.rate, data.is_blooming)
-			SyncBloomStage(self.owner)
 
 			if (data.newval - data.oldval) >= TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD then
 				self.bloombadge:PulseGreen()
