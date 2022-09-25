@@ -48,7 +48,7 @@ local function UpdateBloomStage(inst, stage)
 		if not GetModConfigData("stage") and badge ~= nil then
 			if stage == 0 then
 				inst.HUD.controls.status.bloombadge:Hide()
-			elseif not self.bloombadge.shown then
+			elseif not inst.HUD.controls.status.bloombadge.shown then
 				inst.HUD.controls.status.bloombadge:Show()
 			end
 		end
