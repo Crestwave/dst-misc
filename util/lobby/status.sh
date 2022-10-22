@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 ./server.sh '~'
-./get-hosts.sh -v >serverlist2
 awk '
 	/[[:digit:]]+-[[:digit:]]+$/ {
 		split($NF, r, "-")
@@ -17,7 +16,7 @@ latest=$(curl -s https://s3.amazonaws.com/dstbuilds/builds.json | jq '.release[-
 
 while read -r line; do
 	[[ $line == *Beta* ]] && continue
-	sv=$(grep ",\(\[󰀘\] \)\?$line," serverlist2 || echo "$line" DOWN >&2)
+	sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv || echo "$line" DOWN >&2)
 	if [[ $sv ]]; then
 		IFS=, read -r host name region version group <<<"$sv"
 		if [[ $version != $latest ]]; then

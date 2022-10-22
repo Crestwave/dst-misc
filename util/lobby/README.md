@@ -22,6 +22,8 @@ The overall goal of this set is to periodically query data from specific servers
 * `fetch-row.sh` - `fetch.sh`, but queries for a specific server (*region* *row*).
 * `row-info.sh` - Extracts some basic info about a row.
 * `watch.sh` - Parses `get-hosts.sh` output to invoke `fetch-row.sh` and `row-info.sh`.
+* `version.sh` - Fetches the latest server version; requires `jq` (*-b* for beta).
 * `server.sh` - Bash script for easily searching servers.
+* `status.sh` - Bash script for easily checking the status of a list of servers.
 
 For more information, see [watch.md](watch.md).
