@@ -32,6 +32,17 @@ get_server() {
 					[ "$4" != 1 ] && get_server "$@" 1
 					exit
 					;;
+				'<html>'*)
+					while read -r err; do
+						case $err in *'<title>'*)
+							err="${err##*'<title>'}"
+							err="${err%%'</title>'*}"
+							printf 'Received response: %s\n' "$err" >&2
+						esac
+					done <row/"$id".json
+
+					continue
+					;;
 			esac
 
 			./row-info.sh row/"$id".json
