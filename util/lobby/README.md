@@ -24,6 +24,6 @@ The overall goal of this set is to periodically query data from specific servers
 * `watch.sh` - Parses `get-hosts.sh` output to invoke `fetch-row.sh` and `row-info.sh`.
 * `version.sh` - Fetches the latest server version; requires `jq` (*-b* for beta).
 * `server.sh` - Bash script for easily searching servers.
-* `status.sh` - Bash script for easily checking the status of a list of servers.
+* `status.sh` - Bash script for easily checking the status of a list of servers (*-b* for beta, *-c* for cached data).
 
 For more information, see [watch.md](watch.md).

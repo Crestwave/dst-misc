@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
-./server.sh '~'
+while getopts bc opt; do
+	case $opt in
+		b) b=1 ;;
+		c) c=1 ;;
+	esac
+done
+
+shift $(( OPTIND - 1 ))
+
+[[ -z $c ]] && ./server.sh '~'
+
 awk '
 	/[[:digit:]]+-[[:digit:]]+$/ {
 		split($NF, r, "-")
@@ -10,17 +20,20 @@ awk '
 	}
 	
 	{ print }
-	' serverlist >grouplist
+	' "${1:-serverlist}" >grouplist
 
-latest=$(curl -s https://s3.amazonaws.com/dstbuilds/builds.json | jq '.release[-1] | tonumber')
+latest=$(./version.sh ${b:+"-b"})
 
 while read -r line; do
-	[[ $line == *Beta* ]] && continue
-	sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv || echo "$line" DOWN >&2)
-	if [[ $sv ]]; then
-		IFS=, read -r host name region version group <<<"$sv"
-		if [[ $version != $latest ]]; then
-			echo "$line" OUTDATED
+	if [[ -n $b && $line == *Beta* ]] || [[ -z $b && $line != *Beta* ]]; then
+		sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv)
+		if [[ -n $sv ]]; then
+			IFS=, read -r host name region version group <<<"$sv"
+			if [[ $version != $latest ]]; then
+				printf '%s %s\n' "$line" OUTDATED
+			fi
+		else
+			printf '%s %s\n' "$line" DOWN
 		fi
 	fi
 done <grouplist
