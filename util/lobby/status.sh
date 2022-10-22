@@ -8,6 +8,7 @@ done
 
 shift $(( OPTIND - 1 ))
 
+[[ -f env.sh ]] && . env.sh
 [[ -z $c ]] && ./server.sh '~'
 
 awk '
@@ -29,7 +30,7 @@ while read -r line; do
 		sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv)
 		if [[ -n $sv ]]; then
 			IFS=, read -r host name region version group <<<"$sv"
-			if [[ $version != $latest ]]; then
+			if [[ $version != $latest ]] && [[ -z $KLEI_STEAMCLANID || $KLEI_STEAMCLANID == $group ]]; then
 				printf '%s %s\n' "$line" OUTDATED
 			fi
 		else
