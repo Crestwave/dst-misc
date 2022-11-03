@@ -27,7 +27,7 @@ latest=$(./version.sh ${b:+"-b"})
 
 while read -r line; do
 	if [[ -n $b && $line == *Beta* ]] || [[ -z $b && $line != *Beta* ]]; then
-		sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv)
+		sv=$(grep ",\(\[󰀘\] \)\?$line," hosts-full.csv | sort -r)
 		if [[ -n $sv ]]; then
 			IFS=, read -r host name region version group <<<"$sv"
 			if [[ $version != $latest ]] && [[ -z $KLEI_STEAMCLANID || $KLEI_STEAMCLANID == $group ]]; then
