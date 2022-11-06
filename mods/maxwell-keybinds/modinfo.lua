@@ -1,7 +1,7 @@
 name = "Maxwell Keybinds"
 author = "Crestwave"
 description = [[
-Lets Maxwell use X to cast his Codex Umbra and R to access his Magician's Top Hat.
+Lets Maxwell use X to cast or refuel his Codex Umbra and R to access his Magician's Top Hat.
 
 Keybinds are configurable.
 ]]
