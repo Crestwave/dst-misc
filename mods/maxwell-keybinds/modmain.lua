@@ -37,10 +37,20 @@ _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 			local item = GetItem("waxwelljournal")
 
 			if item ~= nil then
-				for k, v in pairs(_G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)) do
-					if v.action == _G.ACTIONS.USESPELLBOOK then
-						item.components.spellbook:OpenSpellBook(_G.ThePlayer)
-						_G.SendRPCToServer(_G.RPC.UseItemFromInvTile, _G.ACTIONS.USESPELLBOOK.code, item)
+				if item.replica.inventoryitem.classified.percentused:value() == 0 then
+					local fuel = GetItem("nightmarefuel")
+
+					if fuel ~= nil then
+						_G.ThePlayer.replica.inventory:ControllerUseItemOnItemFromInvTile(item, fuel)
+					else
+						_G.ThePlayer.replica.inventory:InspectItemFromInvTile(item)
+					end
+				else
+					for k, v in pairs(_G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)) do
+						if v.action == _G.ACTIONS.USESPELLBOOK then
+							_G.ThePlayer.replica.inventory:UseItemFromInvTile(item)
+							item.components.spellbook:OpenSpellBook(_G.ThePlayer)
+						end
 					end
 				end
 			end
