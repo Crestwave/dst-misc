@@ -23,7 +23,7 @@ configuration_options = {
 	{
 		name = "waxwelljournalkey",
 		label = "Codex Umbra Keybind",
-		hover = "Open the Codex's spell wheel",
+		hover = "Open and refuels the Codex Umbra",
 		options = {
 			--fill later
 		},
