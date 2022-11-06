@@ -29,7 +29,6 @@ end
 
 _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 	if IsDefaultScreen() then
-		-- TODO: Automatically refuel when empty
 		-- TODO: Add keybinds for picking spells
 		if _G.ThePlayer.HUD ~= nil and _G.ThePlayer.HUD:GetCurrentOpenSpellBook() ~= nil then
 			_G.ThePlayer.HUD:CloseSpellWheel()
@@ -60,7 +59,7 @@ end)
 
 _G.TheInput:AddKeyDownHandler(tophatkey, function()
 	if IsDefaultScreen() then
-		if _G.ThePlayer:HasTag("usingmagiciantool") then
+		if _G.ThePlayer:HasTag("usingmagiciantool") and (_G.ThePlayer.AnimState:IsCurrentAnimation("tophat_equipped_start") or _G.ThePlayer.AnimState:IsCurrentAnimation("tophat_loop")) then
 			local x, y, z = _G.ThePlayer.Transform:GetWorldPosition()
 			_G.SendRPCToServer(_G.RPC.RightClick, _G.ACTIONS.STOPUSINGMAGICTOOL.code, x, z, _G.ThePlayer)
 		else
