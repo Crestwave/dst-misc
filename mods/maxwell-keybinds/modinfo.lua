@@ -16,11 +16,8 @@ client_only_mod = true
 server_only_mod = false
 all_clients_require_mod = false
 
---[[
-TODO: Add icons
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
---]]
 
 configuration_options = {
 	{
