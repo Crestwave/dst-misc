@@ -12,7 +12,7 @@ shift $(( OPTIND - 1 ))
 
 if [[ -z $c ]]; then
 	./server.sh '~'
-	curl "$DST_SHEETS_URL" |
+	curl "$KLEI_SHEETS_URL" |
 		jq -r '.values | sort_by(.[2])[] | @csv' |
 		awk '{
 			if (/[[:digit:]]+-[[:digit:]]+"/) {
