@@ -12,6 +12,8 @@ shift $(( OPTIND - 1 ))
 
 if [[ -z $c ]]; then
 	./server.sh '~'
+	# example KLEI_SHEETS_URL format:
+	# https://sheets.googleapis.com/v4/spreadsheets/$KLEI_SHEETS_ID/values/Sheet1!A2:C1000?key=$SHEETS_API_KEY
 	curl "$KLEI_SHEETS_URL" |
 		jq -r '.values | sort_by(.[2])[] | @csv' |
 		awk '{

@@ -25,5 +25,6 @@ The overall goal of this set is to periodically query data from specific servers
 * `version.sh` - Fetches the latest server version; requires `jq` (*-b* for beta).
 * `server.sh` - Bash script for easily searching servers.
 * `status.sh` - Bash script for easily checking the status of a list of servers (*-b* for beta, *-c* for cached data).
+* `status2.sh` - Similar to `status.sh`, but queries the list of servers from Google Sheets.
 
 For more information, see [watch.md](watch.md).
