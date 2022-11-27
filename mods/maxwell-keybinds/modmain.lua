@@ -48,7 +48,6 @@ _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 
 				for k, v in pairs(_G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)) do
 					if v.action == _G.ACTIONS.USESPELLBOOK then
-						_G.ThePlayer.replica.inventory:UseItemFromInvTile(item)
 						item.components.spellbook:OpenSpellBook(_G.ThePlayer)
 					end
 				end
