@@ -18,7 +18,9 @@ local function GetItem(prefab, tag)
 	end
 
 	for k, v in pairs(containers) do
-		_G.ConcatArrays(items, k.replica.container:GetItems())
+		for k, v in pairs(k.replica.container:GetItems()) do
+			table.insert(items, v)
+		end
 	end
 
 	for k, v in pairs(items) do
