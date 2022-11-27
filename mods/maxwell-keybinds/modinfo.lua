@@ -6,7 +6,7 @@ Lets Maxwell use X to cast/refuel his Codex Umbra and R to access his Magician's
 Keybinds are configurable.
 ]]
 
-version = "1.2"
+version = "1.3"
 api_version = 10
 
 dst_compatible = true
