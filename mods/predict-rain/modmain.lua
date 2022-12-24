@@ -1,34 +1,52 @@
-local function PredictRainStart()
-	local MOISTURE_RATES = {
-	    MIN = {
-	        autumn = .25,
-	        winter = .25,
-	        spring = 3,
-	        summer = .1,
-	    },
-	    MAX = {
-	        autumn = 1.0,
-	        winter = 1.0,
-	        spring = 3.75,
-	        summer = .5,
-	    }
-	}
+local _G = GLOBAL
 
-	local TheWorld = GLOBAL.TheWorld
-	local world = TheWorld.net.components.weather ~= nil and "Surface" or "Caves"
-	local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
+local function PredictRainStart(world)
+	local MOISTURE_RATES
+
+	if world == "Island" or world == "Volcano" then
+		MOISTURE_RATES = {
+		    MIN = {
+		        autumn = .25,
+		        winter = .25,
+		        spring = 3,
+		        summer = .1,
+		    },
+		    MAX = {
+		        autumn = 1.0,
+		        winter = 1.0,
+		        spring = 3.75,
+		        summer = .5,
+		    }
+		}
+	else
+		MOISTURE_RATES = {
+		    MIN = {
+		        autumn = 0,
+		        winter = 3,
+		        spring = 3,
+		        summer = 0,
+		    },
+		    MAX = {
+		        autumn = 0.1,
+		        winter = 3.75,
+		        spring = 3.75,
+		        summer = -0.2,
+		    }
+		}
+	end
+
+	local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (_G.TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
 	local totalseconds = 0
-	local rain = false
 
-	local season = TheWorld.state.season
-	local seasonprogress = TheWorld.state.seasonprogress
-	local elapseddaysinseason = TheWorld.state.elapseddaysinseason
-	local remainingdaysinseason = TheWorld.state.remainingdaysinseason
+	local season = _G.TheWorld.state.season
+	local seasonprogress = _G.TheWorld.state.seasonprogress
+	local elapseddaysinseason = _G.TheWorld.state.elapseddaysinseason
+	local remainingdaysinseason = _G.TheWorld.state.remainingdaysinseason
 	local totaldaysinseason = remainingdaysinseason / (1 - seasonprogress)
 	local _totaldaysinseason = elapseddaysinseason + remainingdaysinseason
 
-	local moisture = TheWorld.state.moisture
-	local moistureceil = TheWorld.state.moistureceil
+	local moisture = _G.TheWorld.state.moisture
+	local moistureceil = _G.TheWorld.state.moistureceil
 
 	while elapseddaysinseason < _totaldaysinseason do
 		local moisturerate
@@ -36,16 +54,16 @@ local function PredictRainStart()
 		if world == "Surface" and season == "winter" and elapseddaysinseason == 2 then
 			moisturerate = 50
 		else
-			local p = 1 - math.sin(GLOBAL.PI * seasonprogress)
+			local p = 1 - math.sin(_G.PI * seasonprogress)
 			moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
+			print("MOISTURERATE: " .. tostring(moisturerate))
 		end
 
 		local _moisture = moisture + (moisturerate * remainingsecondsinday)
 	
 		if _moisture >= moistureceil then
 			totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
-			rain = true
-			break
+			return totalseconds
 		else
 			moisture = _moisture
 			totalseconds = totalseconds + remainingsecondsinday
@@ -56,41 +74,41 @@ local function PredictRainStart()
 		end
 	end
 
-	return world, totalseconds, rain
+	return false
 end
 
-local function PredictRainStop()
+local function PredictRainStop(world)
 	local PRECIP_RATE_SCALE = 10
 	local MIN_PRECIP_RATE = .1
 
-	local TheWorld = GLOBAL.TheWorld
-	local world = TheWorld.net.components.weather ~= nil and "Surface" or "Caves"
-	local dbgstr = (TheWorld.net.components.weather ~= nil and TheWorld.net.components.weather:GetDebugString()) or TheWorld.net.components.caveweather:GetDebugString()
+	local dbgstr = (world == "Island" or world == "Volcano") and _G.TheWorld.net.components.weather:GetIADebugString() or
+			world == "Surface" and _G.TheWorld.net.components.weather:GetDebugString() or
+			world == "Caves" and _G.TheWorld.net.components.caveweather:GetDebugString()
 	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:(%d+.%d+)%((%d+.%d+)/(%d+.%d+)%) %+ (%d+.%d+), preciprate:%((%d+.%d+) of (%d+.%d+)%).*")
 
-	moisture = GLOBAL.tonumber(moisture)
-	moistureceil = GLOBAL.tonumber(moistureceil)
-	moisturefloor = GLOBAL.tonumber(moisturefloor)
-	preciprate = GLOBAL.tonumber(preciprate)
-	peakprecipitationrate = GLOBAL.tonumber(peakprecipitationrate)
+	moisture = _G.tonumber(moisture)
+	moistureceil = _G.tonumber(moistureceil)
+	moisturefloor = _G.tonumber(moisturefloor)
+	preciprate = _G.tonumber(preciprate)
+	peakprecipitationrate = _G.tonumber(peakprecipitationrate)
 
 	local totalseconds = 0
 
 	while moisture > moisturefloor do
 		if preciprate > 0 then
 			local p = math.max(0, math.min(1, (moisture - moisturefloor) / (moistureceil - moisturefloor)))
-			local rate = MIN_PRECIP_RATE + (1 - MIN_PRECIP_RATE) * math.sin(p * GLOBAL.PI)
+			local rate = MIN_PRECIP_RATE + (1 - MIN_PRECIP_RATE) * math.sin(p * _G.PI)
 
 			preciprate = math.min(rate, peakprecipitationrate)
-			moisture = math.max(moisture - preciprate * GLOBAL.FRAMES * PRECIP_RATE_SCALE, 0)
+			moisture = math.max(moisture - preciprate * _G.FRAMES * PRECIP_RATE_SCALE, 0)
 
-			totalseconds = totalseconds + GLOBAL.FRAMES
+			totalseconds = totalseconds + _G.FRAMES
 		else
 			break
 		end
 	end
 
-	return world, totalseconds
+	return totalseconds
 end
 
 AddUserCommand("predictrain", {
@@ -99,7 +117,7 @@ AddUserCommand("predictrain", {
 Forecast rain start or stop.
 Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 ]],
-	permission = GLOBAL.COMMAND_PERMISSION.USER,
+	permission = _G.COMMAND_PERMISSION.USER,
 	slash = true,
 	usermenu = false,
 	servermenu = false,
@@ -111,40 +129,42 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 			return
 		end
 
-		local TheWorld = GLOBAL.TheWorld
-
 		local function Announce(msg)
-			GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, msg))
+			_G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg))
 		end
 
 		if params.mode ~= nil then
 			if params.mode == "1" then
-				Announce = function(msg) GLOBAL.TheNet:Say(string.format("%s %s", GLOBAL.STRINGS.LMB, msg), true) end
+				Announce = function(msg) _G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg), true) end
 			elseif params.mode == "2" then
-				Announce = function(msg) GLOBAL.ChatHistory:SendCommandResponse(msg) end
+				Announce = function(msg) _G.ChatHistory:SendCommandResponse(msg) end
 			elseif params.mode ~= "0" then
-				GLOBAL.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
+				_G.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
 				return
 			end
 		end
 
+		local world = _G.TheWorld:HasTag("island") and "Island" or
+				_G.TheWorld:HasTag("volcano") and "Volcano" or
+				_G.TheWorld.net.components.weather ~= nil and "Surface" or
+				_G.TheWorld.net.components.caveweather ~= nil and "Caves"
 
-		if TheWorld.state.pop ~= 1 then
-			local world, totalseconds, rain = PredictRainStart()
+		if _G.TheWorld.state.pop ~= 1 then
+			local totalseconds = PredictRainStart(world)
 
-			if rain then
-				local d = TheWorld.state.cycles + 1 + TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
+			if totalseconds then
+				local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
 				local m = math.floor(totalseconds / 60)
 				local s = totalseconds % 60
 	
 				Announce(string.format("%s will rain on day %.2f (%dm %ds).", world, d, m, s))
 			else
-				Announce(string.format("%s will no longer rain this %s.", world, TheWorld.state.season))
+				Announce(string.format("%s will no longer rain this %s.", world, _G.TheWorld.state.season))
 			end
 		else
-			local world, totalseconds = PredictRainStop()
+			local totalseconds = PredictRainStop(world)
 
-			local d = TheWorld.state.cycles + 1 + TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
+			local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
 			local m = math.floor(totalseconds / 60)
 			local s = totalseconds % 60
 
