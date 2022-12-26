@@ -2,23 +2,10 @@ local _G = GLOBAL
 
 local function PredictRainStart(world)
 	local MOISTURE_RATES
+	local moisture
+	local moistureceil
 
 	if world == "Island" or world == "Volcano" then
-		MOISTURE_RATES = {
-		    MIN = {
-		        autumn = .25,
-		        winter = .25,
-		        spring = 3,
-		        summer = .1,
-		    },
-		    MAX = {
-		        autumn = 1.0,
-		        winter = 1.0,
-		        spring = 3.75,
-		        summer = .5,
-		    }
-		}
-	else
 		MOISTURE_RATES = {
 		    MIN = {
 		        autumn = 0,
@@ -33,6 +20,27 @@ local function PredictRainStart(world)
 		        summer = -0.2,
 		    }
 		}
+
+		moisture = _G.TheWorld.state.islandmoisture
+		moistureceil = _G.TheWorld.state.islandmoistureceil
+	else
+		MOISTURE_RATES = {
+		    MIN = {
+		        autumn = .25,
+		        winter = .25,
+		        spring = 3,
+		        summer = .1,
+		    },
+		    MAX = {
+		        autumn = 1.0,
+		        winter = 1.0,
+		        spring = 3.75,
+		        summer = .5,
+		    }
+		}
+
+		moisture = _G.TheWorld.state.moisture
+		moistureceil = _G.TheWorld.state.moistureceil
 	end
 
 	local remainingsecondsinday = TUNING.TOTAL_DAY_TIME - (_G.TheWorld.state.time * TUNING.TOTAL_DAY_TIME)
@@ -45,9 +53,6 @@ local function PredictRainStart(world)
 	local totaldaysinseason = remainingdaysinseason / (1 - seasonprogress)
 	local _totaldaysinseason = elapseddaysinseason + remainingdaysinseason
 
-	local moisture = _G.TheWorld.state.moisture
-	local moistureceil = _G.TheWorld.state.moistureceil
-
 	while elapseddaysinseason < _totaldaysinseason do
 		local moisturerate
 
@@ -56,7 +61,6 @@ local function PredictRainStart(world)
 		else
 			local p = 1 - math.sin(_G.PI * seasonprogress)
 			moisturerate = MOISTURE_RATES.MIN[season] + p * (MOISTURE_RATES.MAX[season] - MOISTURE_RATES.MIN[season])
-			print("MOISTURERATE: " .. tostring(moisturerate))
 		end
 
 		local _moisture = moisture + (moisturerate * remainingsecondsinday)
@@ -84,7 +88,7 @@ local function PredictRainStop(world)
 	local dbgstr = (world == "Island" or world == "Volcano") and _G.TheWorld.net.components.weather:GetIADebugString() or
 			world == "Surface" and _G.TheWorld.net.components.weather:GetDebugString() or
 			world == "Caves" and _G.TheWorld.net.components.caveweather:GetDebugString()
-	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:(%d+.%d+)%((%d+.%d+)/(%d+.%d+)%) %+ (%d+.%d+), preciprate:%((%d+.%d+) of (%d+.%d+)%).*")
+	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:(%d+.%d+)%((%d+.%d+)/(%d+.%d+)%) %+ (%-?%d+.%d+), preciprate:%((%d+.%d+) of (%d+.%d+)%).*")
 
 	moisture = _G.tonumber(moisture)
 	moistureceil = _G.tonumber(moistureceil)
