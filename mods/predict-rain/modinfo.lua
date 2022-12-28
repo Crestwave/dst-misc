@@ -3,9 +3,11 @@ author = "Crestwave"
 description = [[
 /predictrain to forecast rain start or stop.
 /help predictrain for more info.
+
+Compatible with Island Adventures.
 ]]
 
-version = "1.0"
+version = "1.1"
 api_version = 10
 
 dst_compatible = true
