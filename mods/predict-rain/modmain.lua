@@ -88,6 +88,12 @@ local function PredictRainStop(world)
 	local dbgstr = (world == "Island" or world == "Volcano") and _G.TheWorld.net.components.weather:GetIADebugString() or
 			world == "Surface" and _G.TheWorld.net.components.weather:GetDebugString() or
 			world == "Caves" and _G.TheWorld.net.components.caveweather:GetDebugString()
+
+	if _G.TheWorld.state.hurricane then
+		local _, _, hurricane_timer, hurricane_duration = string.find(dbgstr, ".*hurricane:(%d+.%d+)/(%d+.%d+).*")
+		return hurricane_duration - hurricane_timer
+	end
+
 	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:(%d+.%d+)%((%d+.%d+)/(%d+.%d+)%) %+ (%-?%d+.%d+), preciprate:%((%d+.%d+) of (%d+.%d+)%).*")
 
 	moisture = _G.tonumber(moisture)
