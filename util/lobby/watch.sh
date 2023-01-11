@@ -12,7 +12,7 @@ get_server() {
 		}
 		' listings/"$3" | while IFS=, read -r id name; do
 			name="${name##*/}"
-			./fetch-row.sh "${name%%-*}" "$id"
+			./fetch-row.sh "${name%-*}" "$id"
 
 			read -r data <row/"$id".json
 
