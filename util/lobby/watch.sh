@@ -24,7 +24,7 @@ get_server() {
 
 					continue
 					;;
-				'{"GET":[]}')
+				'{"GET":[{}]}')
 					printf 'rowId invalid; updating %s\n' \
 						"$3".gz >&2
 					./lobby.sh "${3%.json}"
