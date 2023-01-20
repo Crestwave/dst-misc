@@ -3,7 +3,7 @@ mkdir -p listings
 cd ./listings || exit
 printf '%s\n' parallel remote-name-all >curlrc
 
-url=https://lobby-cdn.klei.com
+url=https://lobby-v2-cdn.klei.com
 
 if [ "$#" -gt 0 ]; then
 	for i; do
@@ -11,24 +11,14 @@ if [ "$#" -gt 0 ]; then
 		printf 'url = "%s"\n' "$url"/"$i".json.gz >>curlrc
 	done
 else
-	curl "$url" |
-		awk '
-			BEGIN { RS = "(<Contents>|</Contents>)" }
-			/<Key>/ {
-				gsub(/<[^/]*>/, "")
-				gsub(/<\/[^>]*>/, ",")
-				gsub("&quot;", "")
-				print
-			}
-			' |
-				while IFS=, read -r file _ md5 _; do
-					if ! printf '%s  %s\n' "$md5" "$file" |
-						md5sum -c 2>/dev/null
-					then
-						printf 'url = "%s"\n' \
-							"$url/$file" >>curlrc
-					fi
+	set Steam PSN Rail XBone Switch
+	curl "$url"/regioncapabilities-v2.json |
+		jq -r '.LobbyRegions[][]' |
+			while read -r region; do
+				for i; do
+					printf 'url = "%s"\n' "$url/$region-$i.json.gz" >>curlrc
 				done
+			done
 fi
 
 curl -K curlrc
