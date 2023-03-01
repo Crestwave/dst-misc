@@ -143,3 +143,10 @@ COMPONENT_ACTIONS.POINT.blinkstaff = function(inst, doer, ...)
 		return _blinkstaff(inst, doer, ...)
 	end
 end
+
+-- WX-78 speech
+AddPrefabPostInit("wx78", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		inst.components.talker.mod_str_fn = nil
+	end)
+end)
