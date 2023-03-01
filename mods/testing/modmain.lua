@@ -150,3 +150,22 @@ AddPrefabPostInit("wx78", function(inst)
 		inst.components.talker.mod_str_fn = nil
 	end)
 end)
+
+-- Activate Wilson skills
+AddComponentPostInit("skilltreeupdater", function(self, inst)
+	inst:DoTaskInTime(0, function(inst)
+		if inst.prefab == "wilson" then
+			_G.TheSkillTree:AddSkillXP(160, "wilson")
+			_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
+
+			local SKILLTREE_DEFS = require("prefabs/skilltree_defs").SKILLTREE_DEFS
+			for skill, data in pairs(SKILLTREE_DEFS.wilson) do
+				if data.lock_open == nil then
+					self:ActivateSkill(skill, "wilson")
+				end
+			end
+
+			inst:PushEvent("unlockrecipe")
+		end
+	end)
+end)
