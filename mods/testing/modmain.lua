@@ -89,7 +89,6 @@ for i, prefab in ipairs(prefabs) do
 	end)
 end
 
-
 -- Hungry/starving adjectives for critters
 local prefabs = { "critter_lamb", "critter_puppy", "critter_kitten", "critter_perdling", "critter_dragonling", "critter_glomling", "critter_lunarmothling", "critter_eyeofterror" }
 
@@ -139,8 +138,8 @@ end)
 -- Disable lazy explorer telepoofs unless CONTROL_FORCE_STACK is held
 local COMPONENT_ACTIONS = UpvalueHacker.GetUpvalue(_G.EntityScript.CollectActions, "COMPONENT_ACTIONS")
 local _blinkstaff = COMPONENT_ACTIONS.POINT.blinkstaff
-COMPONENT_ACTIONS.POINT.blinkstaff = function(inst, doer, pos, actions, right)
+COMPONENT_ACTIONS.POINT.blinkstaff = function(inst, doer, ...)
 	if doer.components.playercontroller ~= nil and doer.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_STACK) then
-		return _blinkstaff(inst, doer, pos, actions, right)
+		return _blinkstaff(inst, doer, ...)
 	end
 end
