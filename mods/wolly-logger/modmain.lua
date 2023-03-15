@@ -492,7 +492,7 @@ GLOBAL.ACTIONS.ATTACK.fn = function(act)
         local obj = act.target
         if obj ~= nil and act.doer ~= nil and act.doer.components ~= nil and act.doer.components.combat ~= nil then
             local weapon = act.doer.components.combat:GetWeapon()
-            if weapon ~= nil and weapon.prefab == "firestaff" then
+            if weapon ~= nil and (weapon.prefab == "firestaff" or weapon.prefab == "firepen") then
                 obj.litbyname = act.doer:GetDisplayName()
                 obj.litbyid = act.doer.userid
                 obj.originalid = obj.GUID
