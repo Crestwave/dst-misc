@@ -153,19 +153,44 @@ end)
 
 -- Activate Wilson skills
 AddComponentPostInit("skilltreeupdater", function(self, inst)
-	inst:DoTaskInTime(0, function(inst)
-		if inst.prefab == "wilson" then
-			_G.TheSkillTree:AddSkillXP(160, "wilson")
+	inst:DoTaskInTime(1, function(inst)
+		if inst.prefab == "wilson" and inst == _G.ThePlayer then
 			_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
+			skills={"wilson_alchemy_1","wilson_alchemy_2","wilson_alchemy_3","wilson_alchemy_4","wilson_alchemy_5","wilson_alchemy_6","wilson_alchemy_7","wilson_alchemy_8","wilson_alchemy_9","wilson_alchemy_10","wilson_beard_4","wilson_beard_5","wilson_beard_6","wilson_beard_7","wilson_allegiance_shadow"}
+			self.skilltree:AddSkillXP(160, "wilson")
 
-			local SKILLTREE_DEFS = require("prefabs/skilltree_defs").SKILLTREE_DEFS
-			for skill, data in pairs(SKILLTREE_DEFS.wilson) do
-				if data.lock_open == nil then
-					self:ActivateSkill(skill, "wilson")
+
+			if self.skilltree.activatedskills.wilson ~= nil then
+				for k, v in pairs(self.skilltree.activatedskills.wilson) do
+					self:DeactivateSkill(k, "wilson")
 				end
 			end
 
-			inst:PushEvent("unlockrecipe")
+			inst:DoTaskInTime(_G.FRAMES, function(inst)
+				for i, skill in ipairs(skills) do
+					self:ActivateSkill(skill, "wilson")
+				end
+
+				inst:PushEvent("unlockrecipe")
+
+				inst:DoTaskInTime(_G.FRAMES, function(inst)
+					for i, skill in ipairs(skills) do
+						self:DeactivateSkill(skill, "wilson")
+					end
+
+					inst:DoTaskInTime(_G.FRAMES, function(inst)
+						for i=1,7 do
+							self:ActivateSkill("wilson_torch_"..i, "wilson")
+							self:ActivateSkill("wilson_beard_"..i, "wilson")
+						end
+
+						self:ActivateSkill("wilson_allegiance_shadow", "wilson")
+						inst:DoTaskInTime(1, function(inst) inst:PushEvent("unlockrecipe") end)
+					end)
+				end)
+			end)
 		end
 	end)
 end)
+
+AddClassPostConstruct("widgets/skilltreetoast", function(self) self:Hide() end)
