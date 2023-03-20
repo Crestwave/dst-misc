@@ -17,20 +17,20 @@ get_server() {
 			read -r data <row/"$id".json
 
 			case $data in
-				'{"error":'*)
-					err="${data#'{"error":'}"
-					err="${err%'}'}"
-					printf 'Received error %s\n' "$err" >&2
-
-					continue
-					;;
-				'{"GET":[{}]}')
+				'{"Error":{"Code":"E_NOT_IN_DB"}}')
 					printf 'rowId invalid; updating %s\n' \
 						"$3".gz >&2
 					./lobby.sh "${3%.json}"
 					gunzip -fk listings/"$3".gz
 					[ "$4" != 1 ] && get_server "$@" 1
 					exit
+					;;
+				'{"Error":'*)
+					err="${data#'{"Error":'}"
+					err="${err%'}'}"
+					printf 'Received error %s\n' "$err" >&2
+
+					continue
 					;;
 				'<html>'*)
 					while read -r err; do
