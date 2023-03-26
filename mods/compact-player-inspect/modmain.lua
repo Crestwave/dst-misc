@@ -2,11 +2,10 @@ local _G = GLOBAL
 
 AddClassPostConstruct("screens/playerhud", function(self)
 	local PlayerAvatarPopup = require "widgets/_playeravatarpopup"
-	local DressupAvatarPopup = require "widgets/_dressupavatarpopup"
 
 	self._TogglePlayerInfoPopup = self.TogglePlayerInfoPopup
 	self.TogglePlayerInfoPopup = function(self, player_name, data, show_net_profile, force)
-		if data.userid ~= nil and data.userid == self.owner.userid then
+		if (data.userid ~= nil and data.userid == self.owner.userid) or (data.inst ~= nil and data.inst:HasTag("dressable")) then
 			return self:_TogglePlayerInfoPopup(player_name, data, show_net_profile, force)
 		end
 
@@ -29,9 +28,6 @@ AddClassPostConstruct("screens/playerhud", function(self)
 
 		-- Don't show steam button for yourself or targets without a userid(skeletons)
 		self.playeravatarpopup = self.controls.right_root:AddChild(
-			data.inst ~= nil and
-			data.inst:HasTag("dressable") and
-			DressupAvatarPopup(self.owner, player_name, data) or
 			PlayerAvatarPopup(self.owner, player_name, data, show_net_profile and data.userid ~= nil and data.userid ~= self.owner.userid)
 		)
 	end
