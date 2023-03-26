@@ -2,7 +2,7 @@ name = "Compact Player Inspect"
 author = "Crestwave"
 description = "Converts the player avatar popup to its pre-rework state when inspecting other players."
 
-version = "1.0"
+version = "1.1"
 api_version = 10
 
 dst_compatible = true
