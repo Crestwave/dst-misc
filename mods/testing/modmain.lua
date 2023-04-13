@@ -194,3 +194,16 @@ AddComponentPostInit("skilltreeupdater", function(self, inst)
 end)
 
 AddClassPostConstruct("widgets/skilltreetoast", function(self) self:Hide() end)
+
+-- Sanity rate calculator
+-- Estimates your sanity rate after passively losing or gaining sanity.
+AddClassPostConstruct("components/sanity_replica", function(self)
+	self.inst:ListenForEvent("sanitydelta", function(inst, data)
+		if data.overtime then
+			local delta = (data.newpercent - data.oldpercent) * self:Max()
+			local time = 60 / (_G.GetTime() - (self.lastdeltatime or 0))
+			print("SANITY RATE: " .. tostring(delta * time))
+			self.lastdeltatime = _G.GetTime()
+		end
+	end)
+end)
