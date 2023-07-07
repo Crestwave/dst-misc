@@ -152,7 +152,7 @@ end
 
 function _Bloomness:DoDelta(amount)
 	local oldval = self.timer
-	local max_timer = self.level == self.max and TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION or self.stage_duration
+	local max_timer = self.level == self.max and (self.calcfullbloomdurationfn ~= nil and self.calcfullbloomdurationfn(self.inst, 0, math.inf)) or self.stage_duration
 	self.timer = self.timer + amount
 	self.inst:PushEvent("bloomdelta", { oldval = oldval, newval = self.timer, max = max_timer, rate = self.rate, is_blooming = self.is_blooming, level = self.level })
 end

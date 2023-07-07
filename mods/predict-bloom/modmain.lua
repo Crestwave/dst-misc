@@ -28,7 +28,12 @@ end
 local function CalcFullBloomDurationFn(inst, value, remaining, full_bloom_duration)
 	value = value * TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD
 
-	return math.min(remaining + value, TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION)
+	local actual_maximum = (inst.components.skilltreeupdater and
+					inst.components.skilltreeupdater:IsActivated("wormwood_blooming_max_upgrade") and
+					TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION_UPGRADED)
+				or TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION
+
+	return math.min(remaining + value, actual_maximum)
 end
 
 local function OnSeasonChange(inst, season)
@@ -101,6 +106,30 @@ AddPlayerPostInit(function(inst)
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
 			inst:ListenForEvent("bloomdelta", function(data) SyncBloomStage(inst) end)
 			inst:WatchWorldState("season", OnSeasonChange)
+
+			inst:ListenForEvent("onactivateskill_client", function(inst, data)
+				local bloomness = inst.components._bloomness
+				local skilltreeupdater = inst.components.skilltreeupdater
+
+				if data.skill == "wormwood_blooming_speed1" then
+					if not (skilltreeupdater:IsActivated("wormwood_blooming_speed2")
+						or skilltreeupdater:IsActivated("wormwood_blooming_speed3")) then
+						bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED1, bloomness.full_bloom_duration)
+					end
+				elseif data.skill == "wormwood_blooming_speed2" then
+					if not skilltreeupdater:IsActivated("wormwood_blooming_speed3") then
+						bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED2, bloomness.full_bloom_duration)
+					end
+				elseif data.skill == "wormwood_blooming_max_upgrade" then
+					if not skilltreeupdater:IsActivated("wormwood_blooming_speed3") then
+						bloomness:SetDurations(bloomness.stage_duration, TUNING.WORMWOOD_BLOOM_FULL_DURATION_UPGRADED)
+					end
+				else
+					return
+				end
+
+				bloomness:DoDelta(0)
+			end)
 
 			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
 			BloomSaver:StartAutoSave()
