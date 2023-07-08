@@ -5,7 +5,8 @@ AddClassPostConstruct("screens/playerhud", function(self)
 
 	self._TogglePlayerInfoPopup = self.TogglePlayerInfoPopup
 	self.TogglePlayerInfoPopup = function(self, player_name, data, show_net_profile, force)
-		if (data.userid ~= nil and data.userid == self.owner.userid) or (data.inst ~= nil and data.inst:HasTag("dressable")) then
+		-- Use the new pop-up when inspecting yourself, a scarecrow, or when triggered from playerstatusscreen
+		if (data.userid ~= nil and data.userid == self.owner.userid) or (data.inst ~= nil and data.inst:HasTag("dressable")) or force == true then
 			return self:_TogglePlayerInfoPopup(player_name, data, show_net_profile, force)
 		end
 
