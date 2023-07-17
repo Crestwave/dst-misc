@@ -38,4 +38,14 @@ configuration_options = {
 		},
 		default = true,
 	},
+	{
+		name = "acidrain",
+		label = "Acid Rain Calculation",
+		options = {
+			{ description = "Enabled", data = true },
+			{ description = "Disabled", data = false },
+		},
+		default = true,
+		hover = "[EXPERIMENTAL] Calculates bloom gained from acid rain",
+	},
 }

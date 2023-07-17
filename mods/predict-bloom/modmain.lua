@@ -80,7 +80,7 @@ local function SyncBloomStage(inst)
 end
 
 local function OnBloomFXDirty(inst)
-	SyncBloomStage(inst)
+	inst:DoTaskInTime(0, SyncBloomStage)
 end
 
 local function OnNewSpawn(inst)
@@ -104,7 +104,7 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
 			inst.components._bloomness:DoDelta(0)
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
-			inst:ListenForEvent("bloomdelta", function(data) SyncBloomStage(inst) end)
+			inst:ListenForEvent("bloomdelta", function(inst, data) SyncBloomStage(inst) end)
 			inst:WatchWorldState("season", OnSeasonChange)
 
 			inst:ListenForEvent("onactivateskill_client", function(inst, data)
@@ -160,6 +160,45 @@ AddPlayerPostInit(function(inst)
 					end
 				end
 			end)
+
+			if GetModConfigData("acidrain") then
+				local pulsetime
+				local _Flash = inst.HUD.bloodover.Flash
+				local Flash = function(...)
+					pulsetime = _G.GetTime()
+					return _Flash(...)
+				end
+
+				local function OnHealthDelta(inst, data)
+					if pulsetime == _G.GetTime() then
+						return
+					end
+
+					if data.overtime then
+						if data.oldpercent == data.newpercent then
+							inst.components._bloomness:Fertilize()
+						end
+					elseif not inst.player_classified.istakingfiredamage:value() or inst.player_classified.istakingfiredamagelow:value() then
+						local damage = inst.replica.health:Max() * (data.oldpercent - data.newpercent)
+						if damage > 0 then
+							inst.components._bloomness:Fertilize(damage)
+						end
+					end
+				end
+
+				local function OnIsAcidRaining(isacidraining)
+					if isacidraining then
+						inst:ListenForEvent("healthdelta", OnHealthDelta)
+						inst.HUD.bloodover.Flash = Flash
+					else
+						inst:RemoveEventCallback("healthdelta", OnHealthDelta)
+						inst.HUD.bloodover.Flash = _Flash
+					end
+				end
+
+				inst:WatchWorldState("isacidraining", OnIsAcidRaining)
+				OnIsAcidRaining(_G.TheWorld.state.isacidraining)
+			end
 		end
 	end)
 end)
