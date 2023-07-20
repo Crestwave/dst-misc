@@ -32,7 +32,6 @@ local function CalcFullBloomDurationFn(inst, value, remaining, full_bloom_durati
 					inst.components.skilltreeupdater:IsActivated("wormwood_blooming_max_upgrade") and
 					TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION_UPGRADED)
 				or TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION
-
 	return math.min(remaining + value, actual_maximum)
 end
 
@@ -145,12 +144,12 @@ AddPlayerPostInit(function(inst)
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
 				if inst.isghostmode:value() then
-					_G.ThePlayer.components._bloomness:SetLevel(0)
+					inst._parent.components._bloomness:SetLevel(0)
 					if badge ~= nil then
 						badge:Hide()
 					end
 				elseif _G.TheWorld.state.isspring then
-					_G.ThePlayer.components._bloomness:Fertilize()
+					inst._parent.components._bloomness:Fertilize()
 					if badge ~= nil then
 						badge:Show()
 					end
@@ -266,14 +265,14 @@ AddPrefabPostInit("world", function(inst)
 					inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
 						if not act then return end
 
-						if _G.ThePlayer.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+						if inst._parent.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
 							if inst.isperformactionsuccess:value() then
 								local defs = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab]
 								if defs ~= nil and defs.nutrients ~= nil then
 									local val = defs.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
 									if val > 0 then
-										_G.ThePlayer.components._bloomness:Fertilize(val)
+										inst._parent.components._bloomness:Fertilize(val)
 										print("FERTILIZE SUCCESS: " ..tostring(val))
 									end
 								end
