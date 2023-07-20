@@ -265,7 +265,11 @@ AddPrefabPostInit("world", function(inst)
 					inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(inst)
 						if not act then return end
 
-						if inst._parent.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and "fertilize" or "short_fertilize") then
+						if inst._parent.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and
+													(inst._parent.components.skilltreeupdater:IsActivated("wormwood_blooming_farmrange2") and
+													"shortest_fertilize" or
+													"fertilize") or
+												"short_fertilize") then
 							if inst.isperformactionsuccess:value() then
 								local defs = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab]
 								if defs ~= nil and defs.nutrients ~= nil then
