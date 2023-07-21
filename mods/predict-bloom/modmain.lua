@@ -376,7 +376,7 @@ if GetModConfigData("meter") then
 		function self:BloomDelta(data)
 			self.bloombadge:SetPercent(math.max(data.newval, 0), data.max, data.rate, data.is_blooming)
 
-			if (data.newval - data.oldval) >= TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD then
+			if (data.newval - data.oldval) > 0 and data.level == 3 then
 				self.bloombadge:PulseGreen()
 				_G.TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
 			end
