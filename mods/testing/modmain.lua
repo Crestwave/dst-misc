@@ -156,9 +156,11 @@ AddComponentPostInit("skilltreeupdater", function(self, inst)
 	_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
 	_G.TheInventory:SetGenericKVValue("celestialchampion_killed", "1")
 	inst:DoTaskInTime(1, function(inst)
-		if inst.prefab == "wilson" and inst == _G.ThePlayer then
+		if inst ~= _G.ThePlayer then return end
+		self.skilltree:AddSkillXP(160, _G.ThePlayer.prefab)
+
+		if inst.prefab == "wilson" then
 			skills={"wilson_alchemy_1","wilson_alchemy_2","wilson_alchemy_3","wilson_alchemy_4","wilson_alchemy_5","wilson_alchemy_6","wilson_alchemy_7","wilson_alchemy_8","wilson_alchemy_9","wilson_alchemy_10","wilson_beard_4","wilson_beard_5","wilson_beard_6","wilson_beard_7","wilson_allegiance_shadow"}
-			self.skilltree:AddSkillXP(160, "wilson")
 
 
 			if self.skilltree.activatedskills.wilson ~= nil then
@@ -252,6 +254,7 @@ AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 		end
 	end)
 end)
+
 
 -- Unlock full scrapbook
 AddPrefabPostInit("world", function(inst)
