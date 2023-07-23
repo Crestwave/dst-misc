@@ -252,3 +252,9 @@ AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 		end
 	end)
 end)
+
+-- Unlock full scrapbook
+AddPrefabPostInit("world", function(inst)
+	_G.TheScrapbookPartitions:DebugSeenEverything()
+	_G.TheScrapbookPartitions:DebugUnlockEverything()
+end)
