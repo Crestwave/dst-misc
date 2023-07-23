@@ -36,7 +36,7 @@ for i=1,2 do
 			local x, y, z = inst.Transform:GetWorldPosition()
 			local mark = _G.SpawnPrefab(inst.product)
 			mark.Transform:SetPosition(x, y, z)
-			mark.AnimState:SetMultColour(1, 1, 1, .1)
+			mark.AnimState:SetMultColour(1, 1, 1, .5)
 			mark:AddTag("NOBLOCK")
 			_G.RemovePhysicsColliders(mark)
 			inst:ListenForEvent("onremove", function(inst)
