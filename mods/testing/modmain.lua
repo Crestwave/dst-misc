@@ -153,9 +153,10 @@ end)
 
 -- Activate Wilson skills
 AddComponentPostInit("skilltreeupdater", function(self, inst)
+	_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
+	_G.TheInventory:SetGenericKVValue("celestialchampion_killed", "1")
 	inst:DoTaskInTime(1, function(inst)
 		if inst.prefab == "wilson" and inst == _G.ThePlayer then
-			_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
 			skills={"wilson_alchemy_1","wilson_alchemy_2","wilson_alchemy_3","wilson_alchemy_4","wilson_alchemy_5","wilson_alchemy_6","wilson_alchemy_7","wilson_alchemy_8","wilson_alchemy_9","wilson_alchemy_10","wilson_beard_4","wilson_beard_5","wilson_beard_6","wilson_beard_7","wilson_allegiance_shadow"}
 			self.skilltree:AddSkillXP(160, "wilson")
 
@@ -204,6 +205,50 @@ AddClassPostConstruct("components/sanity_replica", function(self)
 			local time = 60 / (_G.GetTime() - (self.lastdeltatime or 0))
 			print("SANITY RATE: " .. tostring(delta * time))
 			self.lastdeltatime = _G.GetTime()
+		end
+	end)
+end)
+
+-- Reset individual skills in-game
+local ImageButton = require("widgets/imagebutton")
+
+AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
+	self.inst:DoTaskInTime(0, function(inst)
+		if _G.ThePlayer.userid == self.targetdata.userid then
+			self.infopanel.respec_button:Show()
+			self.infopanel.activatedtext = self.infopanel:AddChild(ImageButton("images/global_redux.xml", "button_carny_long_normal.tex", "button_carny_long_hover.tex", "button_carny_long_disabled.tex", "button_carny_long_down.tex"))
+			self.infopanel.activatedtext.image:SetScale(1)
+			self.infopanel.activatedtext:SetFont(_G.CHATFONT)
+			self.infopanel.activatedtext:SetPosition(0,-37)
+			self.infopanel.activatedtext.text:SetColour(0,0,0,1)
+			self.infopanel.activatedtext:SetScale(0.5)
+			self.infopanel.activatedtext:SetText("Reset Skill")
+			self.infopanel.activatedtext:SetOnClick(function()
+				if self.selectedskill and _G.ThePlayer ~= nil and _G.ThePlayer.components.skilltreeupdater ~= nil then
+					_G.ThePlayer.components.skilltreeupdater:DeactivateSkill(self.selectedskill, _G.ThePlayer.prefab)
+					self:RefreshTree()
+				end
+			end)
+
+			local _OnControl = self.skilltreewidget.OnControl
+			self.skilltreewidget.OnControl = function(self, control, down, ...)
+				if not down and not _G.TheInput:ControllerAttached() and control == _G.CONTROL_ACTION then
+					local skilltree = self.root.tree
+
+					if skilltree.selectedskill and skilltree.infopanel.activatedtext:IsVisible() then
+						self.root.infopanel.activatedtext.onclick()
+						return true
+					end
+				end
+
+				return _OnControl(self, control, down, ...)
+			end
+
+			local _RefreshTree = self.RefreshTree
+			self.RefreshTree = function(self, ...)
+				_RefreshTree(self, ...)
+				self.infopanel.respec_button:Show()
+			end
 		end
 	end)
 end)
