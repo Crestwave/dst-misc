@@ -668,8 +668,10 @@ AddPrefabPostInit("boat_leak", function(inst)
     inst:DoTaskInTime(0, function(inst)
         if not inst:HasTag("boat_repaired_patch") then
             local boat = inst.components.boatleak.boat
-            local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
-            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            if boat ~= nil then
+                local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
+                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+            end
             print(logstring)
         end
 
@@ -677,9 +679,11 @@ AddPrefabPostInit("boat_leak", function(inst)
         inst.components.boatleak.onsprungleak = function(inst)
             _onsprungleak(inst)
             local boat = inst.components.boatleak.boat
-            local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
-            logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
-            print(logstring)
+            if boat ~= nil then
+                local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
+                logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                print(logstring)
+            end
         end
     end)
 end)
