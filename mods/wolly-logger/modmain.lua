@@ -355,6 +355,7 @@ local old_REPAIR_LEAK = GLOBAL.ACTIONS.REPAIR_LEAK.fn
 local old_SMOTHER = GLOBAL.ACTIONS.SMOTHER.fn
 local old_BOAT_CANNON_SHOOT = GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn
 local old_DEPLOY = GLOBAL.ACTIONS.DEPLOY.fn
+local old_TOSS = GLOBAL.ACTIONS.TOSS.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -625,6 +626,17 @@ GLOBAL.ACTIONS.DEPLOY.fn = function(act)
         local obj = act.invobject
         if successful and obj ~= nil and obj:HasTag("groundtile") then
             logdebugaction(act, obj, " deploys ", ":beach_umbrella: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.TOSS.fn = function(act)
+    local successful = old_TOSS(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " casts ", ":man_lifting_weights: ")
         end
     end, successful, act)
     return successful
