@@ -1,8 +1,8 @@
 #!/bin/sh
-[ "$#" -eq 0 ] && set china eu sing us
+[ "$#" -eq 0 ] && set ap-east-1 ap-southeast-1 eu-central-1 us-east-1
 
 for _; do
-	set "$@" data/"$1".json
+	set "$@" data/"$1"/*.json
 	shift
 done
 

@@ -1,14 +1,26 @@
 #!/bin/sh
-[ "$#" -eq 0 ] && set china eu sing us
+[ "$#" -eq 0 ] && set ap-east-1 ap-southeast-1 eu-central-1 us-east-1
 
-read -r data <<EOF
-{"__gameId":"DontStarveTogether","__token":"$KLEI_TOKEN","query":{}}
-EOF
+cd ./listings || exit
+gunzip -fk *.gz
+cd - >/dev/null || exit
 
-mkdir -p data
-for i; do
-	url=https://lobby-$i.klei.com/lobby/read
+printf "parallel\n" >data/curlrc
 
-	printf 'Fetching %s lobby data...\n' "$i"
-	curl -w '\n' -d "$data" "$url" >data/"$i".json
+for region; do
+	mkdir -p data/"$region"
+	rm -f data/"$region"/*.json
+
+	printf 'Processing %s lobby data...\n' "$region"
+
+	awk -F\" -v RS=, '/"__rowId"/ { print $4 }' listings/"$region"*.json |
+		while read -r row; do
+			printf 'next
+data = {"__gameId":"DontStarveTogether","__token":"%s","query":{"__rowId":"%s"}}
+url = https://lobby-v2-%s.klei.com/lobby/read
+output = data/%s/%s.json
+' "$KLEI_TOKEN" "$row" "$region" "$region" "$row"
+		done >>data/curlrc
 done
+
+curl -K data/curlrc
