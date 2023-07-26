@@ -6,6 +6,7 @@ gunzip -fk *.gz
 cd - >/dev/null || exit
 
 printf "parallel\n" >data/curlrc
+printf "parallel-max = 300\n" >>data/curlrc
 
 for region; do
 	mkdir -p data/"$region"
