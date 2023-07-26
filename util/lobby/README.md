@@ -1,15 +1,15 @@
 POSIX shell scripts to fetch and parse lobby data.
 
-The scripts optionally accept specific regions as arguments, defaulting to all. Namely: china, eu, sing, us
+The scripts optionally accept specific regions as arguments, defaulting to all. Namely: ap-east-1, ap-southeast, eu-central-1, us-east-1
 
 
-* `fetch.sh` - Outputs lobby data into data/*region*.json.
-* `chars.sh` - Parses data/*region*.json and outputs a ranking of how many people are using a character.
+* `fetch.sh` - Outputs lobby data into data/*region*/\*.json.
+* `chars.sh` - Parses data/*region*/\*.json and outputs a ranking of how many people are using a character.
 
 
-To run `fetch.sh`, you'll need to set the `KLEI_TOKEN` environmental variable to your client token. The simplest way to retrieve this is to run `print(TheFrontEnd:GetAccountManager():GetToken())` in the in-game console.
+To run `fetch.sh`, you'll need to set the `KLEI_TOKEN` environmental variable your cluster token. The simplest way to retrieve this is to run `print(TheNet:GenerateClusterToken())` in the in-game console.
 
-Note that this token eventually expires, so you'll have to get new ones periodically. Alternatively, you can ask Klei for a permanent token; they are open to it and have given them to several sites that utilize lobby data.
+Note: Because of the lobby v2 update, you will now need to run `lobby.sh` before `fetch.sh`.
 
 ---
 
