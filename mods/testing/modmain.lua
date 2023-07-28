@@ -216,7 +216,19 @@ local ImageButton = require("widgets/imagebutton")
 
 AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 	self.inst:DoTaskInTime(0, function(inst)
-		if _G.ThePlayer.userid == self.targetdata.userid then
+		if not self.readonly then
+			local skilltreeupdater
+
+			if self.fromfrontend then
+				skilltreeupdater = TheSkillTree
+			else
+				skilltreeupdater = _G.ThePlayer and _G.ThePlayer.components.skilltreeupdater or nil
+			end
+
+			if skilltreeupdater == nil then
+				return
+			end
+
 			self.infopanel.respec_button:Show()
 			self.infopanel.activatedtext = self.infopanel:AddChild(ImageButton("images/global_redux.xml", "button_carny_long_normal.tex", "button_carny_long_hover.tex", "button_carny_long_disabled.tex", "button_carny_long_down.tex"))
 			self.infopanel.activatedtext.image:SetScale(1)
@@ -226,8 +238,8 @@ AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 			self.infopanel.activatedtext:SetScale(0.5)
 			self.infopanel.activatedtext:SetText("Reset Skill")
 			self.infopanel.activatedtext:SetOnClick(function()
-				if self.selectedskill and _G.ThePlayer ~= nil and _G.ThePlayer.components.skilltreeupdater ~= nil then
-					_G.ThePlayer.components.skilltreeupdater:DeactivateSkill(self.selectedskill, _G.ThePlayer.prefab)
+				if self.selectedskill then
+					skilltreeupdater:DeactivateSkill(self.selectedskill, _G.ThePlayer.prefab)
 					self:RefreshTree()
 				end
 			end)
@@ -237,8 +249,12 @@ AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 				if not down and not _G.TheInput:ControllerAttached() and control == _G.CONTROL_ACTION then
 					local skilltree = self.root.tree
 
-					if skilltree.selectedskill and skilltree.infopanel.activatedtext:IsVisible() then
-						self.root.infopanel.activatedtext.onclick()
+					if skilltree.selectedskill then
+						if skilltree.infopanel.activatedtext:IsVisible() then
+							self.root.infopanel.activatedtext.onclick()
+						elseif skilltree.infopanel.activatebutton:IsVisible() then
+							self.root.infopanel.activatebutton.onclick()
+						end
 						return true
 					end
 				end
@@ -250,6 +266,12 @@ AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
 			self.RefreshTree = function(self, ...)
 				_RefreshTree(self, ...)
 				self.infopanel.respec_button:Show()
+				if not self.infopanel.activatedtext:IsVisible() and skilltreeupdater:GetAvailableSkillPoints(self.target) > 0 then
+					self.infopanel.activatebutton:Show()
+					self.infopanel.activatebutton:SetOnClick(function()
+						self:LearnSkill(skilltreeupdater,characterprefab)
+					end)
+				end
 			end
 		end
 	end)
