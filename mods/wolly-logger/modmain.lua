@@ -1022,12 +1022,10 @@ end ]]
 
 -- this will get called if trees are felled, rocks are mined, anything is hammered down, etc.
 -- right now it just reports that x destroys y, will add more descriptive actions later
--- TODO: replace with self.inst:PushEvent("workfinished", { worker = worker })
 AddComponentPostInit("workable", function(self, inst)
-    local old_WorkedBy = self.WorkedBy
-    self.WorkedBy = function(self, worker, numworks)
-        GLOBAL.pcall(function(self, worker, numworks)
-            if numworks >= self.workleft then
+    self.inst:ListenForEvent("worked", function(inst, data)
+        GLOBAL.pcall(function(self, worker, workleft)
+            if workleft <= 0 then
                 local workerid = worker.userid or worker.GUID 
                 workerid =  "[" .. workerid .. "]"
                 local workedid = "[" .. self.inst.GUID .. "]"
@@ -1050,7 +1048,6 @@ AddComponentPostInit("workable", function(self, inst)
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring = worker:GetDisplayName() .. workerid .. " " .. action .. "s " .. self.inst:GetDisplayName() .. workedid .. discord_ownedby .. discord_target
                 
-                --if ((action ~= "chop" or self.inst.prefab == "livingtree" or self.inst.prefab == "livingtree_halloween") and (action ~= "dig" or self.inst.prefab == "livingtree" or self.inst.prefab == "livingtree_halloween" or not self.inst:HasTag("tree"))  and (action ~= "mine" or not self.inst:HasTag("boulder"))) then
                 if (action == "chop") then
                     if discord_enabled and (GetModConfigData("discordchopping") == "all" or (GetModConfigData("discordchopping") == "player" and worker.userid ~= nil)) then
                         io.write("[" .. GLOBAL.os.date("%x %X") .. "] :boom: " .. discord_logstring .. "\n")
@@ -1082,12 +1079,9 @@ AddComponentPostInit("workable", function(self, inst)
                 print(logstring)
                     end
                 end
-                
             end
-        end, self, worker, numworks)
-        --return 
-        return old_WorkedBy(self, worker, numworks)
-    end
+        end, self, data.worker, data.workleft)
+    end)
 end)
 
 AddComponentPostInit("inspectable", function(self, inst)
