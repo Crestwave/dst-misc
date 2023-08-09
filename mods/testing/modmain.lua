@@ -113,9 +113,9 @@ end
 
 -- Prevent screen blackouts and inventory hiding
 AddPrefabPostInit("world", function(inst)
-	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function(inst) if inst.fadetime:value() <= 0 then inst:DoTaskInTime(1, GLOBAL.TheCamera:Snap()) end end, "RegisterNetListeners", "OnPlayerFadeDirty")
-	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerHUDDirty")
-	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "OnPlayerCameraSnap")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function(inst) if inst.fadetime:value() <= 0 then inst:DoTaskInTime(1, GLOBAL.TheCamera:Snap()) end end, "RegisterNetListeners", "RegisterNetListeners_common", "OnPlayerFadeDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "RegisterNetListeners_local", "OnPlayerHUDDirty")
+	UpvalueHacker.SetUpvalue(GLOBAL.Prefabs.player_classified.fn, function() end, "RegisterNetListeners", "RegisterNetListeners_common", "OnPlayerCameraSnap")
 
 	_DoRecipeClick = GLOBAL.DoRecipeClick
 	GLOBAL.DoRecipeClick = function(owner, recipe, skin)
