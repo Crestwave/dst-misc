@@ -266,7 +266,7 @@ AddPrefabPostInit("world", function(inst)
 						if not act then return end
 
 						if inst._parent.AnimState:IsCurrentAnimation(fert:HasTag("slowfertilize") and
-													(inst._parent.components.skilltreeupdater:IsActivated("wormwood_blooming_farmrange2") and
+													(inst._parent.components.skilltreeupdater:IsActivated("wormwood_quick_selffertilizer") and
 													"shortest_fertilize" or
 													"fertilize") or
 												"short_fertilize") then
