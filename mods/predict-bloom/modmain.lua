@@ -390,23 +390,25 @@ if GetModConfigData("meter") then
 			self.bloombadge.rate:SetScale(1,.78,1)
 			self.bloombadge.rate:Hide()
 
-			local _ShowStatusNumbers = self.ShowStatusNumbers
-			function self:ShowStatusNumbers()
-				_ShowStatusNumbers(self)
-				if self.bloombadge ~= nil then
-					self.bloombadge.rate:Show()
-					self.bloombadge.num:Hide()
+			self.inst:DoTaskInTime(0, function(inst)
+				local _ShowStatusNumbers = self.ShowStatusNumbers
+				function self:ShowStatusNumbers()
+					_ShowStatusNumbers(self)
+					if self.bloombadge ~= nil then
+						self.bloombadge.rate:Show()
+						self.bloombadge.num:Hide()
+					end
 				end
-			end
 
-			local _HideStatusNumbers = self.HideStatusNumbers
-			function self:HideStatusNumbers()
-				_HideStatusNumbers(self)
-				if self.bloombadge ~= nil then
-					self.bloombadge.rate:Hide()
-					self.bloombadge.num:Show()
+				local _HideStatusNumbers = self.HideStatusNumbers
+				function self:HideStatusNumbers()
+					_HideStatusNumbers(self)
+					if self.bloombadge ~= nil then
+						self.bloombadge.rate:Hide()
+						self.bloombadge.num:Show()
+					end
 				end
-			end
+			end)
 
 			local _OnLoseFocus = self.bloombadge.OnLoseFocus
 			function self.bloombadge:OnLoseFocus()
