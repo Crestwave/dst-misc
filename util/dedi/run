@@ -4,19 +4,6 @@ cluster=${PWD##*/}
 master=${cluster}_Master
 caves=${cluster}_Caves
 
-archive() {
-	date=$(date "+%Y-%m-%d-%H-%M-%S")
-	for shard; do
-		dest="ar/$shard"
-		mkdir -p "$dest"
-		for log in log chat_log; do
-			if [ -e "$shard/server_${log}.txt" ]; then
-				mv "$shard/server_${log}.txt" "$dest/server_${log}_${date}.txt"
-			fi
-		done
-	done
-}
-
 down() {
 	send "$master" 'c_shutdown()'
 	tmux send-keys -t "$cluster" ^C
@@ -26,13 +13,11 @@ launch() (
 	set -- rlwrap ./dontstarve_dedicated_server_nullrenderer_x64 -cluster "$cluster"
 	
 	if ! tmux has-session -t "$master" 2>/dev/null; then
-		archive Master
 		(cd ../dedi/bin64 || exit
 		tmux new-session -d -s "$master" "$@" -shard Master)
 	fi
 
 	if ! tmux has-session -t "$caves" 2>/dev/null; then
-		archive Caves
 		ppid=$(tmux list-panes -t "$master" -F "#{pane_pid}")
 		(cd ../dedi/bin64 || exit
 		tmux new-session -d -s "$caves" "$@" -shard Caves -monitor_parent_process "$ppid")
