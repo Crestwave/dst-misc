@@ -1,6 +1,7 @@
 #!/bin/sh
 [ "$#" -eq 0 ] && set ap-east-1 ap-southeast-1 eu-central-1 us-east-1
 
+./lobby.sh
 cd ./listings || exit
 gunzip -fk *.gz
 cd - >/dev/null || exit
