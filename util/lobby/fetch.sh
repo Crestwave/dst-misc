@@ -6,6 +6,7 @@ cd ./listings || exit
 gunzip -fk *.gz
 cd - >/dev/null || exit
 
+mkdir -p data
 printf "parallel\n" >data/curlrc
 printf "parallel-max = 300\n" >>data/curlrc
 
@@ -26,3 +27,4 @@ output = data/%s/%s.json
 done
 
 curl -K data/curlrc
+touch data
