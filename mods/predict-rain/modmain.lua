@@ -89,12 +89,17 @@ local function PredictRainStop(world)
 			world == "Surface" and _G.TheWorld.net.components.weather:GetDebugString() or
 			world == "Caves" and _G.TheWorld.net.components.caveweather:GetDebugString()
 
+	if _G.TheWorld.state.islunarhailing then
+		local LUNARHAIL_CEIL = 100
+		return _G.TheWorld.state.lunarhaillevel * (TUNING.LUNARHAIL_EVENT_TIME / LUNARHAIL_CEIL)
+	end
+
 	if _G.TheWorld.state.hurricane then
 		local _, _, hurricane_timer, hurricane_duration = string.find(dbgstr, ".*hurricane:(%d+.%d+)/(%d+.%d+).*")
 		return hurricane_duration - hurricane_timer
 	end
 
-	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:(%d+.%d+)%((%d+.%d+)/(%d+.%d+)%) %+ (%-?%d+.%d+), preciprate:%((%d+.%d+) of (%d+.%d+)%).*")
+	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:%s?(%d+.%d+)%s?%((%d+.%d+)/(%d+.%d+)%) %+ (%-?%d+.%d+).*preciprate:%s?%((%d+.%d+) of (%d+.%d+)%).*")
 
 	moisture = _G.tonumber(moisture)
 	moistureceil = _G.tonumber(moistureceil)
