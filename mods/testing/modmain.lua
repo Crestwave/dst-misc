@@ -151,48 +151,13 @@ AddPrefabPostInit("wx78", function(inst)
 	end)
 end)
 
--- Activate Wilson skills
+-- Unlock full skill tree
 AddComponentPostInit("skilltreeupdater", function(self, inst)
 	_G.TheInventory:SetGenericKVValue("fuelweaver_killed", "1")
 	_G.TheInventory:SetGenericKVValue("celestialchampion_killed", "1")
 	inst:DoTaskInTime(1, function(inst)
 		if inst ~= _G.ThePlayer then return end
 		self.skilltree:AddSkillXP(160, _G.ThePlayer.prefab)
-
-		if inst.prefab == "wilson" then
-			skills={"wilson_alchemy_1","wilson_alchemy_2","wilson_alchemy_3","wilson_alchemy_4","wilson_alchemy_5","wilson_alchemy_6","wilson_alchemy_7","wilson_alchemy_8","wilson_alchemy_9","wilson_alchemy_10","wilson_beard_4","wilson_beard_5","wilson_beard_6","wilson_beard_7","wilson_allegiance_shadow"}
-
-
-			if self.skilltree.activatedskills.wilson ~= nil then
-				for k, v in pairs(self.skilltree.activatedskills.wilson) do
-					self:DeactivateSkill(k, "wilson")
-				end
-			end
-
-			inst:DoTaskInTime(_G.FRAMES, function(inst)
-				for i, skill in ipairs(skills) do
-					self:ActivateSkill(skill, "wilson")
-				end
-
-				inst:PushEvent("unlockrecipe")
-
-				inst:DoTaskInTime(_G.FRAMES, function(inst)
-					for i, skill in ipairs(skills) do
-						self:DeactivateSkill(skill, "wilson")
-					end
-
-					inst:DoTaskInTime(_G.FRAMES, function(inst)
-						for i=1,7 do
-							self:ActivateSkill("wilson_torch_"..i, "wilson")
-							self:ActivateSkill("wilson_beard_"..i, "wilson")
-						end
-
-						self:ActivateSkill("wilson_allegiance_shadow", "wilson")
-						inst:DoTaskInTime(1, function(inst) inst:PushEvent("unlockrecipe") end)
-					end)
-				end)
-			end)
-		end
 	end)
 end)
 
@@ -210,73 +175,6 @@ AddClassPostConstruct("components/sanity_replica", function(self)
 		end
 	end)
 end)
-
--- Reset individual skills in-game
-local ImageButton = require("widgets/imagebutton")
-
-AddClassPostConstruct("widgets/redux/skilltreebuilder", function(self)
-	self.inst:DoTaskInTime(0, function(inst)
-		if not self.readonly then
-			local skilltreeupdater
-
-			if self.fromfrontend then
-				skilltreeupdater = TheSkillTree
-			else
-				skilltreeupdater = _G.ThePlayer and _G.ThePlayer.components.skilltreeupdater or nil
-			end
-
-			if skilltreeupdater == nil then
-				return
-			end
-
-			self.infopanel.respec_button:Show()
-			self.infopanel.activatedtext = self.infopanel:AddChild(ImageButton("images/global_redux.xml", "button_carny_long_normal.tex", "button_carny_long_hover.tex", "button_carny_long_disabled.tex", "button_carny_long_down.tex"))
-			self.infopanel.activatedtext.image:SetScale(1)
-			self.infopanel.activatedtext:SetFont(_G.CHATFONT)
-			self.infopanel.activatedtext:SetPosition(0,-37)
-			self.infopanel.activatedtext.text:SetColour(0,0,0,1)
-			self.infopanel.activatedtext:SetScale(0.5)
-			self.infopanel.activatedtext:SetText("Reset Skill")
-			self.infopanel.activatedtext:SetOnClick(function()
-				if self.selectedskill then
-					skilltreeupdater:DeactivateSkill(self.selectedskill, _G.ThePlayer.prefab)
-					self:RefreshTree()
-				end
-			end)
-
-			local _OnControl = self.skilltreewidget.OnControl
-			self.skilltreewidget.OnControl = function(self, control, down, ...)
-				if not down and not _G.TheInput:ControllerAttached() and control == _G.CONTROL_ACTION then
-					local skilltree = self.root.tree
-
-					if skilltree.selectedskill then
-						if skilltree.infopanel.activatedtext:IsVisible() then
-							self.root.infopanel.activatedtext.onclick()
-						elseif skilltree.infopanel.activatebutton:IsVisible() then
-							self.root.infopanel.activatebutton.onclick()
-						end
-						return true
-					end
-				end
-
-				return _OnControl(self, control, down, ...)
-			end
-
-			local _RefreshTree = self.RefreshTree
-			self.RefreshTree = function(self, ...)
-				_RefreshTree(self, ...)
-				self.infopanel.respec_button:Show()
-				if not self.infopanel.activatedtext:IsVisible() and skilltreeupdater:GetAvailableSkillPoints(self.target) > 0 then
-					self.infopanel.activatebutton:Show()
-					self.infopanel.activatebutton:SetOnClick(function()
-						self:LearnSkill(skilltreeupdater,characterprefab)
-					end)
-				end
-			end
-		end
-	end)
-end)
-
 
 -- Unlock full scrapbook
 AddPrefabPostInit("world", function(inst)
