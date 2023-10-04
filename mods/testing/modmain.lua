@@ -184,20 +184,22 @@ end)
 
 -- Mark Wagstaff scrap hints
 AddPrefabPostInit("wagstaff_npc", function(inst)
-	local x, y, z = inst.Transform:GetWorldPosition()
-	local _Say = inst.components.talker.Say
-	inst.components.talker.Say = function(self, script, ...)
-		for k,v in pairs(_G.STRINGS.WAGSTAFF_GOTTOHINT) do
-			if v == script then
-				local angle = inst:GetAngleToPoint(x, y, z)
-				local mark = _G.SpawnPrefab("archive_resonator_base")
-				mark.Transform:SetPosition(inst.Transform:GetWorldPosition())
-				mark.AnimState:SetMultColour(0, 1, 1, 1)
-				mark.Transform:SetRotation(angle + 180)
-				_G.ThePlayer.components.talker:Say(tostring(inst:GetAngleToPoint(x, y, z)))
+	inst:DoTaskInTime(0, function(inst)
+		local x, y, z = inst.Transform:GetWorldPosition()
+		local _Say = inst.components.talker.Say
+		inst.components.talker.Say = function(self, script, ...)
+			for k,v in pairs(_G.STRINGS.WAGSTAFF_GOTTOHINT) do
+				if v == script then
+					local angle = inst:GetAngleToPoint(x, y, z)
+					local mark = _G.SpawnPrefab("archive_resonator_base")
+					mark.Transform:SetPosition(inst.Transform:GetWorldPosition())
+					mark.AnimState:SetMultColour(0, 1, 1, 1)
+					mark.Transform:SetRotation(angle + 90)
+					_G.ThePlayer.components.talker:Say(tostring(inst:GetAngleToPoint(x, y, z)))
+				end
 			end
-		end
 
-		return _Say(self, script, ...)
-	end
+			return _Say(self, script, ...)
+		end
+	end)
 end)
