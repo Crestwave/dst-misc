@@ -185,16 +185,16 @@ end)
 -- Mark Wagstaff scrap hints
 AddPrefabPostInit("wagstaff_npc", function(inst)
 	inst:DoTaskInTime(0, function(inst)
-		local x, y, z = inst.Transform:GetWorldPosition()
 		local _Say = inst.components.talker.Say
 		inst.components.talker.Say = function(self, script, ...)
 			for k,v in pairs(_G.STRINGS.WAGSTAFF_GOTTOHINT) do
 				if v == script then
-					local angle = inst:GetAngleToPoint(x, y, z)
+					local x, y, z = inst.Transform:GetWorldPosition()
+					local angle = inst.Transform:GetRotation()
 					local mark = _G.SpawnPrefab("archive_resonator_base")
-					mark.Transform:SetPosition(inst.Transform:GetWorldPosition())
+					mark.Transform:SetPosition(x, y, z)
 					mark.AnimState:SetMultColour(0, 1, 1, 1)
-					mark.Transform:SetRotation(angle + 90)
+					mark.Transform:SetRotation(angle - 90)
 					print(string.format("Recorded Wagstaff hint at {%.2f,%.2f} (%.2f degrees)", x, z, angle))
 					_G.ThePlayer.components.talker:Say(tostring(angle))
 				end
