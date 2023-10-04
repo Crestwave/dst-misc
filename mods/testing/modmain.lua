@@ -195,7 +195,8 @@ AddPrefabPostInit("wagstaff_npc", function(inst)
 					mark.Transform:SetPosition(inst.Transform:GetWorldPosition())
 					mark.AnimState:SetMultColour(0, 1, 1, 1)
 					mark.Transform:SetRotation(angle + 90)
-					_G.ThePlayer.components.talker:Say(tostring(inst:GetAngleToPoint(x, y, z)))
+					print(string.format("Recorded Wagstaff hint at {%.2f,%.2f} (%.2f degrees)", x, z, angle))
+					_G.ThePlayer.components.talker:Say(tostring(angle))
 				end
 			end
 
