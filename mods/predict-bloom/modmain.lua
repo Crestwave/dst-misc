@@ -173,11 +173,9 @@ AddPlayerPostInit(function(inst)
 						return
 					end
 
-					if data.overtime then
-						if data.oldpercent == data.newpercent then
-							inst.components._bloomness:Fertilize()
-						end
-					elseif not inst.player_classified.istakingfiredamage:value() or inst.player_classified.istakingfiredamagelow:value() then
+					if not data.overtime and
+							(not inst.player_classified.istakingfiredamage:value() or inst.player_classified.istakingfiredamagelow:value()) and
+							(not inst.player_classified.isinmiasma:value()) then
 						local damage = inst.replica.health:Max() * (data.oldpercent - data.newpercent)
 						if damage > 0 then
 							inst.components._bloomness:Fertilize(damage)
@@ -185,8 +183,9 @@ AddPlayerPostInit(function(inst)
 					end
 				end
 
-				local function OnIsAcidRaining(isacidraining)
-					if isacidraining then
+				local function OnIsAcidSizzling(isacidsizzling)
+					if isacidsizzling then
+						inst.components._bloomness:Fertilize()
 						inst:ListenForEvent("healthdelta", OnHealthDelta)
 						inst.HUD.bloodover.Flash = Flash
 					else
@@ -195,8 +194,8 @@ AddPlayerPostInit(function(inst)
 					end
 				end
 
-				inst:WatchWorldState("isacidraining", OnIsAcidRaining)
-				OnIsAcidRaining(_G.TheWorld.state.isacidraining)
+				inst:ListenForEvent("isacidsizzling", OnIsAcidSizzling)
+				OnIsAcidSizzling(inst:IsAcidSizzling())
 			end
 		end
 	end)
