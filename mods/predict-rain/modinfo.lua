@@ -19,3 +19,16 @@ all_clients_require_mod = false
 
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
+
+configuration_options = {
+	{
+		name = "predicthail",
+		label = "Predict Hail",
+		options = {
+			{ description = "Enabled", data = true },
+			{ description = "Disabled", data = false },
+		},
+		default = false,
+		hover = "[EXPERIMENTAL] Enables /predicthail; may cause performance issues",
+	},
+}

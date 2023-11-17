@@ -64,7 +64,7 @@ local function PredictRainStart(world)
 		end
 
 		local _moisture = moisture + (moisturerate * remainingsecondsinday)
-	
+
 		if _moisture >= moistureceil then
 			totalseconds = totalseconds + ((moistureceil - moisture) / moisturerate)
 			return totalseconds
@@ -171,7 +171,7 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 				local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
 				local m = math.floor(totalseconds / 60)
 				local s = totalseconds % 60
-	
+
 				Announce(string.format("%s will rain on day %.2f (%dm %ds).", world, d, m, s))
 			else
 				Announce(string.format("%s will no longer rain this %s.", world, _G.TheWorld.state.season))
@@ -188,114 +188,116 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 	end,
 })
 
-AddPrefabPostInit("world", function(inst)
-	inst:DoTaskInTime(1, function(inst)
-		if inst:HasTag("forest") then
-			local GOOD_ARENA_SQUARE_SIZE = 6
-			local w, h = inst.Map:GetSize()
+if GetModConfigData("predicthail") then
+	AddPrefabPostInit("world", function(inst)
+		inst:DoTaskInTime(1, function(inst)
+			if inst:HasTag("forest") then
+				local GOOD_ARENA_SQUARE_SIZE = 6
+				local w, h = inst.Map:GetSize()
 
-			w = w * _G.TILE_SCALE / 2
-			h = h * _G.TILE_SCALE / 2
+				w = w * _G.TILE_SCALE / 2
+				h = h * _G.TILE_SCALE / 2
 
-			local cache = false
-			local time = 0
-			local pt = nil
+				local tiles = {}
+				local cache = false
+				local time = 0
+				local pt = nil
 
-			for x=-w,w,4 do
-				for y=-h,h,4 do
-					if inst.Map:IsAboveGroundInSquare(x, 0, y, GOOD_ARENA_SQUARE_SIZE, inst.Map.IsTileLandNoDocks) then
-						table.insert(tiles, _G.Vector3(x, 0, y))
+				for x=-w,w,4 do
+					for y=-h,h,4 do
+						if inst.Map:IsAboveGroundInSquare(x, 0, y, GOOD_ARENA_SQUARE_SIZE, inst.Map.IsTileLandNoDocks) then
+							table.insert(tiles, _G.Vector3(x, 0, y))
+						end
 					end
 				end
-			end
 
-			inst.components.riftspawner = {
-				IsLunarPortalActive = function()
-					if cache then
-						if inst.Map:GetTileAtPoint(pt:Get()) ~= _G.WORLD_TILES.RIFT_MOON then
-							cache = false
-							time = _G.GetTime()
-							pt = nil
-							return false
-						else
-							return true
-						end
-					else
-						if _G.GetTime() - time < 1 then
-							return false
-						end
-
-						for k, v in pairs(tiles) do
-							if inst.Map:GetTileAtPoint(v:Get()) == _G.WORLD_TILES.RIFT_MOON then
-								cache = true
+				inst.components.riftspawner = {
+					IsLunarPortalActive = function()
+						if cache then
+							if inst.Map:GetTileAtPoint(pt:Get()) ~= _G.WORLD_TILES.RIFT_MOON then
+								cache = false
 								time = _G.GetTime()
-								pt = v
+								pt = nil
+								return false
+							else
 								return true
 							end
+						else
+							if _G.GetTime() - time < 1 then
+								return false
+							end
+
+							for k, v in pairs(tiles) do
+								if inst.Map:GetTileAtPoint(v:Get()) == _G.WORLD_TILES.RIFT_MOON then
+									cache = true
+									time = _G.GetTime()
+									pt = v
+									return true
+								end
+							end
+
+							time = _G.GetTime()
+							return false
 						end
-
-						cache = false
-						time = _G.GetTime()
-						return false
 					end
-				end
-			}
-		end
+				}
+			end
+		end)
 	end)
-end)
 
-AddUserCommand("predicthail", {
-	prettyname = "Predict Hail",
-	desc = [[
+	AddUserCommand("predicthail", {
+		prettyname = "Predict Hail",
+		desc = [[
 Forecast lunar hail start or stop.
 Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 ]],
-	permission = _G.COMMAND_PERMISSION.USER,
-	slash = true,
-	usermenu = false,
-	servermenu = false,
-	params = {"mode"},
-	paramsoptional = {true},
-	vote = false,
-	localfn = function(params, caller)
-		if caller == nil or caller.HUD == nil or not _G.TheWorld:HasTag("forest") then
-			return
-		end
-
-		local function Announce(msg)
-			_G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg))
-		end
-
-		if params.mode ~= nil then
-			if params.mode == "1" then
-				Announce = function(msg) _G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg), true) end
-			elseif params.mode == "2" then
-				Announce = function(msg) _G.ChatHistory:SendCommandResponse(msg) end
-			elseif params.mode ~= "0" then
-				_G.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
+		permission = _G.COMMAND_PERMISSION.USER,
+		slash = true,
+		usermenu = false,
+		servermenu = false,
+		params = {"mode"},
+		paramsoptional = {true},
+		vote = false,
+		localfn = function(params, caller)
+			if caller == nil or caller.HUD == nil or not _G.TheWorld:HasTag("forest") then
 				return
 			end
-		end
 
-		if not _G.TheWorld.islunarhailing then
-			local LUNARHAIL_CEIL = 100
-			local totalseconds = ((LUNARHAIL_CEIL - _G.TheWorld.state.lunarhaillevel) / 100) * TUNING.LUNARHAIL_EVENT_COOLDOWN
+			local function Announce(msg)
+				_G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg))
+			end
 
-			if totalseconds then
+			if params.mode ~= nil then
+				if params.mode == "1" then
+					Announce = function(msg) _G.TheNet:Say(string.format("%s %s", _G.STRINGS.LMB, msg), true) end
+				elseif params.mode == "2" then
+					Announce = function(msg) _G.ChatHistory:SendCommandResponse(msg) end
+				elseif params.mode ~= "0" then
+					_G.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
+					return
+				end
+			end
+
+			if not _G.TheWorld.islunarhailing then
+				local LUNARHAIL_CEIL = 100
+				local totalseconds = ((LUNARHAIL_CEIL - _G.TheWorld.state.lunarhaillevel) / 100) * TUNING.LUNARHAIL_EVENT_COOLDOWN
+
+				if totalseconds then
+					local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
+					local m = math.floor(totalseconds / 60)
+					local s = totalseconds % 60
+	
+					Announce(string.format("Lunar hail will start on day %.2f (%dm %ds).", d, m, s))
+				end
+			else
+				local totalseconds = PredictRainStop("Surface")
+
 				local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
 				local m = math.floor(totalseconds / 60)
 				local s = totalseconds % 60
 
-				Announce(string.format("Lunar hail will start on day %.2f (%dm %ds).", d, m, s))
+				Announce(string.format("Lunar hail will stop on day %.2f (%dm %ds).", d, m, s))
 			end
-		else
-			local totalseconds = PredictRainStop("Surface")
-
-			local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
-			local m = math.floor(totalseconds / 60)
-			local s = totalseconds % 60
-
-			Announce(string.format("Lunar hail will stop on day %.2f (%dm %ds).", d, m, s))
-		end
-	end,
-})
+		end,
+	})
+end
