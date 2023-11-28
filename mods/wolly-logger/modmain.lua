@@ -671,8 +671,8 @@ AddPrefabPostInit("boat_leak", function(inst)
             if boat ~= nil then
                 local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
+                print(logstring)
             end
-            print(logstring)
         end
 
         _onsprungleak = inst.components.boatleak.onsprungleak
