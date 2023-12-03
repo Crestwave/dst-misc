@@ -28,7 +28,7 @@ AddPlayerPostInit(function(inst)
 				local basedelay = ridetime / moodmult / beardmult / domesticmult
 				local domestication = GLOBAL.Remap(basedelay, TUNING.BEEFALO_MIN_BUCK_TIME, TUNING.BEEFALO_MAX_BUCK_TIME, 0, 1)
 
-				if inst.AnimState:IsCurrentAnimation("buck") or inst.AnimState:IsCurrentAnimation("buck_pst") then
+				if inst.AnimState:IsCurrentAnimation("buck") or inst.AnimState:IsCurrentAnimation("bucked") or inst.AnimState:IsCurrentAnimation("buck_pst") then
 					inst.components.talker:Say(string.format("%.2f%%", domestication * 100))
 					print(string.format("Recorded %.2f second ride time for \"%s\" (%s domestication)", ridetime, mount.name, domestication))
 				elseif not mount:HasTag("domesticated") and domestication > 0 then
