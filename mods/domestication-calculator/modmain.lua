@@ -13,6 +13,9 @@ AddPlayerPostInit(function(inst)
 						moodmult = mount:HasTag("scarytoprey") and TUNING.BEEFALO_BUCK_TIME_MOOD_MULT or 1
 						beardmult = not mount:HasTag("has_beard") and TUNING.BEEFALO_BUCK_TIME_NUDE_MULT or 1
 						domesticmult = not mount:HasTag("domesticated") and TUNING.BEEFALO_BUCK_TIME_UNDOMESTICATED_MULT or 1
+						skillmult = inst.components.skilltreeupdater and inst.components.skilltreeupdater:HasSkillTag("beefalobucktime")
+							and TUNING.SKILLS.WATHGRITHR.WATHGRITHR_BEEFALO_BUCK_TIME_MOD
+							or 1
 					end
 				end)
 			end
@@ -25,7 +28,7 @@ AddPlayerPostInit(function(inst)
 			end
 
 			if type(mount) == "table" and mount.prefab == "beefalo" and ridetime ~= nil then
-				local basedelay = ridetime / moodmult / beardmult / domesticmult
+				local basedelay = ridetime / moodmult / beardmult / domesticmult / skillmult
 				local domestication = GLOBAL.Remap(basedelay, TUNING.BEEFALO_MIN_BUCK_TIME, TUNING.BEEFALO_MAX_BUCK_TIME, 0, 1)
 
 				if inst.AnimState:IsCurrentAnimation("buck") or inst.AnimState:IsCurrentAnimation("bucked") or inst.AnimState:IsCurrentAnimation("buck_pst") then
