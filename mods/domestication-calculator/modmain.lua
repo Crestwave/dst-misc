@@ -2,12 +2,12 @@ AddPlayerPostInit(function(inst)
 	inst:ListenForEvent("isridingdirty", function(inst)
 		if inst ~= GLOBAL.ThePlayer then return end
 
-		if inst.replica.rider._isriding:value() then
+		if inst.replica.rider:IsRiding() then
 			if lastmounted == nil then
 				lastmounted = GLOBAL.GetTime()
 
 				inst:DoTaskInTime(GLOBAL.FRAMES, function(inst)
-					mount = inst.replica.rider.classified ~= nil and inst.replica.rider.classified.ridermount:value()
+					mount = inst.replica.rider:GetMount()
 
 					if type(mount) == "table" and mount.prefab == "beefalo" then
 						moodmult = mount:HasTag("scarytoprey") and TUNING.BEEFALO_BUCK_TIME_MOOD_MULT or 1
