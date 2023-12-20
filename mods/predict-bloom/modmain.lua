@@ -142,7 +142,7 @@ AddPlayerPostInit(function(inst)
 			SyncBloomStage(inst)
 			UpdateBloomStage(inst, inst.components._bloomness:GetLevel())
 
-			inst.player_classified:ListenForEvent("isghostmodedirty", function(inst)
+			local function OnGhostModeDirty(inst)
 				if inst.isghostmode:value() then
 					inst._parent.components._bloomness:SetLevel(0)
 					if badge ~= nil then
@@ -158,7 +158,10 @@ AddPlayerPostInit(function(inst)
 						badge:Show()
 					end
 				end
-			end)
+			end
+
+			inst.player_classified:ListenForEvent("isghostmodedirty", OnGhostModeDirty)
+			OnGhostModeDirty(inst.player_classified)
 
 			if GetModConfigData("acidrain") then
 				local pulsetime
