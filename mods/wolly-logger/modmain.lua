@@ -1,3 +1,7 @@
+if not GLOBAL.TheNet:GetIsMasterSimulation() then
+    return
+end
+
 --modimport("tweaks.lua")
 modimport("persistent.lua")
 --modimport("extracommands.lua")
@@ -666,7 +670,7 @@ end)
 
 AddPrefabPostInit("boat_leak", function(inst)
     inst:DoTaskInTime(0, function(inst)
-        if not inst:HasTag("boat_repaired_patch") then
+        if inst:IsValid() and not inst:HasTag("boat_repaired_patch") then
             local boat = inst.components.boatleak.boat
             if boat ~= nil then
                 local logstring = GLOBAL.string.format("%s[%s] springs a %s[%s]! @(%.2f, %.2f, %.2f)", boat:GetDisplayName(), boat.GUID, inst:GetDisplayName(), inst.GUID, boat.Transform:GetWorldPosition())
