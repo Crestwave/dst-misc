@@ -31,7 +31,7 @@ local function GetItem(prefab, tag)
 end
 
 _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
-	if IsDefaultScreen() then
+	if IsDefaultScreen() and _G.ThePlayer:HasTag("shadowmagic") then
 		if _G.ThePlayer.HUD ~= nil and _G.ThePlayer.HUD:GetCurrentOpenSpellBook() ~= nil then
 			_G.ThePlayer.HUD:CloseSpellWheel()
 		else
@@ -59,13 +59,16 @@ _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 end)
 
 _G.TheInput:AddKeyDownHandler(tophatkey, function()
-	if IsDefaultScreen() then
+	if IsDefaultScreen() and _G.ThePlayer:HasTag("magician") then
 		if _G.ThePlayer:HasTag("usingmagiciantool") then
 			local x, y, z = _G.ThePlayer.Transform:GetWorldPosition()
 			_G.SendRPCToServer(_G.RPC.RightClick, _G.ACTIONS.STOPUSINGMAGICTOOL.code, x, z, _G.ThePlayer)
 		else
 			local item = GetItem("tophat", "magiciantool")
-			_G.SendRPCToServer(_G.RPC.UseItemFromInvTile, _G.ACTIONS.USEMAGICTOOL.code, item, 1, nil)
+
+			if item ~= nil then
+				_G.SendRPCToServer(_G.RPC.UseItemFromInvTile, _G.ACTIONS.USEMAGICTOOL.code, item, 1, nil)
+			end
 		end
 	end
 end)
