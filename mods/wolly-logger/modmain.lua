@@ -360,6 +360,7 @@ local old_REPAIR_LEAK = GLOBAL.ACTIONS.REPAIR_LEAK.fn
 local old_SMOTHER = GLOBAL.ACTIONS.SMOTHER.fn
 local old_BOAT_CANNON_SHOOT = GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn
 local old_DEPLOY = GLOBAL.ACTIONS.DEPLOY.fn
+local old_CASTAOE = GLOBAL.ACTIONS.CASTAOE.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -641,6 +642,20 @@ GLOBAL.ACTIONS.DEPLOY.fn = function(act)
         local obj = act.invobject
         if successful and obj ~= nil and obj:HasTag("groundtile") then
             logdebugaction(act, obj, " deploys ", ":beach_umbrella: ")
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.CASTAOE.fn = function(act)
+    local successful = old_CASTAOE(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject
+        if successful and obj ~= nil then
+            --logdebugaction(act, obj, " casts ", ":magic_wand: ")
+	    local act_str = GLOBAL.ACTIONS.CASTAOE.stroverridefn(act):gsub(" %(%d+ Embers%)", "")
+            local logstring = GLOBAL.string.format("%s[%s] casts %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, act_str, obj.GUID, act:GetActionPoint():Get())
+            print(logstring)
         end
     end, successful, act)
     return successful
