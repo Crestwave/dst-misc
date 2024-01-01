@@ -279,7 +279,7 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 			end
 
 			if not _G.TheWorld.components.riftspawner:IsLunarPortalActive() then
-				Announce("Lunar rift is currently inactive")
+				Announce("Lunar rift is currently inactive.")
 			elseif not _G.TheWorld.state.islunarhailing then
 				local LUNARHAIL_CEIL = 100
 				local totalseconds = ((LUNARHAIL_CEIL - _G.TheWorld.state.lunarhaillevel) / 100) * TUNING.LUNARHAIL_EVENT_COOLDOWN
