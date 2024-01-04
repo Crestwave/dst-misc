@@ -1,5 +1,6 @@
 local _G = GLOBAL
 local UpvalueHacker = require("tools/upvaluehacker")
+_G.battlesongs = {}
 
 -- Remove name obfuscation for Wagstaff tools
 for i=1,5 do
@@ -204,6 +205,41 @@ AddPrefabPostInit("wagstaff_npc", function(inst)
 			end
 
 			return _Say(self, script, ...)
+		end
+	end)
+end)
+
+-- Detect active battlesong buffs
+local song_defs = require("prefabs/battlesongdefs").song_defs
+for k, v in pairs(song_defs) do
+	if v.LOOP_FX ~= nil then
+		AddPrefabPostInit(v.LOOP_FX, function(inst)
+			inst:DoTaskInTime(0, function(inst)
+				if _G.ThePlayer.player_classified.hasinspirationbuff:value() and _G.ThePlayer:GetDistanceSqToInst(inst) <= (TUNING.BATTLESONG_ATTACH_RADIUS ^ 2) then
+					local time = _G.GetTime()
+					_G.battlesongs[k] = time
+
+					_G.ThePlayer:DoTaskInTime(5, function(inst)
+						if _G.battlesongs[k] == time then
+							_G.battlesongs[k] = nil
+						end
+					end)
+				end
+			end)
+		end)
+	end
+end
+
+AddPlayerPostInit(function(player)
+	player:DoTaskInTime(0, function(player)
+		if player == _G.ThePlayer then
+			player:ListenForEvent("hasinspirationbuff", function(inst, data)
+				if not data.on then
+					for k in pairs(_G.battlesongs) do
+						_G.battlesongs[k] = nil
+					end
+				end
+			end)
 		end
 	end)
 end)
