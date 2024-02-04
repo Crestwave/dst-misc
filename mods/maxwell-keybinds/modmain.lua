@@ -31,8 +31,8 @@ local function GetItem(prefab, tag)
 end
 
 _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
-	if IsDefaultScreen() and _G.ThePlayer:HasTag("shadowmagic") then
-		if _G.ThePlayer.HUD ~= nil and _G.ThePlayer.HUD:GetCurrentOpenSpellBook() ~= nil then
+	if IsDefaultScreen() then
+		if _G.ThePlayer.HUD ~= nil and _G.ThePlayer.HUD:GetCurrentOpenSpellBook() ~= nil and _G.ThePlayer.HUD:GetCurrentOpenSpellBook().prefab == "waxwelljournal" then
 			_G.ThePlayer.HUD:CloseSpellWheel()
 		else
 			local item = GetItem("waxwelljournal")
@@ -48,10 +48,8 @@ _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 					end
 				end
 
-				for k, v in pairs(_G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)) do
-					if v.action == _G.ACTIONS.USESPELLBOOK then
-						item.components.spellbook:OpenSpellBook(_G.ThePlayer)
-					end
+				if v.action == _G.ACTIONS.USESPELLBOOK then
+					item.components.spellbook:OpenSpellBook(_G.ThePlayer)
 				end
 			end
 		end
