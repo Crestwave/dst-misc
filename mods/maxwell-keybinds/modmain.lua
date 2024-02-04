@@ -48,9 +48,7 @@ _G.TheInput:AddKeyDownHandler(waxwelljournalkey, function()
 					end
 				end
 
-				if v.action == _G.ACTIONS.USESPELLBOOK then
-					item.components.spellbook:OpenSpellBook(_G.ThePlayer)
-				end
+				item.components.spellbook:OpenSpellBook(_G.ThePlayer)
 			end
 		end
 	end
