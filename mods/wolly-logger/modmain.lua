@@ -116,6 +116,14 @@ AddSimPostInit(function()
         end)
     end
 
+    GLOBAL.TheWorld:ListenForEvent("lunarrift_opened", function(inst, data)
+	    print("Lunar rifts have been opened.")
+    end)
+
+    GLOBAL.TheWorld:ListenForEvent("shadowrift_opened", function(inst, data)
+	    print("Shadow rifts have been opened.")
+    end)
+
     -- this is to make player inventories accessible even after they log off
    --[[  GLOBAL.TheWorld:ListenForEvent("ms_playerleft", function(world, player)
         if player.components ~= nil and player.components.inventory ~= nil then
