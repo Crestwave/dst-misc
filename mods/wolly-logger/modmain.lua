@@ -183,6 +183,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("reading") == "all" or
             desc == " casts " or
+	    desc == " haunts " or
             desc == " shoots " or
             desc == " unwraps " or
             desc == " deploys " or
@@ -198,6 +199,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("discordpickup") == "all" or GetModConfigData("discordpickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
             desc == " casts " or
+	    desc == " haunts " or
             desc == " shoots " or
             desc == " unwraps " or
             desc == " deploys " or
@@ -361,6 +363,8 @@ local old_SMOTHER = GLOBAL.ACTIONS.SMOTHER.fn
 local old_BOAT_CANNON_SHOOT = GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn
 local old_DEPLOY = GLOBAL.ACTIONS.DEPLOY.fn
 local old_CASTAOE = GLOBAL.ACTIONS.CASTAOE.fn
+local old_GIVE = GLOBAL.ACTIONS.GIVE.fn
+local old_HAUNT = GLOBAL.ACTIONS.HAUNT.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
     -- wurt can read books so fix this later
@@ -647,6 +651,7 @@ GLOBAL.ACTIONS.DEPLOY.fn = function(act)
     return successful
 end
 
+-- Unique logs
 GLOBAL.ACTIONS.CASTAOE.fn = function(act)
     local successful = old_CASTAOE(act)
     GLOBAL.pcall(function(successful, act)
@@ -656,6 +661,29 @@ GLOBAL.ACTIONS.CASTAOE.fn = function(act)
 	    local act_str = GLOBAL.ACTIONS.CASTAOE.stroverridefn(act):gsub(" %(%d+ Embers%)", "")
             local logstring = GLOBAL.string.format("%s[%s] casts %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, act_str, obj.GUID, act:GetActionPoint():Get())
             print(logstring)
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.GIVE.fn = function(act)
+    local successful = old_GIVE(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.invobject
+        if successful and obj ~= nil then
+            local logstring = GLOBAL.string.format("%s[%s] gives %s[%s] to %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, obj:GetDisplayName(), obj.GUID, act.target:GetDisplayName(), act.target.GUID, act.target.Transform:GetWorldPosition())
+            print(logstring)
+        end
+    end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.HAUNT.fn = function(act)
+    local successful = old_HAUNT(act)
+    GLOBAL.pcall(function(successful, act)
+        local obj = act.target
+        if successful and obj ~= nil then
+            logdebugaction(act, obj, " haunts ", ":ghost: ")
         end
     end, successful, act)
     return successful
