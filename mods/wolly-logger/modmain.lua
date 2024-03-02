@@ -124,6 +124,10 @@ AddSimPostInit(function()
 	    print("Shadow rifts have been opened.")
     end)
 
+    GLOBAL.TheWorld:WatchWorldState("cycles", function(inst)
+	    print("Day " .. GLOBAL.TheWorld.state.cycles + 1)
+    end)
+
     -- this is to make player inventories accessible even after they log off
    --[[  GLOBAL.TheWorld:ListenForEvent("ms_playerleft", function(world, player)
         if player.components ~= nil and player.components.inventory ~= nil then
@@ -1033,7 +1037,7 @@ local function OnCloseBox(self, data)
             local old_amount = 0
             if old_cache[k] ~= nil then old_amount = old_cache[k] end
             if v > old_amount then
-                local logstring =  doer:GetDisplayName() .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. self:GetDisplayName() .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
+                local logstring =  doer:GetDisplayName() .. "[" .. doerid .. "]" .. " adds " .. v - old_amount .. " " .. k .. " to " .. (self:GetDisplayName() ~= " " and self:GetDisplayName() or self.prefab) .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
@@ -1048,7 +1052,7 @@ local function OnCloseBox(self, data)
             local new_amount = 0
             if new_cache[k] ~= nil then new_amount = new_cache[k] end
             if v > new_amount then
-                local logstring = doer:GetDisplayName() .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. self:GetDisplayName() .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
+                local logstring = doer:GetDisplayName() .. "[" .. doerid .. "]" .. " removes " .. v - new_amount.. " " .. k .. " from " .. (self:GetDisplayName() ~= " " and self:GetDisplayName() or self.prefab) .. "[" .. self.GUID .. "]" .. string.format(" @(%.2f, %.2f, %.2f)", self.Transform:GetWorldPosition())
                 logstring = GLOBAL.string.gsub(logstring, '@admin','@ admin')
                 local discord_logstring =  ":briefcase: " .. logstring
                 if GetModConfigData("stealing") == "all" then
