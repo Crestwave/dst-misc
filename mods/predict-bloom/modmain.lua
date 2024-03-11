@@ -5,6 +5,15 @@ local BloomSaver = nil
 local badge = nil
 local inittask = false
 
+local function OnFertilizedWithFormula(inst, value)
+	if value > 0 and inst.components._bloomness then
+		if inst.components.skilltreeupdater:IsActivated("wormwood_blooming_max_upgrade") then
+			value = value * TUNING.WORMWOOD_BLOOM_MAX_UPGRADE_MULT
+		end
+		inst.components._bloomness:Fertilize(value)
+	end
+end
+
 local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
 	local season_mult = 1
 	if _G.TheWorld.state.season == "spring" then
@@ -102,6 +111,9 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.calcratefn = CalcBloomRateFn
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
 			inst.components._bloomness:DoDelta(0)
+
+			inst.OnFertilizedWithFormula = OnFertilizedWithFormula
+
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
 			inst:ListenForEvent("bloomdelta", function(inst, data) SyncBloomStage(inst) end)
 			inst:WatchWorldState("season", OnSeasonChange)
@@ -118,10 +130,6 @@ AddPlayerPostInit(function(inst)
 				elseif data.skill == "wormwood_blooming_speed2" then
 					if not skilltreeupdater:IsActivated("wormwood_blooming_speed3") then
 						bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED2, bloomness.full_bloom_duration)
-					end
-				elseif data.skill == "wormwood_blooming_max_upgrade" then
-					if not skilltreeupdater:IsActivated("wormwood_blooming_speed3") then
-						bloomness:SetDurations(bloomness.stage_duration, TUNING.WORMWOOD_BLOOM_FULL_DURATION_UPGRADED)
 					end
 				else
 					return
@@ -180,9 +188,7 @@ AddPlayerPostInit(function(inst)
 							(not inst.player_classified.istakingfiredamage:value() or inst.player_classified.istakingfiredamagelow:value()) and
 							(not inst.player_classified.isinmiasma:value()) then
 						local damage = inst.replica.health:Max() * (data.oldpercent - data.newpercent)
-						if damage > 0 then
-							inst.components._bloomness:Fertilize(damage)
-						end
+						inst:OnFertilizedWithFormula(damage)
 					end
 				end
 
@@ -275,12 +281,9 @@ AddPrefabPostInit("world", function(inst)
 							if inst.isperformactionsuccess:value() then
 								local defs = FERTILIZER_DEFS[fert.fertilizerkey or fert.prefab]
 								if defs ~= nil and defs.nutrients ~= nil then
-									local val = defs.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
+									local value = defs.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
-									if val > 0 then
-										inst._parent.components._bloomness:Fertilize(val)
-										print("FERTILIZE SUCCESS: " ..tostring(val))
-									end
+									inst._parent:OnFertilizedWithFormula(value)
 								end
 							end
 
@@ -303,11 +306,7 @@ AddPrefabPostInit("world", function(inst)
 				if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
 					local _Fertilize = inst.components.bloomness.Fertilize
 					inst.components.bloomness.Fertilize = function(self, value)
-						if self.inst.components._bloomness ~= nil then
-							self.inst.components._bloomness:Fertilize(value)
-							print("FERTILIZE SUCCESS: " ..tostring(value))
-						end
-
+						self.inst:OnFertilizedWithFormula(value)
 						return _Fertilize(self, value)
 					end
 
