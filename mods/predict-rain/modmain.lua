@@ -189,59 +189,25 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 })
 
 if GetModConfigData("predicthail") then
-	AddPrefabPostInit("world", function(inst)
-		inst:DoTaskInTime(1, function(inst)
-			if inst:HasTag("forest") then
-				local GOOD_ARENA_SQUARE_SIZE = 6
-				local w, h = inst.Map:GetSize()
+	local lunarrift = nil
 
-				w = w * _G.TILE_SCALE / 2
-				h = h * _G.TILE_SCALE / 2
-
-				local tiles = {}
-				local cache = false
-				local time = 0
-				local pt = nil
-
-				for x=-w,w,4 do
-					for y=-h,h,4 do
-						if inst.Map:IsAboveGroundInSquare(x, 0, y, GOOD_ARENA_SQUARE_SIZE, inst.Map.IsTileLandNoDocks) then
-							table.insert(tiles, _G.Vector3(x, 0, y))
-						end
-					end
-				end
-
-				inst.components.riftspawner = {
-					IsLunarPortalActive = function()
-						if cache then
-							if inst.Map:GetTileAtPoint(pt:Get()) ~= _G.WORLD_TILES.RIFT_MOON then
-								cache = false
-								time = _G.GetTime()
-								pt = nil
-								return false
-							else
-								return true
-							end
-						else
-							if _G.GetTime() - time < 1 then
-								return false
-							end
-
-							for k, v in pairs(tiles) do
-								if inst.Map:GetTileAtPoint(v:Get()) == _G.WORLD_TILES.RIFT_MOON then
-									cache = true
-									time = _G.GetTime()
-									pt = v
-									return true
-								end
-							end
-
-							time = _G.GetTime()
-							return false
-						end
-					end
-				}
+	AddPrefabPostInit("globalmapicon", function(inst)
+		inst:DoTaskInTime(0, function(inst)
+			if (lunarrift == nil or not lunarrift:IsValid()) and
+				_G.TheWorld:HasTag("forest") and
+				_G.TheWorld.Map:GetTileAtPoint(inst.Transform:GetWorldPosition()) then
+				lunarrift = inst
 			end
+		end)
+	end)
+
+	AddPrefabPostInit("world", function(inst)
+		inst:DoTaskInTime(0, function(inst)
+			inst.components.riftspawner = {
+				IsLunarPortalActive = function()
+					return lunarrift ~= nil and lunarrift:IsValid()
+				end
+			}
 		end)
 	end)
 
