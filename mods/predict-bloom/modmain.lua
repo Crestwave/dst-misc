@@ -306,7 +306,7 @@ AddPrefabPostInit("world", function(inst)
 				if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
 					local _Fertilize = inst.components.bloomness.Fertilize
 					inst.components.bloomness.Fertilize = function(self, value)
-						self.inst:_OnFertilizedWithFormula(value)
+						self.inst.components._bloomness:Fertilize(value)
 						return _Fertilize(self, value)
 					end
 
