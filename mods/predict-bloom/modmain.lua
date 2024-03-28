@@ -5,7 +5,7 @@ local BloomSaver = nil
 local badge = nil
 local inittask = false
 
-local function OnFertilizedWithFormula(inst, value)
+local function _OnFertilizedWithFormula(inst, value)
 	if value > 0 and inst.components._bloomness then
 		if inst.components.skilltreeupdater:IsActivated("wormwood_blooming_max_upgrade") then
 			value = value * TUNING.WORMWOOD_BLOOM_MAX_UPGRADE_MULT
@@ -112,7 +112,7 @@ AddPlayerPostInit(function(inst)
 			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
 			inst.components._bloomness:DoDelta(0)
 
-			inst.OnFertilizedWithFormula = OnFertilizedWithFormula
+			inst._OnFertilizedWithFormula = _OnFertilizedWithFormula
 
 			inst:ListenForEvent("bloomfxdirty", OnBloomFXDirty)
 			inst:ListenForEvent("bloomdelta", function(inst, data) SyncBloomStage(inst) end)
@@ -188,7 +188,7 @@ AddPlayerPostInit(function(inst)
 							(not inst.player_classified.istakingfiredamage:value() or inst.player_classified.istakingfiredamagelow:value()) and
 							(not inst.player_classified.isinmiasma:value()) then
 						local damage = inst.replica.health:Max() * (data.oldpercent - data.newpercent)
-						inst:OnFertilizedWithFormula(damage)
+						inst:_OnFertilizedWithFormula(damage)
 					end
 				end
 
@@ -283,7 +283,7 @@ AddPrefabPostInit("world", function(inst)
 								if defs ~= nil and defs.nutrients ~= nil then
 									local value = defs.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX]
 
-									inst._parent:OnFertilizedWithFormula(value)
+									inst._parent:_OnFertilizedWithFormula(value)
 								end
 							end
 
@@ -306,7 +306,7 @@ AddPrefabPostInit("world", function(inst)
 				if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.components.bloomness ~= nil then
 					local _Fertilize = inst.components.bloomness.Fertilize
 					inst.components.bloomness.Fertilize = function(self, value)
-						self.inst:OnFertilizedWithFormula(value)
+						self.inst:_OnFertilizedWithFormula(value)
 						return _Fertilize(self, value)
 					end
 
