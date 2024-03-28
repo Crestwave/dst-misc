@@ -195,7 +195,7 @@ if GetModConfigData("predicthail") then
 		inst:DoTaskInTime(0, function(inst)
 			if (lunarrift == nil or not lunarrift:IsValid()) and
 				_G.TheWorld:HasTag("forest") and
-				_G.TheWorld.Map:GetTileAtPoint(inst.Transform:GetWorldPosition()) then
+				_G.TheWorld.Map:GetTileAtPoint(inst.Transform:GetWorldPosition()) == _G.WORLD_TILES.RIFT_MOON then
 				lunarrift = inst
 			end
 		end)
@@ -239,7 +239,7 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 				elseif params.mode == "2" then
 					Announce = function(msg) _G.ChatHistory:SendCommandResponse(msg) end
 				elseif params.mode ~= "0" then
-					_G.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predictrain.", params.mode))
+					_G.ChatHistory:SendCommandResponse(string.format("Invalid mode '%s'; see /help predicthail.", params.mode))
 					return
 				end
 			end
