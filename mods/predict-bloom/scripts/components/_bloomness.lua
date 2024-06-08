@@ -68,20 +68,23 @@ end
 function _Bloomness:UpdateRate()
 	if self.level > 0 then
 		self.rate = self.calcratefn ~= nil and self.calcratefn(self.inst, self.level, self.is_blooming, self.fertilizer) or 1
+		self:UpdateRateScale()
+	end
+end
 
-		if self.is_blooming then
-			self.ratescale =
-				(self.rate >= 2.5 and RATE_SCALE.INCREASE_HIGH) or
-				(self.rate >= 1.5 and RATE_SCALE.INCREASE_MED) or
-				(self.rate > 0 and RATE_SCALE.INCREASE_LOW) or
-				RATE_SCALE.NEUTRAL
-		else
-			self.ratescale =
-				(self.rate >= 2.5 and RATE_SCALE.DECREASE_HIGH) or
-				(self.rate >= 1.5 and RATE_SCALE.DECREASE_MED) or
-				(self.rate > 0 and RATE_SCALE.DECREASE_LOW) or
-				RATE_SCALE.NEUTRAL
-		end
+function _Bloomness:UpdateRateScale()
+	if self.is_blooming then
+		self.ratescale =
+			(self.rate >= 2.5 and RATE_SCALE.INCREASE_HIGH) or
+			(self.rate >= 1.5 and RATE_SCALE.INCREASE_MED) or
+			(self.rate > 0 and RATE_SCALE.INCREASE_LOW) or
+			RATE_SCALE.NEUTRAL
+	else
+		self.ratescale =
+			(self.rate >= 2.5 and RATE_SCALE.DECREASE_HIGH) or
+			(self.rate >= 1.5 and RATE_SCALE.DECREASE_MED) or
+			(self.rate > 0 and RATE_SCALE.DECREASE_LOW) or
+			RATE_SCALE.NEUTRAL
 	end
 end
 
@@ -126,7 +129,6 @@ function _Bloomness:Save()
 		level = self.level,
 		timer = self.timer,
 		rate = self.rate,
-		ratescale = self.ratescale,
 		is_blooming = self.is_blooming,
 		fertilizer = self.fertilizer,
 	} or nil
@@ -136,13 +138,13 @@ function _Bloomness:Load(data)
 	if data ~= nil then
 		self.timer = data.timer or 0
 		self.rate = data.rate or 1
-		self.ratescale = data.ratescale or RATE_SCALE.NEUTRAL
 		self.is_blooming = data.is_blooming or false
 		self.fertilizer = data.fertilizer or 0
 		self.level = data.level or 0
 
 		if self.level > 0 then
 			self.inst:StartUpdatingComponent(self)
+			self:UpdateRateScale()
 			self.onlevelchangedfn(self.inst, self.level)
 		else
 			self.inst:StopUpdatingComponent(self)

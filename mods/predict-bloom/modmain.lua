@@ -99,7 +99,11 @@ local function OnNewSpawn(inst)
 end
 
 local function OnLoad(inst)
-	inst.components._bloomness:Load(BloomSaver:LoadData())
+	if inst.components.bloomness == nil then
+		inst.components._bloomness:Load(BloomSaver:LoadData())
+	else
+		inst.components._bloomness:Load(inst.components.bloomness:OnSave())
+	end
 end
 
 AddPlayerPostInit(function(inst)
@@ -138,8 +142,10 @@ AddPlayerPostInit(function(inst)
 				bloomness:DoDelta(0)
 			end)
 
-			BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
-			BloomSaver:StartAutoSave()
+			if inst.components.bloomness == nil then
+				BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
+				BloomSaver:StartAutoSave()
+			end
 
 			if inittask then
 				OnNewSpawn(inst)
