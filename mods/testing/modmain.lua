@@ -187,7 +187,7 @@ AddPrefabPostInit("world", function(inst)
 end)
 
 -- Mark Wagstaff scrap hints
-AddPrefabPostInit("wagstaff_npc", function(inst)
+AddPrefabPostInit("wagstaff_npc_wagpunk", function(inst)
 	inst:DoTaskInTime(0, function(inst)
 		local _Say = inst.components.talker.Say
 		inst.components.talker.Say = function(self, script, ...)
