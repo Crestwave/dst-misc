@@ -72,7 +72,7 @@ AddPrefabPostInit("oceanvine_deco", function(inst)
 end)
 
 -- Merm fluency
-local prefabs = { "merm", "mermguard" }
+local prefabs = { "merm", "mermguard", "merm_lunar", "mermguard_lunar", "merm_shadow", "mermguard_shadow" }
 
 for i, prefab in ipairs(prefabs) do
 	AddPrefabPostInit(prefab, function(inst)
