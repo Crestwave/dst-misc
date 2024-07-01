@@ -215,7 +215,10 @@ for k, v in pairs(song_defs) do
 	if v.LOOP_FX ~= nil then
 		AddPrefabPostInit(v.LOOP_FX, function(inst)
 			inst:DoTaskInTime(0, function(inst)
-				if _G.ThePlayer.player_classified.hasinspirationbuff:value() and _G.ThePlayer:GetDistanceSqToInst(inst) <= (TUNING.BATTLESONG_ATTACH_RADIUS ^ 2) then
+				-- NOTE: if the player momentarily detaches then stays between the attach and detach radius while another Wigfrid song is within range,
+				-- the song may still be listed as attached.
+				if (_G.battlesongs[k] ~= nil and _G.ThePlayer:GetDistanceSqToInst(inst) <= (TUNING.BATTLESONG_DETACH_RADIUS * TUNING.BATTLESONG_DETACH_RADIUS)) or
+					(_G.ThePlayer.player_classified.hasinspirationbuff:value() and _G.ThePlayer:GetDistanceSqToInst(inst) <= (TUNING.BATTLESONG_ATTACH_RADIUS ^ TUNING.BATTLESONG_ATTACH_RADIUS)) then
 					local time = _G.GetTime()
 					_G.battlesongs[k] = time
 
