@@ -246,3 +246,47 @@ AddPlayerPostInit(function(player)
 		end
 	end)
 end)
+
+-- Multi-line support
+AddClassPostConstruct("widgets/textedit", function(self)
+	self.inst:DoTaskInTime(0, function(inst)
+		local _OnTextEntered = self.OnTextEntered
+		if _OnTextEntered ~= nil then
+			self.OnTextEntered = function(...)
+				if _G.TheInput:IsKeyDown(_G.KEY_ALT) then
+					self:SetEditing(true)
+					self.inst.TextEditWidget:OnTextInput("\n")
+				else
+					_OnTextEntered(...)
+				end
+			end
+		end
+	end)
+end)
+
+AddClassPostConstruct("widgets/writeablewidget", function(self)
+	self.inst:DoTaskInTime(0, function(inst)
+		local function onaccept(inst, doer, widget)
+			if not widget.isopen then
+				return
+			end
+
+			local msg = widget:GetText()
+			widget.edit_text:SetString(msg)
+
+			local writeable = inst.replica.writeable
+			if writeable ~= nil then
+				writeable:Write(doer, msg)
+			end
+
+			if widget.config.acceptbtn.cb ~= nil then
+				widget.config.acceptbtn.cb(inst, doer, widget)
+			end
+
+			doer.HUD:CloseWriteableWidget()
+		end
+
+		local config = self.config
+		self.menu.items[3].onclick = function() onaccept(self.writeable, self.owner, self) end
+	end)
+end)
