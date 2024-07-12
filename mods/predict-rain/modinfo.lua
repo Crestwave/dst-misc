@@ -7,7 +7,7 @@ description = [[
 Compatible with Island Adventures.
 ]]
 
-version = "1.4"
+version = "1.5"
 api_version = 10
 
 dst_compatible = true
