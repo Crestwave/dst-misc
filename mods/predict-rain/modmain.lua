@@ -203,11 +203,15 @@ if GetModConfigData("predicthail") then
 
 	AddPrefabPostInit("world", function(inst)
 		inst:DoTaskInTime(0, function(inst)
-			inst.components.riftspawner = {
-				IsLunarPortalActive = function()
+			if inst.components.riftspawner == nil then
+				inst.components.riftspawner = {}
+			end
+
+			if inst.components.riftspawner.IsLunarPortalActive == nil then
+				inst.components.riftspawner.IsLunarPortalActive = function()
 					return lunarrift ~= nil and lunarrift:IsValid()
 				end
-			}
+			end
 		end)
 	end)
 
@@ -247,8 +251,8 @@ Modes: 0 for global chat, 1 for whisper chat, 2 for local chat.
 			if not _G.TheWorld.components.riftspawner:IsLunarPortalActive() then
 				Announce("Lunar rift is currently inactive.")
 			elseif not _G.TheWorld.state.islunarhailing then
-				local LUNARHAIL_CEIL = 100
-				local totalseconds = ((LUNARHAIL_CEIL - _G.TheWorld.state.lunarhaillevel) / 100) * TUNING.LUNARHAIL_EVENT_COOLDOWN
+				local LUNAR_HAIL_CEIL = 100
+				local totalseconds = ((LUNAR_HAIL_CEIL - _G.TheWorld.state.lunarhaillevel) / 100) * TUNING.LUNARHAIL_EVENT_COOLDOWN
 
 				if totalseconds then
 					local d = _G.TheWorld.state.cycles + 1 + _G.TheWorld.state.time + (totalseconds / TUNING.TOTAL_DAY_TIME)
