@@ -192,7 +192,7 @@ if GetModConfigData("predicthail") then
 	local lunarrift = nil
 
 	AddPrefabPostInit("globalmapicon", function(inst)
-		inst:DoTaskInTime(0, function(inst)
+		inst:DoTaskInTime(1, function(inst)
 			if (lunarrift == nil or not lunarrift:IsValid()) and
 				_G.TheWorld:HasTag("forest") and
 				_G.TheWorld.Map:GetTileAtPoint(inst.Transform:GetWorldPosition()) == _G.WORLD_TILES.RIFT_MOON then
