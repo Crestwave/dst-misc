@@ -30,6 +30,13 @@ AddPrefabPostInit("houndcorpse", function(inst)
 	end)
 end)
 
+-- Remove name obfuscation for ornery chests
+AddPrefabPostInit("chest_mimic", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		inst:SetPrefabNameOverride("chest_mimic_revealed")
+	end)
+end)
+
 -- Mark buried moon altars
 for i=1,2 do
 	AddPrefabPostInit("moon_altar_astral_marker_"..i, function(inst)
