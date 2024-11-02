@@ -61,6 +61,15 @@ AddPrefabPostInit("burnable_locator_medium", function(inst)
 	end)
 end)
 
+-- Attack Rictus directly
+AddPrefabPostInit("shadowthrall_mouth", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		inst.CanMouseThrough = function()
+			return false, true
+		end
+	end)
+end)
+
 -- Hide waterlogged biome god rays
 AddPrefabPostInit("lightrays_canopy", function(inst)
 	inst:DoTaskInTime(0, function(inst)
