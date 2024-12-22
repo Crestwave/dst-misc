@@ -109,12 +109,12 @@ end
 AddPlayerPostInit(function(inst)
 	inst:DoTaskInTime(0, function(inst)
 		if inst == _G.ThePlayer and inst.prefab == "wormwood" and inst.player_classified ~= nil then
-			inst:AddComponent("_bloomness")
-			inst.components._bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
-			inst.components._bloomness.onlevelchangedfn = UpdateBloomStage
-			inst.components._bloomness.calcratefn = CalcBloomRateFn
-			inst.components._bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
-			inst.components._bloomness:DoDelta(0)
+			local _bloomness = inst:AddComponent("_bloomness")
+			_bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
+			_bloomness.onlevelchangedfn = UpdateBloomStage
+			_bloomness.calcratefn = CalcBloomRateFn
+			_bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
+			_bloomness:DoDelta(0)
 
 			inst._OnFertilizedWithFormula = _OnFertilizedWithFormula
 
@@ -123,27 +123,26 @@ AddPlayerPostInit(function(inst)
 			inst:WatchWorldState("season", OnSeasonChange)
 
 			inst:ListenForEvent("onactivateskill_client", function(inst, data)
-				local bloomness = inst.components._bloomness
 				local skilltreeupdater = inst.components.skilltreeupdater
 
 				if data.skill == "wormwood_blooming_speed1" then
 					if not (skilltreeupdater:IsActivated("wormwood_blooming_speed2")
 						or skilltreeupdater:IsActivated("wormwood_blooming_speed3")) then
-						bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED1, bloomness.full_bloom_duration)
+						_bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED1, _bloomness.full_bloom_duration)
 					end
 				elseif data.skill == "wormwood_blooming_speed2" then
 					if not skilltreeupdater:IsActivated("wormwood_blooming_speed3") then
-						bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED2, bloomness.full_bloom_duration)
+						_bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION_UPGRADED2, _bloomness.full_bloom_duration)
 					end
 				else
 					return
 				end
 
-				bloomness:DoDelta(0)
+				_bloomness:DoDelta(0)
 			end)
 
 			if inst.components.bloomness == nil then
-				BloomSaver = AutoSaveManager("bloomness", inst.components._bloomness.Save, { inst.components._bloomness })
+				BloomSaver = AutoSaveManager("bloomness", _bloomness.Save, { _bloomness })
 				BloomSaver:StartAutoSave()
 			end
 
@@ -154,16 +153,16 @@ AddPlayerPostInit(function(inst)
 			end
 
 			SyncBloomStage(inst)
-			UpdateBloomStage(inst, inst.components._bloomness:GetLevel())
+			UpdateBloomStage(inst, _bloomness:GetLevel())
 
 			local function OnGhostModeDirty(inst)
 				if inst.isghostmode:value() then
-					inst._parent.components._bloomness:SetLevel(0)
+					_bloomness:SetLevel(0)
 					if badge ~= nil then
 						badge:Hide()
 					end
 				elseif _G.TheWorld.state.isspring then
-					inst._parent.components._bloomness:Fertilize()
+					_bloomness:Fertilize()
 					if badge ~= nil then
 						badge:Show()
 					end
@@ -200,7 +199,7 @@ AddPlayerPostInit(function(inst)
 
 				local function OnIsAcidSizzling(isacidsizzling)
 					if isacidsizzling then
-						inst.components._bloomness:Fertilize()
+						_bloomness:Fertilize()
 						inst:ListenForEvent("healthdelta", OnHealthDelta)
 						inst.HUD.bloodover.Flash = Flash
 					else
