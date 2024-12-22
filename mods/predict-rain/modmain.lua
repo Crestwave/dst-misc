@@ -1,4 +1,41 @@
 local _G = GLOBAL
+-- Note: true dt is 0.033333335071802, which makes FRAMES accurate up to 8 decimals of precision
+local dt = _G.FRAMES
+local easing = require('easing')
+local UpvalueHacker = require("tools/upvaluehacker")
+
+local _moisture
+local _moisturefloor
+local _moistureceil
+local _moisturerate
+local _preciprate
+local _peakprecipitationrate
+
+-- Get direct upvalues to avoid debug string rounding
+local function GetUpvalues(self)
+	-- Delay by a frame to let Island Adventures' postinit load first
+	self.inst:DoTaskInTime(0, function(inst)
+		if _G.TheWorld:HasTag("island") or _G.TheWorld:HasTag("volcano") then
+			_moisture = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_moisture_island")
+			_moisturefloor = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_moisturefloor_island")
+			_moistureceil = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_moistureceil_island")
+			_moisturerate = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_moisturerate_island")
+			_peakprecipitationrate = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_peakprecipitationrate_island")
+
+			_hurricane_timer = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_hurricane_timer")
+			_hurricane_duration = UpvalueHacker.GetUpvalue(self.GetIADebugString, "_hurricane_duration")
+		else
+			_moisture = UpvalueHacker.GetUpvalue(self.GetDebugString, "_moisture")
+			_moisturefloor = UpvalueHacker.GetUpvalue(self.GetDebugString, "_moisturefloor")
+			_moistureceil = UpvalueHacker.GetUpvalue(self.GetDebugString, "_moistureceil")
+			_moisturerate = UpvalueHacker.GetUpvalue(self.GetDebugString, "_moisturerate")
+			_peakprecipitationrate = UpvalueHacker.GetUpvalue(self.GetDebugString, "_peakprecipitationrate")
+		end
+	end)
+end
+
+AddClassPostConstruct("components/weather", GetUpvalues)
+AddClassPostConstruct("components/caveweather", GetUpvalues)
 
 local function PredictRainStart(world)
 	local MOISTURE_RATES
@@ -85,28 +122,25 @@ local function PredictRainStop(world)
 	local PRECIP_RATE_SCALE = 10
 	local MIN_PRECIP_RATE = .1
 
-	local dbgstr = (world == "Island" or world == "Volcano") and _G.TheWorld.net.components.weather:GetIADebugString() or
-			world == "Surface" and _G.TheWorld.net.components.weather:GetDebugString() or
-			world == "Caves" and _G.TheWorld.net.components.caveweather:GetDebugString()
-
 	if _G.TheWorld.state.islunarhailing then
 		local LUNARHAIL_CEIL = 100
 		return _G.TheWorld.state.lunarhaillevel * (TUNING.LUNARHAIL_EVENT_TIME / LUNARHAIL_CEIL)
 	end
 
 	if _G.TheWorld.state.hurricane then
-		local _, _, hurricane_timer, hurricane_duration = string.find(dbgstr, ".*hurricane:(%d+.%d+)/(%d+.%d+).*")
+		local hurricane_timer = _hurricane_timer:value()
+		local hurricane_duration = _hurricane_duration:value()
 		return hurricane_duration - hurricane_timer
 	end
 
-	local _, _, moisture, moisturefloor, moistureceil, moisturerate, preciprate, peakprecipitationrate = string.find(dbgstr, ".*moisture:%s?(%d+.%d+)%s?%((%d+.%d+)/(%d+.%d+)%) %+ (%-?%d+.%d+).*preciprate:%s?%((%d+.%d+) of (%d+.%d+)%).*")
+	local moisture = _moisture:value()
+	local moisturefloor = _moisturefloor:value()
+	local moistureceil = _moistureceil:value()
+	local moisturerate = _moisturerate:value()
+	local peakprecipitationrate = _peakprecipitationrate:value()
 
-	moisture = _G.tonumber(moisture)
-	moistureceil = _G.tonumber(moistureceil)
-	moisturefloor = _G.tonumber(moisturefloor)
-	preciprate = _G.tonumber(preciprate)
-	peakprecipitationrate = _G.tonumber(peakprecipitationrate)
-
+	-- Temporarily set preciprate to 1 to kickstart the first loop
+	local preciprate = 1
 	local totalseconds = 0
 
 	while moisture > moisturefloor do
@@ -115,9 +149,9 @@ local function PredictRainStop(world)
 			local rate = MIN_PRECIP_RATE + (1 - MIN_PRECIP_RATE) * math.sin(p * _G.PI)
 
 			preciprate = math.min(rate, peakprecipitationrate)
-			moisture = math.max(moisture - preciprate * _G.FRAMES * PRECIP_RATE_SCALE, 0)
+			moisture = math.max(moisture - preciprate * dt * PRECIP_RATE_SCALE, 0)
 
-			totalseconds = totalseconds + _G.FRAMES
+			totalseconds = totalseconds + dt
 		else
 			break
 		end
