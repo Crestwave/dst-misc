@@ -376,6 +376,7 @@ local old_BOAT_CANNON_SHOOT = GLOBAL.ACTIONS.BOAT_CANNON_SHOOT.fn
 local old_DEPLOY = GLOBAL.ACTIONS.DEPLOY.fn
 local old_CASTAOE = GLOBAL.ACTIONS.CASTAOE.fn
 local old_GIVE = GLOBAL.ACTIONS.GIVE.fn
+local old_TAKEITEM = GLOBAL.ACTIONS.TAKEITEM.fn
 local old_HAUNT = GLOBAL.ACTIONS.HAUNT.fn
 
 GLOBAL.ACTIONS.READ.fn = function(act)
@@ -688,6 +689,19 @@ GLOBAL.ACTIONS.GIVE.fn = function(act)
             print(logstring)
         end
     end, successful, act)
+    return successful
+end
+
+GLOBAL.ACTIONS.TAKEITEM.fn = function(act)
+    local obj = act.target ~= nil and act.target.takeitem ~= nil and act.target.takeitem:value()
+    local successful = old_TAKEITEM(act)
+    GLOBAL.pcall(function(successful, act)
+        if successful and obj ~= nil then
+            local stack = obj.components.stackable ~= nil and obj.components.stackable:StackSize() or 1
+            local logstring = GLOBAL.string.format("%s[%s] takes %d %s[%s] from %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, stack, obj:GetDisplayName(), obj.GUID, act.target:GetDisplayName(), act.target.GUID, act.target.Transform:GetWorldPosition())
+            print(logstring)
+        end
+    end, successful, act, obj)
     return successful
 end
 
