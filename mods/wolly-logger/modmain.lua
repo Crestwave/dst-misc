@@ -117,15 +117,15 @@ AddSimPostInit(function()
     end
 
     GLOBAL.TheWorld:ListenForEvent("lunarrift_opened", function(inst, data)
-	    print("Lunar rifts have been opened.")
+        print("Lunar rifts have been opened.")
     end)
 
     GLOBAL.TheWorld:ListenForEvent("shadowrift_opened", function(inst, data)
-	    print("Shadow rifts have been opened.")
+        print("Shadow rifts have been opened.")
     end)
 
     GLOBAL.TheWorld:WatchWorldState("cycles", function(inst)
-	    print("Day " .. GLOBAL.TheWorld.state.cycles + 1)
+        print("Day " .. GLOBAL.TheWorld.state.cycles + 1)
     end)
 
     -- this is to make player inventories accessible even after they log off
@@ -195,7 +195,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("pickup") == "all" or GetModConfigData("pickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("reading") == "all" or
             desc == " casts " or
-	    desc == " haunts " or
+            desc == " haunts " or
             desc == " shoots " or
             desc == " unwraps " or
             desc == " deploys " or
@@ -211,7 +211,7 @@ local function logdebugaction(act, obj, desc, emoji)
             desc == " picks up " and (GetModConfigData("discordpickup") == "all" or GetModConfigData("discordpickup") == "theft" and obj.builtbyid ~= nil and act.doer.userid ~= nil and obj.builtbyid ~= act.doer.userid) or
             desc == " casts spell " and GetModConfigData("discordreading") == "all" or
             desc == " casts " or
-	    desc == " haunts " or
+            desc == " haunts " or
             desc == " shoots " or
             desc == " unwraps " or
             desc == " deploys " or
@@ -670,7 +670,7 @@ GLOBAL.ACTIONS.CASTAOE.fn = function(act)
         local obj = act.invobject
         if successful and obj ~= nil then
             --logdebugaction(act, obj, " casts ", ":magic_wand: ")
-	    local act_str = GLOBAL.ACTIONS.CASTAOE.stroverridefn(act):gsub(" %(%d+ Embers%)", "")
+            local act_str = GLOBAL.ACTIONS.CASTAOE.stroverridefn(act):gsub(" %(%d+ Embers%)", "")
             local logstring = GLOBAL.string.format("%s[%s] casts %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, act_str, obj.GUID, act:GetActionPoint():Get())
             print(logstring)
         end
@@ -683,7 +683,8 @@ GLOBAL.ACTIONS.GIVE.fn = function(act)
     GLOBAL.pcall(function(successful, act)
         local obj = act.invobject
         if successful and obj ~= nil then
-            local logstring = GLOBAL.string.format("%s[%s] gives %s[%s] to %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, obj:GetDisplayName(), obj.GUID, act.target:GetDisplayName(), act.target.GUID, act.target.Transform:GetWorldPosition())
+            local stack = obj.components.stackable ~= nil and obj.components.stackable:StackSize() or 1
+            local logstring = GLOBAL.string.format("%s[%s] gives %d %s[%s] to %s[%s] @(%.2f, %.2f, %.2f)", act.doer:GetDisplayName(), act.doer.userid, stack, obj:GetDisplayName(), obj.GUID, act.target:GetDisplayName(), act.target.GUID, act.target.Transform:GetWorldPosition())
             print(logstring)
         end
     end, successful, act)
