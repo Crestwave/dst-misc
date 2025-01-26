@@ -1,13 +1,8 @@
 local _G = GLOBAL
+local UIAnim = require "widgets/uianim"
 local summonkey = _G["KEY_"..GetModConfigData("summonkey")]
 local togglekey = _G["KEY_"..GetModConfigData("togglekey")]
-
-local UIAnim = require "widgets/uianim"
 local tiles = {}
-
--- debug
-_G.itemtile = nil
-_G.itemtiles = {}
 
 local function IsDefaultScreen()
 	return _G.ThePlayer ~= nil
@@ -147,7 +142,7 @@ AddClassPostConstruct("widgets/itemtile", function(self, invitem)
 		self.rechargetime = TUNING.WENDYSKILL_COMMAND_COOLDOWN
 		self.rechargeframe = self:AddChild(UIAnim())
 
-		-- remove the frame because I don't like it
+		-- leave the frame out because I don't like it
 		--self.rechargeframe:GetAnimState():SetBank("recharge_meter")
 		--self.rechargeframe:GetAnimState():SetBuild("recharge_meter")
 		--self.rechargeframe:GetAnimState():PlayAnimation("frame")
@@ -164,9 +159,36 @@ AddClassPostConstruct("widgets/itemtile", function(self, invitem)
 
 		-- maintain a list of tiles
 		table.insert(tiles, self)
+	end
+end)
 
-		-- debug
-		_G.itemtile = self
-		_G.itemtiles = tiles
+local _stroverridefn = _G.ACTIONS.APPLYELIXIR.stroverridefn
+_G.ACTIONS.APPLYELIXIR.stroverridefn = function(act, ...)
+	if act.invobject then
+		local doer = act.doer
+		if doer.components.playercontroller ~= nil and doer.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_INSPECT) then
+			local head = doer.replica.inventory:GetEquippedItem(_G.EQUIPSLOTS.HEAD)
+			if head ~= nil and head:HasTag("elixir_drinker") then
+				return _G.subfmt(_G.STRINGS.ACTIONS.GIVE.DRINK, {item = act.invobject:GetBasicDisplayName()})
+			end
+		end
+	end
+
+	return _stroverridefn(act, ...)
+end
+
+AddClassPostConstruct("components/inventory_replica", function(self, inst)
+	local _UseItemFromInvTile = self.UseItemFromInvTile
+	self.UseItemFromInvTile = function(self, item, ...)
+		if item ~= nil and item:HasTag("ghostlyelixir") then
+			if inst.components.playercontroller ~= nil and inst.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_INSPECT) then
+				local head = self:GetEquippedItem(_G.EQUIPSLOTS.HEAD)
+				if head ~= nil and head:HasTag("elixir_drinker") then
+					return self:ControllerUseItemOnItemFromInvTile(head, item)
+				end
+			end
+		end
+
+		return _UseItemFromInvTile(self, item, ...)
 	end
 end)
