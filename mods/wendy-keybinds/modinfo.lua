@@ -1,9 +1,17 @@
-name = "Wendy Keybinds"
+name = "Wendy Keybinds+"
 author = "Crestwave"
 description = [[
 Lets Wendy use X to summon/unsummon Abigail and R to rile/soothe her.
 
 Keybinds are configurable.
+
+Additional features:
+- Spell cooldown display on Abigail's Flower
+- Drink elixir directly with alt+right click
+- Middle click on the ground or while holding ctrl to cast Attack At
+- Middle click on an entity to cast Haunt At
+- Middle click on Abigail to cast Scare
+- Right click on Abigail to cast Escape
 ]]
 
 version = "0.1"
