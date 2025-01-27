@@ -15,18 +15,22 @@ local function CastSpell(label, item, pos)
 		for k, v in pairs(item.components.spellbook.items) do
 			if v.label == label then
 				if pos ~= nil then
-					_G.TheNet:SendRPCToServer(_G.RPC.LeftClick, _G.ACTIONS.CASTAOE.code, pos.x, pos.z, nil, nil, nil, nil, nil, nil, false, item, k)
-					return true
+					if not _G.TheWorld.ismastersim then
+						return _G.TheNet:SendRPCToServer(_G.RPC.LeftClick, _G.ACTIONS.CASTAOE.code, pos.x, pos.z, nil, nil, nil, nil, nil, nil, false, item, k)
+					else
+						item.components.spellbook:SelectSpell(k)
+						local buffaction = _G.BufferedAction(_G.ThePlayer, nil, _G.ACTIONS.CASTAOE, item, pos)
+						return _G.ThePlayer.components.locomotor:PushAction(buffaction, true)
+					end
 				else
 					item.components.spellbook:SelectSpell(k)
-					item.components.spellbook:SetSpellName(v.label)
-					item.components.spellbook:SetSpellFn(v.execute)
-					item.components.spellbook:CastSpell(_G.ThePlayer)
-					return false
+					return _G.ThePlayer.replica.inventory:CastSpellBookFromInv(item)
 				end
 			end
 		end
 	end
+
+	return false
 end
 
 local function GetItem(prefab, tag)
@@ -56,7 +60,9 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 
 		if item ~= nil then
 			if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
-				_G.SendRPCToServer(_G.RPC.ControllerUseItemOnSelfFromInvTile, _G.ACTIONS.CASTSUMMON.code, item)
+				if _G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)[1].action.id == "CASTSUMMON" then
+					_G.ThePlayer.replica.inventory:UseItemFromInvTile(item)
+				end
 			else
 				CastSpell(_G.STRINGS.GHOSTCOMMANDS.UNSUMMON, item)
 			end
