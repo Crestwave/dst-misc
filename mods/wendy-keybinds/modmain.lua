@@ -60,9 +60,13 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 
 		if item ~= nil then
 			if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
-				local actions = _G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)
-				if actions[1] ~= nil and actions[1].action.id == "CASTSUMMON" then
-					_G.ThePlayer.replica.inventory:UseItemFromInvTile(item)
+				--_G.ThePlayer.replica.inventory:ControllerUseItemOnSelfFromInvTile(item)
+				-- the actual ControllerUseItemOnSelfFromInvTile function does not work when networked for some reason
+				if not _G.TheWorld.ismastersim then
+					_G.SendRPCToServer(_G.RPC.ControllerUseItemOnSelfFromInvTile, _G.ACTIONS.CASTSUMMON.code, item)
+				else
+					local buffaction = _G.BufferedAction(_G.ThePlayer, nil, _G.ACTIONS.CASTSUMMON, item)
+					return _G.ThePlayer.components.locomotor:PushAction(buffaction, true)
 				end
 			else
 				CastSpell(_G.STRINGS.GHOSTCOMMANDS.UNSUMMON, item)
