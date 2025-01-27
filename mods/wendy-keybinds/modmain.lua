@@ -76,7 +76,8 @@ _G.TheInput:AddKeyDownHandler(togglekey, function()
 		local item = GetItem("abigail_flower")
 
 		if item ~= nil then
-			return CastSpell(_G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_AGGRESSIVE, item) or CastSpell(_G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_DEFENSIVE, item)
+			local spell = _G.ThePlayer:HasTag("has_aggressive_follower") and _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_DEFENSIVE or _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_AGGRESSIVE
+			return CastSpell(spell, item)
 		end
 	end
 end)
@@ -175,6 +176,7 @@ _G.ACTIONS.APPLYELIXIR.stroverridefn = function(act, ...)
 		local doer = act.doer
 		if doer.components.playercontroller ~= nil and doer.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_INSPECT) then
 			local head = doer.replica.inventory:GetEquippedItem(_G.EQUIPSLOTS.HEAD)
+			-- disable for active item until a clean way can be found to do it
 			if head ~= nil and head:HasTag("elixir_drinker") and act.invobject ~= doer.replica.inventory:GetActiveItem() then
 				return _G.subfmt(_G.STRINGS.ACTIONS.GIVE.DRINK, {item = act.invobject:GetBasicDisplayName()})
 			end
