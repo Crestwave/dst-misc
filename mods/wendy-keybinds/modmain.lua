@@ -60,7 +60,8 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 
 		if item ~= nil then
 			if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
-				if _G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)[1].action.id == "CASTSUMMON" then
+				local actions = _G.ThePlayer.components.playeractionpicker:GetInventoryActions(item)
+				if actions[1] ~= nil and actions[1].action.id == "CASTSUMMON" then
 					_G.ThePlayer.replica.inventory:UseItemFromInvTile(item)
 				end
 			else
@@ -174,7 +175,7 @@ _G.ACTIONS.APPLYELIXIR.stroverridefn = function(act, ...)
 		local doer = act.doer
 		if doer.components.playercontroller ~= nil and doer.components.playercontroller:IsControlPressed(_G.CONTROL_FORCE_INSPECT) then
 			local head = doer.replica.inventory:GetEquippedItem(_G.EQUIPSLOTS.HEAD)
-			if head ~= nil and head:HasTag("elixir_drinker") then
+			if head ~= nil and head:HasTag("elixir_drinker") and act.invobject ~= doer.replica.inventory:GetActiveItem() then
 				return _G.subfmt(_G.STRINGS.ACTIONS.GIVE.DRINK, {item = act.invobject:GetBasicDisplayName()})
 			end
 		end
