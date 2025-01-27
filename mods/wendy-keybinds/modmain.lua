@@ -60,7 +60,6 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 
 		if item ~= nil then
 			if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
-				--_G.ThePlayer.replica.inventory:ControllerUseItemOnSelfFromInvTile(item)
 				-- the actual ControllerUseItemOnSelfFromInvTile function does not work when networked for some reason
 				if not _G.TheWorld.ismastersim then
 					_G.SendRPCToServer(_G.RPC.ControllerUseItemOnSelfFromInvTile, _G.ACTIONS.CASTSUMMON.code, item)
