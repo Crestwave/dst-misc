@@ -182,6 +182,8 @@ _G.ACTIONS.APPLYELIXIR.stroverridefn = function(act, ...)
 			-- disable for active item until a clean way can be found to do it
 			if head ~= nil and head:HasTag("elixir_drinker") and act.invobject ~= doer.replica.inventory:GetActiveItem() then
 				return _G.subfmt(_G.STRINGS.ACTIONS.GIVE.DRINK, {item = act.invobject:GetBasicDisplayName()})
+			else
+				return _G.STRINGS.ACTIONS.LOOKAT.GENERIC
 			end
 		end
 	end
@@ -197,6 +199,8 @@ AddClassPostConstruct("components/inventory_replica", function(self, inst)
 				local head = self:GetEquippedItem(_G.EQUIPSLOTS.HEAD)
 				if head ~= nil and head:HasTag("elixir_drinker") then
 					return self:ControllerUseItemOnItemFromInvTile(head, item)
+				else
+					return self:InspectItemFromInvTile(item)
 				end
 			end
 		end
