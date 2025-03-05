@@ -7,11 +7,11 @@ Keybinds are configurable.
 
 Additional features:
 - Spell cooldown display on Abigail's Flower
-- Drink elixir directly with alt+right click
-- Middle click on the ground or while holding ctrl to cast Attack At
-- Middle click on an entity to cast Haunt At
-- Middle click on Abigail to cast Scare
-- Right click on Abigail to cast Escape
+- Drink elixir directly with Alt+Right Click
+- Middle click on the ground/while holding Ctrl to cast Attack At (Shift-R)
+- Middle click on an entity to cast Haunt At (Ctrl-R)
+- Middle click on Abigail to cast Scare (Ctrl-R)
+- Right click on Abigail to cast Escape (Shift-R)
 ]]
 
 version = "1.1"
