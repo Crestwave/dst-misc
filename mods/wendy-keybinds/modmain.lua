@@ -12,6 +12,7 @@ end
 
 local function CastSpell(label, item, pos)
 	if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil then return end
+	if label == _G.STRINGS.GHOSTCOMMANDS.ATTACK_AT and _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("do_ghost_attackat") ~= nil then return end
 
 	if item.components.spellbook ~= nil then
 		for k, v in pairs(item.components.spellbook.items) do
@@ -145,9 +146,19 @@ AddPrefabPostInit("spellbookcooldown", function(inst)
 			local pct = 1 - inst:GetPercent()
 			for k, v in ipairs(tiles) do
 				if v.inst:IsValid() then
-					-- sync only on >0.01 variance to prevent micro stutters
-					if math.abs(pct - v.rechargepct) > 0.01 then
-						v:SetChargePercent(1 - inst:GetPercent())
+					-- sync only on >0.05 variance to prevent micro stutters
+					if math.abs(pct - v.rechargepct) > 0.05 then
+						if inst:GetSpellName() == _G.hash("do_ghost_attackat") then
+							if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") == nil then
+								v:SetChargeTime(inst:GetLength())
+								v:SetChargePercent(1 - inst:GetPercent())
+								v.recharge:GetAnimState():SetMultColour(.2, .2, 0, 0.64) -- 'Extra cooldown until' with YELLOW colour.
+							end
+						else
+							v:SetChargeTime(TUNING.WENDYSKILL_COMMAND_COOLDOWN)
+							v:SetChargePercent(1 - inst:GetPercent())
+							v.recharge:GetAnimState():SetMultColour(0, 0, 0.4, 0.64) -- 'Cooldown until' with BLUE colour.
+						end
 					end
 				else
 					table.remove(tiles, k)
@@ -155,15 +166,6 @@ AddPrefabPostInit("spellbookcooldown", function(inst)
 			end
 		end)
 	end
-		
-	-- this method is left unused for optimization
-	-- it may be useful if spell-specific cooldowns are implemented
-	--inst:DoTaskInTime(0, function(inst)
-	--	if inst:GetSpellName() == _G.hash("ghostcommand") then
-	--		_G.itemtile:SetChargePercent(1 - inst:GetPercent())
-	--		_G.itemtile:SetChargeTime(inst:GetLength())
-	--	end
-	--end)
 end)
 
 AddClassPostConstruct("widgets/itemtile", function(self, invitem)
