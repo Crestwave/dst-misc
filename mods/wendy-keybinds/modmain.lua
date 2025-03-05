@@ -86,22 +86,26 @@ _G.TheInput:AddKeyDownHandler(togglekey, function()
 end)
 
 _G.TheInput:AddMouseButtonHandler(function(button, down)
-	if IsDefaultScreen() and _G.ThePlayer:HasTag("ghostfriend_summoned") and down and _G.TheInput:GetHUDEntityUnderMouse() == nil then
+	if IsDefaultScreen() and _G.ThePlayer:HasTag("ghostfriend_summoned") and down then
 		if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil then return end
 
 		local item = GetItem("abigail_flower")
 
 		if item ~= nil then
 			local ent = _G.TheInput:GetWorldEntityUnderMouse()
-			if ent ~= nil and not _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_ATTACK) then
+			local hud = _G.TheInput:GetHUDEntityUnderMouse()
+
+			local is_abigail = (hud ~= nil and hud.widget ~= nil and hud.widget:GetParent() ~= nil and hud.widget:GetParent().iconbuild == "status_abigail") or (ent ~= nil and ent.prefab == "abigail" and ent.replica.folower:GetLeader() == _G.ThePlayer)
+
+			if (ent ~= nil or hud ~= nil) and not _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_ATTACK) then
 				if button == _G.MOUSEBUTTON_MIDDLE then
-					if ent.prefab == "abigail" and ent.replica.follower:GetLeader() == _G.ThePlayer then
+					if is_abigail then
 						CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item)
-					else
+					elseif ent ~= nil then
 						CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, ent:GetPosition())
 					end
 				elseif button == _G.MOUSEBUTTON_RIGHT then
-					if ent.prefab == "abigail" and ent.replica.follower:GetLeader() == _G.ThePlayer then
+					if is_abigail then
 						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item)
 					end
 				end
@@ -126,7 +130,6 @@ AddPrefabPostInit("spellbookcooldown", function(inst)
 				if v.inst:IsValid() then
 					-- sync only on >0.01 variance to prevent micro stutters
 					if math.abs(pct - v.rechargepct) > 0.01 then
-						print(pct .." VS ".. v.rechargepct)
 						v:SetChargePercent(1 - inst:GetPercent())
 					end
 				else
