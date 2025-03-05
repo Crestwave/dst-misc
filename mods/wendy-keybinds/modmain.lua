@@ -95,7 +95,7 @@ _G.TheInput:AddMouseButtonHandler(function(button, down)
 			local ent = _G.TheInput:GetWorldEntityUnderMouse()
 			local hud = _G.TheInput:GetHUDEntityUnderMouse()
 
-			local is_abigail = (hud ~= nil and hud.widget ~= nil and hud.widget:GetParent() ~= nil and hud.widget:GetParent().iconbuild == "status_abigail") or (ent ~= nil and ent.prefab == "abigail" and ent.replica.folower:GetLeader() == _G.ThePlayer)
+			local is_abigail = (hud ~= nil and hud.widget ~= nil and hud.widget:GetParent() ~= nil and hud.widget:GetParent().iconbuild == "status_abigail") or (ent ~= nil and ent.prefab == "abigail" and ent.replica.follower:GetLeader() == _G.ThePlayer)
 
 			if (ent ~= nil or hud ~= nil) and not _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_ATTACK) then
 				if button == _G.MOUSEBUTTON_MIDDLE then
