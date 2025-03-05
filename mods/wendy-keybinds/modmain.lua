@@ -11,6 +11,8 @@ local function IsDefaultScreen()
 end
 
 local function CastSpell(label, item, pos)
+	if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil then return end
+
 	if item.components.spellbook ~= nil then
 		for k, v in pairs(item.components.spellbook.items) do
 			if v.label == label then
@@ -59,16 +61,22 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 		local item = GetItem("abigail_flower")
 
 		if item ~= nil then
-			if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
-				-- the actual ControllerUseItemOnSelfFromInvTile function does not work when networked for some reason
-				if not _G.TheWorld.ismastersim then
-					_G.SendRPCToServer(_G.RPC.ControllerUseItemOnSelfFromInvTile, _G.ACTIONS.CASTSUMMON.code, item)
-				else
-					local buffaction = _G.BufferedAction(_G.ThePlayer, nil, _G.ACTIONS.CASTSUMMON, item)
-					return _G.ThePlayer.components.locomotor:PushAction(buffaction, true)
-				end
+			if _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_TRADE) then
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item)
+			elseif _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_STACK) then
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item)
 			else
-				CastSpell(_G.STRINGS.GHOSTCOMMANDS.UNSUMMON, item)
+				if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
+					-- the actual ControllerUseItemOnSelfFromInvTile function does not work when networked for some reason
+					if not _G.TheWorld.ismastersim then
+						_G.SendRPCToServer(_G.RPC.ControllerUseItemOnSelfFromInvTile, _G.ACTIONS.CASTSUMMON.code, item)
+					else
+						local buffaction = _G.BufferedAction(_G.ThePlayer, nil, _G.ACTIONS.CASTSUMMON, item)
+						return _G.ThePlayer.components.locomotor:PushAction(buffaction, true)
+					end
+				else
+					CastSpell(_G.STRINGS.GHOSTCOMMANDS.UNSUMMON, item)
+				end
 			end
 		end
 	end
@@ -79,16 +87,21 @@ _G.TheInput:AddKeyDownHandler(togglekey, function()
 		local item = GetItem("abigail_flower")
 
 		if item ~= nil then
-			local spell = _G.ThePlayer:HasTag("has_aggressive_follower") and _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_DEFENSIVE or _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_AGGRESSIVE
-			return CastSpell(spell, item)
+			if _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_TRADE) then
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition())
+			elseif _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_STACK) then
+				local ent = _G.TheInput:GetWorldEntityUnderMouse()
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, ent:GetPosition())
+			else
+				local spell = _G.ThePlayer:HasTag("has_aggressive_follower") and _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_DEFENSIVE or _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_AGGRESSIVE
+				return CastSpell(spell, item)
+			end
 		end
 	end
 end)
 
 _G.TheInput:AddMouseButtonHandler(function(button, down)
 	if IsDefaultScreen() and _G.ThePlayer:HasTag("ghostfriend_summoned") and down then
-		if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil then return end
-
 		local item = GetItem("abigail_flower")
 
 		if item ~= nil then
@@ -111,7 +124,11 @@ _G.TheInput:AddMouseButtonHandler(function(button, down)
 				end
 			else
 				if button == _G.MOUSEBUTTON_MIDDLE then
-					CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition())
+					if ent ~= nil then
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, ent:GetPosition())
+					else
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition())
+					end
 				end
 			end
 		end
