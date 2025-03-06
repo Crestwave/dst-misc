@@ -46,9 +46,11 @@ AddPlayerPostInit(function(inst)
 	inst:DoTaskInTime(0, function(inst)
 		if inst.player_classified ~= nil then
 			inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(_inst)
-				if inst.AnimState:IsCurrentAnimation("graze_loop") then
-					lastmounted = GLOBAL.GetTime()
-				end
+				inst:DoTaskInTime(0, function(inst)
+					if inst.AnimState:IsCurrentAnimation("graze_loop") then
+						lastmounted = GLOBAL.GetTime()
+					end
+				end)
 			end)
 		end
 	end)
