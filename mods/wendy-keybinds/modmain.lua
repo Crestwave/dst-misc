@@ -10,9 +10,13 @@ local function IsDefaultScreen()
 		and _G.TheFrontEnd:GetActiveScreen().name == "HUD"
 end
 
-local function CastSpell(label, item, pos)
-	if _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil then return end
-	if label == _G.STRINGS.GHOSTCOMMANDS.ATTACK_AT and _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("do_ghost_attackat") ~= nil then return end
+local function CastSpell(label, item, pos, cd)
+	if cd ~= nil and cd ~= false then
+		if (_G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent("ghostcommand") ~= nil) or
+				cd ~= true and _G.ThePlayer.components.spellbookcooldowns:GetSpellCooldownPercent(cd) ~= nil then
+			return
+		end
+	end
 
 	if item.components.spellbook ~= nil then
 		for k, v in pairs(item.components.spellbook.items) do
@@ -63,9 +67,9 @@ _G.TheInput:AddKeyDownHandler(summonkey, function()
 
 		if item ~= nil then
 			if _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_TRADE) then
-				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item)
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item, nil, true)
 			elseif _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_STACK) then
-				CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item)
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item, nil, true)
 			else
 				if not _G.ThePlayer:HasTag("ghostfriend_summoned") then
 					-- the actual ControllerUseItemOnSelfFromInvTile function does not work when networked for some reason
@@ -89,10 +93,9 @@ _G.TheInput:AddKeyDownHandler(togglekey, function()
 
 		if item ~= nil then
 			if _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_TRADE) then
-				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition())
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition(), "do_ghost_attackat")
 			elseif _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_STACK) then
-				local ent = _G.TheInput:GetWorldEntityUnderMouse()
-				CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, ent:GetPosition())
+				CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, _G.TheInput:GetWorldPosition(), true)
 			else
 				local spell = _G.ThePlayer:HasTag("has_aggressive_follower") and _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_DEFENSIVE or _G.STRINGS.ACTIONS.COMMUNEWITHSUMMONED.MAKE_AGGRESSIVE
 				return CastSpell(spell, item)
@@ -114,21 +117,21 @@ _G.TheInput:AddMouseButtonHandler(function(button, down)
 			if (ent ~= nil or hud ~= nil) and not _G.TheInput:IsControlPressed(_G.CONTROL_FORCE_ATTACK) then
 				if button == _G.MOUSEBUTTON_MIDDLE then
 					if is_abigail then
-						CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item)
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.SCARE, item, nil, true)
 					elseif ent ~= nil then
-						CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, ent:GetPosition())
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.HAUNT_AT, item, ent:GetPosition(), true)
 					end
 				elseif button == _G.MOUSEBUTTON_RIGHT then
 					if is_abigail then
-						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item)
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ESCAPE, item, nil, true)
 					end
 				end
 			else
 				if button == _G.MOUSEBUTTON_MIDDLE then
 					if ent ~= nil then
-						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, ent:GetPosition())
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, ent:GetPosition(), "do_ghost_attackat")
 					else
-						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition())
+						CastSpell(_G.STRINGS.GHOSTCOMMANDS.ATTACK_AT, item, _G.TheInput:GetWorldPosition(), "do_ghost_attackat")
 					end
 				end
 			end
