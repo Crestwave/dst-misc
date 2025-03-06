@@ -14,7 +14,7 @@ Additional features:
 - Right click on Abigail to cast Escape (Shift-R)
 ]]
 
-version = "1.2"
+version = "1.3"
 api_version = 10
 
 dst_compatible = true
