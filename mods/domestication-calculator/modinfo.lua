@@ -2,7 +2,7 @@ name = "Domestication Calculator"
 author = "Crestwave"
 description = "Estimates a beefalo's domestication after getting bucked off."
 
-version = "1.1"
+version = "1.2"
 api_version = 10
 
 dst_compatible = true
