@@ -1,4 +1,6 @@
 AddPlayerPostInit(function(inst)
+	local lastmounted
+
 	inst:ListenForEvent("isridingdirty", function(inst)
 		if inst ~= GLOBAL.ThePlayer then return end
 
@@ -38,6 +40,16 @@ AddPlayerPostInit(function(inst)
 					inst.components.talker:Say(string.format(">%.2f%%", domestication * 100))
 				end
 			end
+		end
+	end)
+
+	inst:DoTaskInTime(0, function(inst)
+		if inst.player_classified ~= nil then
+			inst.player_classified:ListenForEvent("isperformactionsuccessdirty", function(_inst)
+				if inst.AnimState:IsCurrentAnimation("graze_loop") then
+					lastmounted = GLOBAL.GetTime()
+				end
+			end)
 		end
 	end)
 end)
