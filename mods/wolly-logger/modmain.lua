@@ -693,7 +693,9 @@ GLOBAL.ACTIONS.GIVE.fn = function(act)
 end
 
 GLOBAL.ACTIONS.TAKEITEM.fn = function(act)
-    local obj = act.target ~= nil and act.target.takeitem ~= nil and act.target.takeitem:value()
+    local obj = act.target ~= nil and
+            (act.target.takeitem ~= nil and act.target.takeitem:value()) or
+            (act.target.components.inventoryitemholder ~= nil and act.target.components.inventoryitemholder.item)
     local successful = old_TAKEITEM(act)
     GLOBAL.pcall(function(successful, act)
         if successful and obj ~= nil then
