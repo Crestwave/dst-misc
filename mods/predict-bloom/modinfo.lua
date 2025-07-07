@@ -8,6 +8,7 @@ Compatible with Combined Status and Status Announcements.
 
 version = "2.14"
 api_version = 10
+priority = 1
 
 dst_compatible = true
 dont_starve_compatible = false
