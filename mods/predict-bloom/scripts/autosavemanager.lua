@@ -242,12 +242,23 @@ function AutoSaveManager:StartAutoSave()
 	-- calls when disconnected, calls when you're the host and ThePlayer.HUD.controls.saving doesn't call
 	local old_DoRestart = DoRestart
 
-	function DoRestart(save)
+	function DoRestart(...)
 		if TheWorld then
 			autosave(self)
 		end
 
-		old_DoRestart(save)
+		old_DoRestart(...)
+	end
+
+	-- calls when closing the game directly
+	local old_Shutdown = Shutdown
+
+	function Shutdown(...)
+		if TheWorld then
+			autosave(self)
+		end
+
+		old_Shutdown(...)
 	end
 
 	-- setup SavingIndicator, called when autosaves happen
