@@ -174,7 +174,10 @@ AddPlayerPostInit(function(inst)
 			end
 
 			inst.player_classified:ListenForEvent("isghostmodedirty", OnGhostModeDirty)
-			OnGhostModeDirty(inst.player_classified)
+
+			if inst.player_classified.isghostmode:value() then
+				OnGhostModeDirty(inst.player_classified)
+			end
 
 			if GetModConfigData("acidrain") then
 				local pulsetime
