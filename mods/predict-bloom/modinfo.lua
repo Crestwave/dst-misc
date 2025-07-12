@@ -6,7 +6,7 @@ Displays a bloom meter for Wormwood, allowing you to easily manage and maintain 
 Compatible with Combined Status and Status Announcements.
 ]]
 
-version = "2.15"
+version = "2.16"
 api_version = 10
 priority = 1
 
