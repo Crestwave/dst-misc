@@ -54,6 +54,15 @@ for i=1,2 do
 	end)
 end
 
+-- Show Pipspook lost toys
+for i in ipairs({ 1, 2, 7, 10, 11, 14, 18, 19, 42, 43}) do
+	AddPrefabPostInit("lost_toy_"..i, function(inst)
+		inst:DoTaskInTime(1, function(inst)
+			inst.AnimState:SetMultColour(1, 1, 1, 1)
+		end)
+	end)
+end
+
 -- Light boats directly on fire
 AddPrefabPostInit("burnable_locator_medium", function(inst)
 	inst:DoTaskInTime(0, function(inst)
@@ -66,6 +75,15 @@ AddPrefabPostInit("shadowthrall_mouth", function(inst)
 	inst:DoTaskInTime(0, function(inst)
 		inst.CanMouseThrough = function()
 			return false, true
+		end
+	end)
+end)
+
+-- Prevent WINbot pickup
+AddPrefabPostInit("winona_storage_robot", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		if not _G.ThePlayer:HasTag("handyperson") then
+			inst:AddTag("NOCLICK")
 		end
 	end)
 end)
@@ -304,5 +322,21 @@ AddClassPostConstruct("widgets/writeablewidget", function(self)
 
 		local config = self.config
 		self.menu.items[3].onclick = function() onaccept(self.writeable, self.owner, self) end
+	end)
+end)
+
+-- Fade out blueprints that are already learned
+AddPrefabPostInit("blueprint", function(inst)
+	inst:DoTaskInTime(0, function(inst)
+		name = inst.replica.named._name:value()
+		name = string.sub(name, 1, #name - (#_G.STRINGS.NAMES.BLUEPRINT+1))
+
+		for k, v in pairs(_G.STRINGS.NAMES) do
+		        if v == name then
+		                if _G.ThePlayer.replica.builder:KnowsRecipe(string.lower(k)) then
+					inst.AnimState:SetMultColour(1, 1, 1, 1/3)
+				end
+		        end
+		end
 	end)
 end)
