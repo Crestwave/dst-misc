@@ -831,7 +831,7 @@ end)
 
 AddComponentPostInit("unwrappable", function(self, inst)
     local _Unwrap = self.Unwrap
-    self.Unwrap = function(self, doer)
+    self.Unwrap = function(self, doer ...)
         if self.itemdata ~= nil then
             local items = "{"
             for i, v in ipairs(self.itemdata) do
@@ -844,7 +844,7 @@ AddComponentPostInit("unwrappable", function(self, inst)
             print(logstring)
         end
 
-        _Unwrap(self, doer)
+        _Unwrap(self, doer, ...)
     end
 end)
 
